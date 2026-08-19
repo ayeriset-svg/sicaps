@@ -56,6 +56,27 @@
         </div>
     </div>
 
+    <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-6" x-data="{ indiv: {{ old('is_individual', $module->is_individual ?? false) ? 'true' : 'false' }} }">
+        <h2 class="font-semibold text-slate-800 mb-4">Pengerjaan & Akses</h2>
+        <div class="space-y-3">
+            <label class="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="is_open" value="1" class="mt-0.5" @checked(old('is_open', $module->is_open ?? false))>
+                <span><span class="font-medium">Buka untuk dikerjakan mahasiswa</span> — bila dimatikan, mahasiswa belum bisa mengisi (hanya melihat materi).</span>
+            </label>
+            <label class="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="is_individual" value="1" x-model="indiv" class="mt-0.5" @checked(old('is_individual', $module->is_individual ?? false))>
+                <span><span class="font-medium">Tugas Individu</span> — wajib dikerjakan tiap mahasiswa (tidak diwakilkan ketua tim). Jika di-PASS, mahasiswa otomatis ditandai HADIR pada presensi.</span>
+            </label>
+            <div x-show="indiv" x-cloak class="grid grid-cols-2 gap-3 pl-6 max-w-md">
+                <div><label class="block text-xs font-medium mb-1">Presensi: Minggu ke-</label>
+                    <input type="number" min="1" max="16" name="attendance_week" value="{{ old('attendance_week', $module->attendance_week ?? '') }}" placeholder="1-16" class="w-full rounded-lg border-rose-200 border px-3 py-2 text-sm"></div>
+                <div><label class="block text-xs font-medium mb-1">Sesi ke-</label>
+                    <input type="number" min="1" max="2" name="attendance_session" value="{{ old('attendance_session', $module->attendance_session ?? '') }}" placeholder="1-2" class="w-full rounded-lg border-rose-200 border px-3 py-2 text-sm"></div>
+                <p class="col-span-2 text-xs text-slate-400">Opsional: saat tugas ini di-PASS, mahasiswa otomatis HADIR pada slot presensi di atas. Kosongkan bila tak perlu.</p>
+            </div>
+        </div>
+    </div>
+
     <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-6">
         <h2 class="font-semibold text-slate-800 mb-1">Materi Modul</h2>
         <p class="text-xs text-slate-400 mb-4">Mengikuti template dokumen. Semua bagian mendukung teks + gambar.</p>

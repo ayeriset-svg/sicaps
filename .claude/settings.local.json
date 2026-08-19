@@ -13,7 +13,8 @@
       "Bash(cd \"C:/Users/Alit - AYU/AppData/Roaming/Claude/local-agent-mode-sessions/skills-plugin/264f04aa-bf22-4685-b39a-4658585823ae/fa00d63b-3716-42f8-a80d-67d29c175221/skills/docx\" 2>/dev/null; which pandoc soffice 2>&1; echo \"---\"; ls scripts/ 2>&1 | head)",
       "Bash(grep -rn 'request\\(\\)->all\\(\\)\\\\|$request->all\\(\\)\\\\|::create\\($request\\\\|->update\\($request->all' app/Http/Controllers)",
       "Bash(cat > *)",
-      "Bash(php -r ' *)"
+      "Bash(php -r ' *)",
+      "Bash(echo \"exit=$?\")"
     ]
   }
 }

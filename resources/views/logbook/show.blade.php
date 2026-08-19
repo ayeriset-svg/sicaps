@@ -35,48 +35,82 @@
             </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-            <h2 class="font-semibold text-slate-800 mb-4">📝 Form Logbook</h2>
-            @if($logbook->status_approval === 'Revision Needed')
+        <div class="bg-white rounded-2xl shadow-sm border {{ $isIndividual ? 'border-indigo-100' : 'border-rose-100' }} p-5">
+            <div class="flex items-center justify-between mb-4 gap-2">
+                <h2 class="font-semibold text-slate-800">📝 {{ $isIndividual ? 'Tugas Individu' : 'Form Logbook Tim' }}</h2>
+                @if($isIndividual)<span class="text-xs rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 font-medium">Dikerjakan per mahasiswa</span>@endif
+            </div>
+
+            {{-- Banner status/akses --}}
+            @if(! $module->is_open)
+                <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 mb-4">
+                    🔒 <span class="font-semibold">Belum dibuka koordinator.</span> Anda belum dapat mengerjakan {{ $isIndividual ? 'tugas' : 'logbook' }} ini. Materi tetap dapat dipelajari.
+                </div>
+            @elseif($locked)
+                <div class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700 mb-4">
+                    ✅ <span class="font-semibold">Sudah disetujui (PASS) & terkunci.</span> {{ $isIndividual ? 'Tugas' : 'Logbook' }} tidak dapat diubah lagi.
+                </div>
+            @elseif($logbook->status_approval === 'Revision Needed')
                 <div class="rounded-lg bg-pink-50 border border-pink-200 px-4 py-3 text-sm text-pink-800 mb-4">
                     <p class="font-semibold">🔁 Perlu Revisi — silakan kerjakan ulang & submit lagi.</p>
                     @if($logbook->feedback)<p class="mt-1">Catatan: {{ $logbook->feedback }}</p>@endif
                 </div>
-            @elseif($logbook->status_approval === 'Approved')
-                <div class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-2 text-sm text-emerald-700 mb-4">✅ Sudah disetujui. Anda tetap dapat memperbarui bila diperlukan.</div>
             @endif
-            @if(! $isLeader)
-                <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-700 mb-4">Hanya ketua tim yang dapat submit logbook.</div>
+            @if(! $isIndividual && ! $isLeader)
+                <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-700 mb-4">Hanya ketua tim yang dapat mengisi logbook tim. Anda hanya dapat melihat.</div>
             @endif
-            <form method="POST" action="{{ route('logbook.update', $module) }}" class="space-y-4" enctype="multipart/form-data">
-                @csrf @method('PUT')
-                @foreach($module->fields() as $field)
-                    @php $val = $logbook->payload_json[$field['key']] ?? ''; @endphp
-                    <div>
-                        <label class="block text-sm font-medium mb-1">{{ $field['label'] }} @if($field['required'] ?? false)<span class="text-red-500">*</span>@endif</label>
-                        @if($field['type'] === 'richtext')
-                            <x-richtext :name="'fields['.$field['key'].']'" :value="$val" :disabled="! $isLeader" />
-                        @elseif($field['type'] === 'file')
-                            @php $fname = $logbook->payload_json[$field['key'].'__name'] ?? null; @endphp
-                            @if($val)
-                                <div class="mb-2 flex items-center gap-2 text-sm">
-                                    <a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all">📎 {{ $fname ?: basename($val) }}</a>
-                                    <span class="text-xs text-slate-400">(berkas saat ini)</span>
-                                </div>
+
+            @if($mayWork)
+                <form method="POST" action="{{ route('logbook.update', $module) }}" class="space-y-4" enctype="multipart/form-data">
+                    @csrf @method('PUT')
+                    @foreach($module->fields() as $field)
+                        @php $val = $logbook->payload_json[$field['key']] ?? ''; @endphp
+                        <div>
+                            <label class="block text-sm font-medium mb-1">{{ $field['label'] }} @if($field['required'] ?? false)<span class="text-red-500">*</span>@endif</label>
+                            @if($field['type'] === 'richtext')
+                                <x-richtext :name="'fields['.$field['key'].']'" :value="$val" />
+                            @elseif($field['type'] === 'file')
+                                @php $fname = $logbook->payload_json[$field['key'].'__name'] ?? null; @endphp
+                                @if($val)
+                                    <div class="mb-2 flex items-center gap-2 text-sm">
+                                        <a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all">📎 {{ $fname ?: basename($val) }}</a>
+                                        <span class="text-xs text-slate-400">(berkas saat ini)</span>
+                                    </div>
+                                @endif
+                                <input type="file" name="files[{{ $field['key'] }}]" accept=".pdf,.doc,.docx"
+                                       class="w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:text-white file:px-3 file:py-1.5 file:text-sm">
+                                <p class="text-xs text-slate-400 mt-1">Format: PDF / Word (.doc, .docx), maks 10 MB.@if($val) Kosongkan bila tidak ingin mengganti.@endif</p>
+                            @else
+                                <input type="url" name="fields[{{ $field['key'] }}]" value="{{ $val }}"
+                                       placeholder="https://..." class="w-full rounded-lg border-slate-300 border px-3 py-2">
                             @endif
-                            <input type="file" name="files[{{ $field['key'] }}]" accept=".pdf,.doc,.docx" @unless($isLeader) disabled @endunless
-                                   class="w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:text-white file:px-3 file:py-1.5 file:text-sm">
-                            <p class="text-xs text-slate-400 mt-1">Format: PDF / Word (.doc, .docx), maks 10 MB.@if($val) Kosongkan bila tidak ingin mengganti.@endif</p>
-                        @else
-                            <input type="url" name="fields[{{ $field['key'] }}]" value="{{ $val }}" @unless($isLeader) disabled @endunless
-                                   placeholder="https://..." class="w-full rounded-lg border-slate-300 border px-3 py-2">
-                        @endif
+                        </div>
+                    @endforeach
+                    <button class="rounded-lg bg-brand text-white px-5 py-2 font-medium hover:bg-brand-dark">Submit {{ $isIndividual ? 'Tugas' : 'Logbook' }}</button>
+                </form>
+            @else
+                {{-- Tampilan read-only isian (tidak dapat diedit) --}}
+                @if($logbook->payload_json)
+                    <div class="space-y-4">
+                        @foreach($module->fields() as $field)
+                            @php $val = $logbook->payload_json[$field['key']] ?? null; @endphp
+                            <div>
+                                <p class="text-sm font-medium text-slate-700 mb-1">{{ $field['label'] }}</p>
+                                @if($field['type'] === 'link')
+                                    @if($val)<a href="{{ $val }}" target="_blank" rel="noopener" class="text-brand hover:underline break-all">🔗 {{ $val }}</a>@else<span class="text-slate-400 text-sm">—</span>@endif
+                                @elseif($field['type'] === 'file')
+                                    @php $fname = $logbook->payload_json[$field['key'].'__name'] ?? null; @endphp
+                                    @if($val)<a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all">📎 {{ $fname ?: basename($val) }}</a>@else<span class="text-slate-400 text-sm">—</span>@endif
+                                @else
+                                    <div class="rt-content text-sm max-w-none">{!! $val ?: '<span class="text-slate-400">—</span>' !!}</div>
+                                @endif
+                            </div>
+                        @endforeach
                     </div>
-                @endforeach
-                @if($isLeader)
-                    <button class="rounded-lg bg-brand text-white px-5 py-2 font-medium hover:bg-brand-dark">Submit Logbook</button>
+                @else
+                    <p class="text-sm text-slate-400">Belum ada isian.</p>
                 @endif
-            </form>
+            @endif
         </div>
     </div>
 

@@ -12,6 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('team_id')->constrained('teams')->cascadeOnDelete();
             $table->foreignId('module_id')->constrained('modules')->cascadeOnDelete();
+            // Pengisi individu (tugas/assignment). NULL = logbook tim (diwakilkan ketua).
+            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->json('payload_json')->nullable()->comment('Nilai per field: {field_key: html/text}');
             $table->enum('status_approval', ['Not Started', 'Pending', 'Revision Needed', 'Approved'])->default('Not Started');
             $table->text('feedback')->nullable()->comment('Feedback superadmin');
@@ -31,7 +33,9 @@ return new class extends Migration
             $table->timestamp('proofread_checked_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['team_id', 'module_id']);
+            // Logbook tim: satu per (team, module) [user_id NULL].
+            // Tugas individu: satu per (module, user).
+            $table->unique(['team_id', 'module_id', 'user_id']);
         });
     }
 

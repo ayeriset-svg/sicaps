@@ -21,6 +21,13 @@ return new class extends Migration
             $table->string('code', 20)->nullable();
             $table->enum('type', ['module', 'assessment', 'other'])->default('module');
             $table->enum('assessment_stage', ['A1', 'A2', 'A3'])->nullable();
+            // Tugas individu (dikerjakan per mahasiswa, bukan diwakilkan tim).
+            $table->boolean('is_individual')->default(false)->comment('true = tugas/assignment individu');
+            // Gate: modul/tugas hanya dapat dikerjakan mahasiswa bila dibuka superadmin.
+            $table->boolean('is_open')->default(false)->comment('Dibuka superadmin utk dikerjakan');
+            // Slot presensi yang otomatis "hadir" saat tugas individu di-PASS (opsional).
+            $table->unsignedTinyInteger('attendance_week')->nullable()->comment('1-16');
+            $table->unsignedTinyInteger('attendance_session')->nullable()->comment('1-2');
             $table->unsignedTinyInteger('ai_policy_level')->default(1)->comment('Level batasan AI 1-5 (Tabel V.5)');
             $table->string('title');
             // Materi modul (rich HTML) — mengikuti template dokumen.

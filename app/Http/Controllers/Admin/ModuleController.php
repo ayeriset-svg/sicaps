@@ -72,6 +72,16 @@ class ModuleController extends Controller
         return back()->with('success', 'Modul dihapus.');
     }
 
+    /** Buka/tutup modul-tugas untuk dikerjakan mahasiswa. */
+    public function toggleOpen(Module $module)
+    {
+        $module->update(['is_open' => ! $module->is_open]);
+
+        return back()->with('success', $module->is_open
+            ? "\"{$module->title}\" dibuka — mahasiswa dapat mengerjakan."
+            : "\"{$module->title}\" ditutup.");
+    }
+
     private function validated(Request $request): array
     {
         $data = $request->validate([
@@ -82,6 +92,8 @@ class ModuleController extends Controller
             'assessment_stage' => ['nullable', Rule::in(['A1', 'A2', 'A3'])],
             'ai_policy_level' => ['required', 'integer', 'between:1,5'],
             'title' => ['required', 'string', 'max:255'],
+            'attendance_week' => ['nullable', 'integer', 'between:1,16'],
+            'attendance_session' => ['nullable', 'integer', 'between:1,2'],
             // Materi modul (rich HTML) mengikuti template dokumen.
             'objectives' => ['nullable', 'string'],
             'tools_materials' => ['nullable', 'string'],
@@ -90,6 +102,16 @@ class ModuleController extends Controller
             'description' => ['nullable', 'string'],
             'tasks' => ['nullable', 'string'],
         ]);
+
+        // Checkbox (hanya terkirim bila dicentang).
+        $data['is_individual'] = $request->boolean('is_individual');
+        $data['is_open'] = $request->boolean('is_open');
+
+        // Slot presensi hanya relevan untuk tugas individu.
+        if (! $data['is_individual']) {
+            $data['attendance_week'] = null;
+            $data['attendance_session'] = null;
+        }
 
         // Sanitasi materi rich-text (anti XSS) sebelum disimpan.
         foreach (array_keys(Module::MATERIAL_FIELDS) as $key) {

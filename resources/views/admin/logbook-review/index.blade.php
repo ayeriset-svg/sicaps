@@ -23,9 +23,15 @@
         <tbody class="divide-y divide-slate-100">
             @forelse($logbooks as $lb)
                 <tr>
-                    <td class="px-5 py-3 font-medium text-slate-800">{{ $lb->team->team_name }}</td>
+                    <td class="px-5 py-3 font-medium text-slate-800">
+                        {{ $lb->team->team_name }}
+                        @if($lb->user_id)<span class="block text-xs font-normal text-indigo-600">👤 {{ $lb->user->name ?? '—' }}</span>@endif
+                    </td>
                     <td class="px-5 py-3 text-slate-500">{{ $lb->team->class_name ?? '—' }}</td>
-                    <td class="px-5 py-3">{{ $lb->module->code }} — {{ \Illuminate\Support\Str::limit($lb->module->title,30) }}</td>
+                    <td class="px-5 py-3">
+                        {{ $lb->module->code }} — {{ \Illuminate\Support\Str::limit($lb->module->title,30) }}
+                        @if($lb->module->isIndividual())<span class="ml-1 rounded-full bg-indigo-100 text-indigo-700 px-1.5 py-0.5 text-xs">Tugas</span>@endif
+                    </td>
                     <td class="px-5 py-3 text-slate-500">{{ $lb->submitted_at?->format('d/m H:i') ?? '—' }}</td>
                     <td class="px-5 py-3"><x-status-badge :status="$lb->status_approval" /></td>
                     <td class="px-5 py-3 text-right whitespace-nowrap">

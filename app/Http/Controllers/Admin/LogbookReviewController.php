@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
+use App\Models\Attendance;
 use App\Models\ModuleLogbook;
 use App\Services\AiDetectionService;
 use App\Services\LogbookWorkflowService;
@@ -21,7 +22,7 @@ class LogbookReviewController extends Controller
 
         $teamIds = $ay->teams()->pluck('id');
 
-        $logbooks = ModuleLogbook::with('team.leader', 'module')
+        $logbooks = ModuleLogbook::with('team.leader', 'module', 'user')
             ->whereIn('team_id', $teamIds)
             ->when($request->filled('status'), fn ($q) => $q->where('status_approval', $request->status))
             ->where('status_approval', '!=', 'Not Started')
@@ -34,7 +35,7 @@ class LogbookReviewController extends Controller
 
     public function show(ModuleLogbook $logbook)
     {
-        $logbook->load('team.members.student', 'module', 'versions.author');
+        $logbook->load('team.members.student', 'module', 'user', 'versions.author');
 
         return view('admin.logbook-review.show', compact('logbook'));
     }
@@ -48,7 +49,44 @@ class LogbookReviewController extends Controller
 
         $workflow->review($logbook, $data['status_approval'], $data['feedback'] ?? null, Auth::user());
 
-        return back()->with('success', 'Review logbook disimpan.');
+        $msg = 'Review logbook disimpan.';
+        if ($this->syncAttendance($logbook->fresh('module'))) {
+            $msg = $data['status_approval'] === 'Approved'
+                ? 'Review disimpan. Tugas individu PASS → mahasiswa otomatis ditandai HADIR pada presensi.'
+                : 'Review disimpan. Status bukan PASS → penanda hadir otomatis (jika ada) dibatalkan.';
+        }
+
+        return back()->with('success', $msg);
+    }
+
+    /**
+     * Sinkronkan presensi untuk TUGAS INDIVIDU: PASS → hadir pada slot presensi
+     * yang ditentukan modul; selain PASS → penanda hadir otomatis dibatalkan.
+     * Return true bila modul ini memang memicu presensi otomatis.
+     */
+    private function syncAttendance(ModuleLogbook $logbook): bool
+    {
+        $module = $logbook->module;
+        if (! $module || ! $module->isIndividual() || ! $logbook->user_id
+            || ! $module->attendance_week || ! $module->attendance_session) {
+            return false;
+        }
+
+        $slot = [
+            'student_id' => $logbook->user_id,
+            'academic_year_id' => $module->academic_year_id,
+            'week_number' => $module->attendance_week,
+            'session_number' => $module->attendance_session,
+        ];
+
+        if ($logbook->status_approval === 'Approved') {
+            Attendance::updateOrCreate($slot, ['status' => 'present', 'recorded_by' => Auth::id()]);
+        } else {
+            // Batalkan hanya penanda "present" pada slot khusus tugas ini.
+            Attendance::where($slot)->where('status', 'present')->delete();
+        }
+
+        return true;
     }
 
     /**
@@ -98,7 +136,7 @@ class LogbookReviewController extends Controller
      */
     public function print(ModuleLogbook $logbook)
     {
-        $logbook->load('team.members.student', 'team.leader', 'team.topic.partner', 'module', 'team.academicYear');
+        $logbook->load('team.members.student', 'team.leader', 'team.topic.partner', 'module', 'user', 'team.academicYear', 'versions.author');
 
         return view('logbook.print', [
             'team' => $logbook->team,

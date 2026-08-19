@@ -34,6 +34,8 @@ class CapstoneDefaultsService
                 'assessment_stage' => $m['stage'],
                 'title' => $m['title'],
                 'description' => $m['description'],
+                // Modul RPS default dibuka agar tim langsung dapat mengerjakan (koordinator dapat menutup).
+                'is_open' => true,
                 'fields_json' => $m['type'] === 'assessment' ? [] : $fields,
             ]);
         }

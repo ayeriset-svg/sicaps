@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ModuleLogbook extends Model
 {
     protected $fillable = [
-        'team_id', 'module_id', 'payload_json', 'status_approval',
+        'team_id', 'module_id', 'user_id', 'payload_json', 'status_approval',
         'feedback', 'updated_by', 'submitted_at', 'reviewed_at', 'revision_count',
         'ai_percentage', 'ai_text_percentage', 'ai_image_percentage', 'ai_detail_json', 'ai_checked_at',
         'proofread_score', 'proofread_json', 'proofread_checked_at',
@@ -41,6 +41,12 @@ class ModuleLogbook extends Model
     public function editor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    /** Pemilik submission untuk tugas individu (NULL = logbook tim). */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function versions(): HasMany

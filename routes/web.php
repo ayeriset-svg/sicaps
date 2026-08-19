@@ -116,6 +116,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/modules/{module}/edit', [ModuleController::class, 'edit'])->name('modules.edit');
         Route::post('/modules', [ModuleController::class, 'store'])->name('modules.store');
         Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
+        Route::post('/modules/{module}/toggle-open', [ModuleController::class, 'toggleOpen'])->name('modules.toggle-open');
         Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
 
         // Review logbook + feedback

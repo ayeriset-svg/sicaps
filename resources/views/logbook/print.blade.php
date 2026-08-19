@@ -74,6 +74,9 @@
             <tr><th>Kelas</th><td>{{ $team->class_name ?? '-' }}</td></tr>
             <tr><th>Nama Tim</th><td>{{ $team->team_name }}</td></tr>
             <tr><th>Nama Mitra (Studi Kasus)</th><td>{{ optional($team->topic)->partner_label ?? '-' }}</td></tr>
+            @if($module->isIndividual() && ($logbook->user_id ?? null))
+                <tr><th>Mahasiswa (Tugas Individu)</th><td>{{ optional($logbook->user)->identity_number }} — {{ optional($logbook->user)->name }}</td></tr>
+            @endif
         </table>
 
         <h2 class="section">IDENTITAS TIM</h2>
@@ -124,6 +127,23 @@
                 Jumlah revisi: {{ $logbook->revision_count ?? 0 }}
             </div>
         </div>
+
+        {{-- Riwayat revisi (snapshot tiap submit/review) --}}
+        @if($logbook && $logbook->relationLoaded('versions') && $logbook->versions->isNotEmpty())
+            <div class="field-label">RIWAYAT REVISI</div>
+            <table class="team">
+                <tr><th class="no">Versi</th><th style="width:130px">Status</th><th>Catatan Review</th><th style="width:150px">Oleh</th><th style="width:120px">Tanggal</th></tr>
+                @foreach($logbook->versions as $v)
+                    <tr>
+                        <td class="no">v{{ $v->version_number }}</td>
+                        <td>{{ $v->status_snapshot ?? '—' }}</td>
+                        <td>{{ $v->feedback_snapshot ? \Illuminate\Support\Str::limit($v->feedback_snapshot, 140) : '—' }}</td>
+                        <td>{{ optional($v->author)->name ?? '—' }}</td>
+                        <td>{{ $v->created_at->format('d/m/Y H:i') }}</td>
+                    </tr>
+                @endforeach
+            </table>
+        @endif
 
         {{-- Indikasi penggunaan AI --}}
         @php $lvl = config('capstone.ai_levels.' . ($module->ai_policy_level ?: 1)); @endphp

@@ -7,6 +7,11 @@
     <div>
         <span class="text-xs text-slate-400">{{ $logbook->module->week_label }} · {{ $logbook->module->code }} · Tim {{ $logbook->team->team_name }} · {{ $logbook->team->class_name }}</span>
         <h1 class="text-2xl font-bold text-brand-dark">{{ $logbook->module->title }}</h1>
+        @if($logbook->module->isIndividual())
+            <span class="inline-block mt-1 rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-medium">👤 Tugas Individu — {{ $logbook->user->name ?? '—' }}
+                @if($logbook->module->attendance_week) · PASS → hadir Mgg {{ $logbook->module->attendance_week }}/Sesi {{ $logbook->module->attendance_session }}@endif
+            </span>
+        @endif
     </div>
     <a href="{{ route('admin.logbook-review.print', $logbook) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50">🖨️ Generate PDF</a>
 </div>

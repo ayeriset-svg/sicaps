@@ -10,7 +10,8 @@ class Module extends Model
 {
     protected $fillable = [
         'academic_year_id', 'order_index', 'week_label', 'code', 'type',
-        'assessment_stage', 'ai_policy_level', 'title',
+        'assessment_stage', 'is_individual', 'is_open', 'attendance_week', 'attendance_session',
+        'ai_policy_level', 'title',
         'objectives', 'tools_materials', 'ai_rules', 'references', 'description', 'tasks',
         'fields_json',
     ];
@@ -32,6 +33,8 @@ class Module extends Model
 
     protected $casts = [
         'fields_json' => 'array',
+        'is_individual' => 'boolean',
+        'is_open' => 'boolean',
     ];
 
     public function academicYear(): BelongsTo
@@ -47,6 +50,18 @@ class Module extends Model
     public function isLogbook(): bool
     {
         return in_array($this->type, ['module', 'other'], true);
+    }
+
+    /** Tugas/assignment yang dikerjakan per mahasiswa (individu). */
+    public function isIndividual(): bool
+    {
+        return (bool) $this->is_individual && $this->isLogbook();
+    }
+
+    /** Label ringkas jenis pengerjaan. */
+    public function workLabel(): string
+    {
+        return $this->isIndividual() ? 'Tugas Individu' : 'Logbook Tim';
     }
 
     public function fields(): array
