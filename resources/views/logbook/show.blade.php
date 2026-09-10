@@ -41,10 +41,26 @@
                 @if($isIndividual)<span class="text-xs rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 font-medium">Dikerjakan per mahasiswa</span>@endif
             </div>
 
+            {{-- Info jadwal --}}
+            @if($module->opens_at || $module->closes_at)
+                <div class="mb-3 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
+                    @if($module->opens_at)<span>▶ Dibuka: <strong>{{ $module->opens_at->translatedFormat('d M Y H:i') }}</strong></span>@endif
+                    @if($module->closes_at)<span>⏹ Deadline: <strong class="{{ $scheduleState==='open' && $module->daysToDeadline()!==null && $module->daysToDeadline()<=3 ? 'text-red-600' : '' }}">{{ $module->closes_at->translatedFormat('d M Y H:i') }}</strong>@if($scheduleState==='open' && $module->daysToDeadline()!==null) ({{ $module->daysToDeadline() }} hari lagi)@endif</span>@endif
+                </div>
+            @endif
+
             {{-- Banner status/akses --}}
-            @if(! $module->is_open)
+            @if($scheduleState === 'closed')
                 <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 mb-4">
                     🔒 <span class="font-semibold">Belum dibuka koordinator.</span> Anda belum dapat mengerjakan {{ $isIndividual ? 'tugas' : 'logbook' }} ini. Materi tetap dapat dipelajari.
+                </div>
+            @elseif($scheduleState === 'scheduled')
+                <div class="rounded-lg bg-sky-50 border border-sky-200 px-4 py-3 text-sm text-sky-800 mb-4">
+                    🗓️ <span class="font-semibold">Belum waktunya.</span> Pengerjaan dibuka mulai {{ $module->opens_at->translatedFormat('d M Y H:i') }}.
+                </div>
+            @elseif($scheduleState === 'ended')
+                <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
+                    ⛔ <span class="font-semibold">Batas waktu berakhir.</span> Deadline {{ $module->closes_at->translatedFormat('d M Y H:i') }} telah lewat — pengerjaan ditutup.
                 </div>
             @elseif($locked)
                 <div class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700 mb-4">

@@ -39,7 +39,18 @@
                                     {{ $m->is_open ? '🔓 Dibuka' : '🔒 Ditutup' }}
                                 </button>
                             </form>
-                        @else
+                        @endif
+                        @if($m->opens_at || $m->closes_at)
+                            @php
+                                $stt = $m->scheduleState();
+                                $sc = ['scheduled'=>'text-sky-600','open'=>'text-emerald-600','ended'=>'text-red-500'][$stt] ?? 'text-slate-400';
+                            @endphp
+                            <div class="mt-1 text-[11px] {{ $sc }} leading-tight">
+                                @if($m->opens_at)<div>▶ {{ $m->opens_at->format('d/m/y H:i') }}</div>@endif
+                                @if($m->closes_at)<div>⏹ {{ $m->closes_at->format('d/m/y H:i') }}</div>@endif
+                                <div class="font-semibold">{{ ['scheduled'=>'Terjadwal','open'=>'Berlangsung','ended'=>'Berakhir','closed'=>'Ditutup','none'=>''][$stt] ?? '' }}</div>
+                            </div>
+                        @elseif(! $m->isLogbook())
                             <span class="text-slate-300 text-xs">—</span>
                         @endif
                     </td>

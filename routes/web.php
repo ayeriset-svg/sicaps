@@ -7,6 +7,7 @@ use App\Http\Controllers\FileController;
 use App\Http\Controllers\GradeController;
 use App\Http\Controllers\ImpersonationController;
 use App\Http\Controllers\LogbookController;
+use App\Http\Controllers\ManualBookController;
 use App\Http\Controllers\PeerEvaluationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\TeamController;
@@ -23,6 +24,7 @@ use App\Http\Controllers\Admin\PenaltyRuleController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\ScoreController;
 use App\Http\Controllers\Admin\StudentController;
+use App\Http\Controllers\Admin\TemplateController;
 use App\Http\Controllers\Admin\TeamController as AdminTeamController;
 use App\Http\Controllers\Admin\TopicController as AdminTopicController;
 use App\Http\Controllers\Admin\UserController;
@@ -51,6 +53,11 @@ Route::middleware('auth')->group(function () {
     // Mode Observasi (impersonation)
     Route::post('/observe-stop', [ImpersonationController::class, 'stop'])->name('observe.stop');
     Route::post('/observe/{user}', [ImpersonationController::class, 'start'])->middleware('role:superadmin')->name('observe.start');
+
+    // Manual Book (panduan) — dapat dibaca semua pengguna terautentikasi.
+    Route::get('/manual-book', [ManualBookController::class, 'publicIndex'])->name('manual.index');
+    Route::get('/manual-book/guide/{role}', [ManualBookController::class, 'guide'])->name('manual.guide');
+    Route::get('/manual-book/{manualBook}', [ManualBookController::class, 'show'])->name('manual.show');
 
     /* ---------------- Mahasiswa ---------------- */
     Route::middleware('role:mahasiswa')->group(function () {
@@ -118,6 +125,18 @@ Route::middleware('auth')->group(function () {
         Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
         Route::post('/modules/{module}/toggle-open', [ModuleController::class, 'toggleOpen'])->name('modules.toggle-open');
         Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
+
+        // Manual Book (kelola)
+        Route::get('/manual-books', [ManualBookController::class, 'index'])->name('manual-books.index');
+        Route::get('/manual-books/create', [ManualBookController::class, 'create'])->name('manual-books.create');
+        Route::post('/manual-books', [ManualBookController::class, 'store'])->name('manual-books.store');
+        Route::get('/manual-books/{manualBook}/edit', [ManualBookController::class, 'edit'])->name('manual-books.edit');
+        Route::put('/manual-books/{manualBook}', [ManualBookController::class, 'update'])->name('manual-books.update');
+        Route::delete('/manual-books/{manualBook}', [ManualBookController::class, 'destroy'])->name('manual-books.destroy');
+
+        // Template import (CSV/Excel)
+        Route::get('/templates/students', [TemplateController::class, 'students'])->name('templates.students');
+        Route::get('/templates/users', [TemplateController::class, 'users'])->name('templates.users');
 
         // Review logbook + feedback
         Route::get('/logbook-review', [LogbookReviewController::class, 'index'])->name('logbook-review.index');

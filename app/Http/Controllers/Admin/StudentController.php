@@ -48,10 +48,11 @@ class StudentController extends Controller
 
     /**
      * Import master data mahasiswa + (opsional) nilai akhir historis.
-     * Header CSV: identity_number,name,email,angkatan,class_name,password,
+     * Header CSV: identity_number,name,angkatan,class_name,password,
      *             year,semester,final_score,grade_letter
-     * Kolom year..grade_letter opsional; bila year+semester diisi, dibuatkan/dilinkkan
-     * ke tahun ajaran (diarsipkan) beserta final_grade historis.
+     * Email tidak lagi diperlukan (dibuat otomatis internal). Kolom year..grade_letter
+     * opsional; bila year+semester diisi, dibuatkan/dilinkkan ke tahun ajaran
+     * (diarsipkan) beserta final_grade historis.
      */
     public function import(Request $request)
     {
@@ -75,13 +76,14 @@ class StudentController extends Controller
                 }
                 $d = @array_combine($header, array_pad($row, count($header), null));
                 $identity = trim($d['identity_number'] ?? '');
-                $email = trim($d['email'] ?? '');
-                if ($identity === '' || $email === '') {
+                if ($identity === '') {
                     $skipped++;
                     continue;
                 }
+                // Email tidak dipakai di master mahasiswa; buat otomatis (unik) bila kolom kosong.
+                $email = trim($d['email'] ?? '') ?: $identity . '@student.sicaps.local';
 
-                $student = User::where('identity_number', $identity)->orWhere('email', $email)->first();
+                $student = User::where('identity_number', $identity)->first();
                 if (! $student) {
                     $student = User::create([
                         'identity_number' => $identity,

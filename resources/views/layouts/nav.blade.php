@@ -17,6 +17,7 @@
     {!! $item('logbook.index', 'Logbook', '📒') !!}
     {!! $item('peer.index', 'Peer 180°', '🤝') !!}
     {!! $item('grade.me', 'Nilai Saya', '📊') !!}
+    {!! $item('manual.index', 'Manual Book', '📘') !!}
 @endif
 
 @if($u->isSuperadmin())
@@ -42,4 +43,7 @@
 
     {!! $header('Laporan') !!}
     {!! $item('admin.reports.index', 'Summary Report', '📈') !!}
+
+    {!! $header('Panduan') !!}
+    {!! $item('admin.manual-books.index', 'Manual Book', '📘') !!}
 @endif

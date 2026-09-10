@@ -14,7 +14,18 @@
       "Bash(grep -rn 'request\\(\\)->all\\(\\)\\\\|$request->all\\(\\)\\\\|::create\\($request\\\\|->update\\($request->all' app/Http/Controllers)",
       "Bash(cat > *)",
       "Bash(php -r ' *)",
-      "Bash(echo \"exit=$?\")"
+      "Bash(echo \"exit=$?\")",
+      "Bash(php -l app/Http/Controllers/ManualBookController.php)",
+      "Bash(php -l config/manual.php)",
+      "Bash(php -r 'require \"vendor/autoload.php\"; $a=require \"bootstrap/app.php\"; $a->make\\(Illuminate\\\\Contracts\\\\Console\\\\Kernel::class\\)->bootstrap\\(\\); echo \"SA sections=\".count\\(config\\(\"manual.superadmin.sections\"\\)\\).\" | MHS sections=\".count\\(config\\(\"manual.mahasiswa.sections\"\\)\\).\"\\\\n\";')",
+      "Bash(python -c \"import reportlab, json; print\\('reportlab', reportlab.Version\\)\")",
+      "Bash(py -c \"import reportlab; print\\(reportlab.Version\\)\")",
+      "Bash(ls /c/Python*)",
+      "Bash(where python *)",
+      "Bash(command -v pip pip3)",
+      "Bash(npm --version)",
+      "Bash(php -m)",
+      "Bash(grep -iE \"^\\(gd|imagick\\)$\")"
     ]
   }
 }

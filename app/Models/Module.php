@@ -10,7 +10,8 @@ class Module extends Model
 {
     protected $fillable = [
         'academic_year_id', 'order_index', 'week_label', 'code', 'type',
-        'assessment_stage', 'is_individual', 'is_open', 'attendance_week', 'attendance_session',
+        'assessment_stage', 'is_individual', 'is_open', 'opens_at', 'closes_at',
+        'attendance_week', 'attendance_session',
         'ai_policy_level', 'title',
         'objectives', 'tools_materials', 'ai_rules', 'references', 'description', 'tasks',
         'fields_json',
@@ -35,6 +36,8 @@ class Module extends Model
         'fields_json' => 'array',
         'is_individual' => 'boolean',
         'is_open' => 'boolean',
+        'opens_at' => 'datetime',
+        'closes_at' => 'datetime',
     ];
 
     public function academicYear(): BelongsTo
@@ -62,6 +65,55 @@ class Module extends Model
     public function workLabel(): string
     {
         return $this->isIndividual() ? 'Tugas Individu' : 'Logbook Tim';
+    }
+
+    /**
+     * Status jadwal: 'closed' (ditutup manual), 'scheduled' (belum mulai),
+     * 'open' (sedang berlangsung), 'ended' (deadline lewat), 'none' (tanpa jadwal).
+     * Assessment murni memakai jendela tanggal (tanpa gate is_open).
+     */
+    public function scheduleState(): string
+    {
+        $now = now();
+
+        if ($this->type === 'assessment') {
+            if ($this->opens_at && $now->lt($this->opens_at)) {
+                return 'scheduled';
+            }
+            if ($this->closes_at && $now->gt($this->closes_at)) {
+                return 'ended';
+            }
+
+            return ($this->opens_at || $this->closes_at) ? 'open' : 'none';
+        }
+
+        if (! $this->is_open) {
+            return 'closed';
+        }
+        if ($this->opens_at && $now->lt($this->opens_at)) {
+            return 'scheduled';
+        }
+        if ($this->closes_at && $now->gt($this->closes_at)) {
+            return 'ended';
+        }
+
+        return 'open';
+    }
+
+    /** Boleh menerima submission mahasiswa saat ini (logbook/tugas dibuka & dalam jendela waktu). */
+    public function acceptsSubmission(): bool
+    {
+        return $this->isLogbook() && $this->scheduleState() === 'open';
+    }
+
+    /** Sisa hari menuju deadline (bulat ke atas); null bila tak ada closes_at. */
+    public function daysToDeadline(): ?int
+    {
+        if (! $this->closes_at) {
+            return null;
+        }
+
+        return (int) ceil(now()->diffInHours($this->closes_at, false) / 24);
     }
 
     public function fields(): array

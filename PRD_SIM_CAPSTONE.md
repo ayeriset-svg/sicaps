@@ -49,6 +49,7 @@ Hanya **2 role**: Superadmin dan Mahasiswa (role Dosen dihapus; seluruh fungsi r
 | Rekap & Override Nilai | View milik sendiri | View milik sendiri | Full |
 | Master Mahasiswa/Mitra/Topik + Import | — | — | Full |
 | Summary Report | — | — | Full |
+| Manual Book / Panduan | Baca | Baca | Kelola (CRUD) + Baca |
 
 ---
 
@@ -89,7 +90,9 @@ Default tiap modul: 1 field richtext ("Uraian Pengerjaan / Dokumentasi") + 1 fie
 
 ### EPIC 1 — Master Data & Academic Year
 * **Tahun Ajaran & Angkatan:** buat/aktifkan/arsipkan. Membuat tahun ajaran otomatis menyemai modul RPS, stage A1/A2/A3 + kriteria, dan aturan penalti default.
-* **Master User & Master Mahasiswa:** CRUD + **import CSV**. Master Mahasiswa lengkap dengan **kelas & angkatan** untuk pemantauan per kelas. Import mendukung **data + nilai historis** (kolom `year,semester,final_score,grade_letter` opsional → membuat tahun ajaran arsip + final grade).
+* **Master User & Master Mahasiswa:** CRUD + **import CSV**. Master Mahasiswa lengkap dengan **kelas & angkatan** untuk pemantauan per kelas — **tanpa kolom email** (identitas mahasiswa cukup NIM; email dibuat otomatis internal untuk kebutuhan autentikasi). Import mendukung **data + nilai historis** (kolom `year,semester,final_score,grade_letter` opsional → membuat tahun ajaran arsip + final grade).
+* **Template Import (FR-1.3):** setiap fitur import menyediakan **unduhan template** (CSV, kompatibel Excel/Google Sheets, ber-BOM UTF-8) berisi header + baris contoh — untuk Master Mahasiswa dan Master User. Endpoint: `admin.templates.students`, `admin.templates.users`.
+* **Manual Book / Panduan (FR-1.4):** superadmin **membuat & mengelola** entri manual book (judul, isi rich-text teks+gambar, urutan, status terbit/draf) di menu **Kelola Manual Book**. Seluruh pengguna (mahasiswa & superadmin) dapat **membaca** manual book yang berstatus *Terbit* lewat menu **Manual Book**. Isi disanitasi (anti-XSS) sebelum disimpan. Tersedia pula **Panduan lengkap step-by-step per role** (Superadmin & Mahasiswa) yang menjelaskan seluruh fitur beserta slot tangkapan layar — halaman siap **disimpan sebagai PDF** (terpisah per role via `manual.guide`), kontennya dikelola di `config/manual.php` dan gambar diletakkan di `public/img/manual/<role>/`.
 
 ### EPIC 2 — Master Mitra & Kelola Topik
 * **Master Mitra (FR-2.1):** jenis **Industri / Masyarakat Desa / Internal**; data: nama (wajib), logo (opsional), alamat (opsional), contact person.
@@ -97,9 +100,10 @@ Default tiap modul: 1 field richtext ("Uraian Pengerjaan / Dokumentasi") + 1 fie
 * **Pemilihan Topik oleh Tim (Modul 1):** ketua tim boleh **memilih dari katalog** ATAU **mengajukan topik mandiri** (opsional bermitra). Superadmin melakukan **approve/reject** dengan catatan.
 
 ### EPIC 3 — Dynamic Digital Logbook & Module Manager
-* **Kelola Modul (FR-3.1):** superadmin mengatur jumlah modul, urutan, judul, deskripsi/materi, jenis (module/assessment/other), dan **daftar field** logbook (label, tipe **richtext/link/file**, wajib/opsional). Tipe `file` mengaktifkan **unggah dokumen PDF/Word** oleh mahasiswa. Tiap modul/tugas juga punya penanda **Buka/Tutup** (`is_open`) dan **Tugas Individu** (`is_individual`) beserta slot presensi opsional.
+* **Kelola Modul (FR-3.1):** superadmin mengatur jumlah modul, urutan, judul, deskripsi/materi, jenis (module/assessment/other), dan **daftar field** logbook (label, tipe **richtext/link/file**, wajib/opsional). Tipe `file` mengaktifkan **unggah dokumen PDF/Word** oleh mahasiswa. Tiap modul/tugas juga punya penanda **Buka/Tutup** (`is_open`) dan **Tugas Individu** (`is_individual`) beserta slot presensi opsional, serta **Jadwal** `opens_at`/`closes_at` (kapan dibuka & deadline) — berlaku untuk modul, tugas, maupun assessment.
 * **Digital Logbook (FR-3.2):** form logbook di-render dinamis sesuai definisi field modul. Ketua tim submit; status `Not Started → Pending → (Revision Needed | Approved)`; versioning payload otomatis pada tiap submit ulang. **Setelah `Approved` (PASS), logbook TERKUNCI** — editor tidak lagi ditampilkan ke mahasiswa dan submit ditolak server (read-only).
-* **Gate Buka/Tutup (FR-3.6):** modul/logbook **dan** tugas hanya dapat dikerjakan mahasiswa setelah **dibuka superadmin** (`is_open`). Saat tertutup, mahasiswa tetap dapat melihat materi tetapi form pengerjaan disembunyikan; submit ditolak server (403). Toggle cepat tersedia di daftar Kelola Modul (kolom Akses).
+* **Gate Buka/Tutup & Jadwal (FR-3.6):** modul/logbook **dan** tugas hanya dapat dikerjakan mahasiswa setelah **dibuka superadmin** (`is_open`) **dan** berada dalam **jendela waktu** `opens_at`–`closes_at` (bila diisi). Sebelum `opens_at` berstatus *Terjadwal*, setelah `closes_at` (deadline) berstatus *Berakhir* — keduanya menyembunyikan form & menolak submit (403). Saat tertutup, mahasiswa tetap dapat melihat materi. Toggle cepat + info jadwal tampil di daftar Kelola Modul (kolom Akses).
+* **Notifikasi Deadline (FR-3.8):** dashboard mahasiswa menampilkan kartu **"Menuju Deadline"** — daftar modul/tugas/assessment yang **sedang berlangsung** dan punya `closes_at`, terurut terdekat, lengkap dengan sisa hari (≤ 3 hari ditandai merah), status pengerjaan, dan tautan cepat "Kerjakan".
 * **Tugas Individu / Assignment (FR-3.7):** selain logbook tim, superadmin dapat menandai modul sebagai **Tugas Individu** (`is_individual`). Fitur & tools sama persis dengan logbook (field dinamis, richtext/link/file, cetak PDF, cek AI, proofreader, riwayat revisi) — **bedanya hanya model pengerjaan**: logbook tim boleh **diwakilkan ketua**, sedangkan tugas **wajib dikerjakan tiap mahasiswa secara individu** (submission per-user; `module_logbooks.user_id`). Bila mahasiswa submit tugas lalu superadmin men-**PASS**, mahasiswa **otomatis ditandai HADIR** pada slot presensi (Minggu/Sesi) yang diset di modul; bila status dibatalkan dari PASS, penanda hadir otomatis tersebut dicabut.
 * **Review & Feedback (FR-3.3):** dilakukan **Superadmin** (menggantikan peran dosen) — memberi status + feedback per modul/tugas. PDF logbook/tugas menyertakan **Riwayat Revisi** (snapshot tiap submit/review: versi, status, catatan, oleh, tanggal).
 * **Pemeriksaan Indikasi AI (FR-3.4):** pada halaman review, superadmin menekan tombol **"Periksa Indikasi AI"** untuk mengestimasi porsi tulisan/gambar berindikasi AI pada isi logbook. Estimasi **heuristik** (densitas frasa/konektor formal, keseragaman kalimat, rasio kata panjang, struktur enumerasi; dikurangi densitas bahasa gaul sebagai sinyal manusia) untuk teks, dan **tanda-tangan metadata generator** (Midjourney/SD/DALL·E/C2PA, dll) untuk gambar; overall = 0,7·teks + 0,3·gambar. Bersifat **indikatif (bukan vonis)**; mendukung **API detektor eksternal** opsional (GPTZero/Sapling/Originality/Winston) via konfigurasi — bila aktif dipakai otomatis, jika gagal fallback ke heuristik. Tiap modul memiliki **Level Batasan AI (1–5, Tabel V.5)** yang ditetapkan superadmin di Kelola Modul. Hasil % + level tampil ke superadmin **dan** ke mahasiswa bersama feedback, dicantumkan pula pada PDF logbook & rekap per kelas di Summary Report.
@@ -164,12 +168,13 @@ Nilai bersifat **kelompok** (sama untuk seluruh anggota tim) melalui rubrik per 
 | Tabel | Keterangan |
 | :--- | :--- |
 | `academic_years` | Tahun ajaran (aktif/arsip). |
-| `users` | role ∈ {superadmin, mahasiswa}; +angkatan, class_name, is_active. |
+| `users` | role ∈ {superadmin, mahasiswa}; +angkatan, class_name, is_active. Email mahasiswa tidak ditampilkan/di-input di Master Mahasiswa (dibuat otomatis saat import). |
+| `manual_books` | Panduan sistem: title, content (rich HTML), order_index, is_published, created_by. Dikelola superadmin, dibaca semua pengguna. |
 | `partners` | Master mitra (type: industri/masyarakat_desa/internal, logo, address). |
 | `topics` | Katalog + mandiri (partner_id, title, general_features, ai_features, origin, is_available). |
 | `teams` | +topic_id, topic_status (none/pending/approved/rejected), case_type; **tanpa** dosen_pembimbing. |
 | `team_members` | Peran anggota (PM_Analyst, UIUX_Designer, Lead_Developer, QA_Tester). |
-| `modules` | Modul dinamis per tahun ajaran (order, week_label, code, type, assessment_stage, description, fields_json); **`is_open`** (gate buka/tutup), **`is_individual`** (tugas per-mahasiswa), **`attendance_week`/`attendance_session`** (slot presensi otomatis saat tugas PASS). |
+| `modules` | Modul dinamis per tahun ajaran (order, week_label, code, type, assessment_stage, description, fields_json); **`is_open`** (gate buka/tutup), **`opens_at`/`closes_at`** (jadwal buka & deadline), **`is_individual`** (tugas per-mahasiswa), **`attendance_week`/`attendance_session`** (slot presensi otomatis saat tugas PASS). |
 | `module_logbooks` | payload_json per field, status_approval, feedback, submitted_at; **`user_id`** (NULL = logbook tim; terisi = pemilik tugas individu) — unique (team, module, user); indikasi AI (`ai_percentage`, `ai_text_percentage`, `ai_image_percentage`, `ai_detail_json`, `ai_checked_at`); tata tulis (`proofread_score`, `proofread_json`, `proofread_checked_at`). |
 | `module_logbook_versions` | Snapshot versi payload. |
 | `assessment_stages` | A1/A2/A3: weight_percentage, peer_weight_percentage, peer_open. |

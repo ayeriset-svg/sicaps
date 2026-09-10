@@ -33,10 +33,15 @@
                     @else
                         <span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium">👥 Logbook Tim</span>
                     @endif
-                    @if($mod->is_open)
-                        <span class="text-xs rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 font-medium">🔓 Dibuka</span>
-                    @else
-                        <span class="text-xs rounded-full bg-slate-100 text-slate-400 px-2 py-0.5 font-medium">🔒 Belum dibuka</span>
+                    @php $stt = $mod->scheduleState(); $dl = $mod->daysToDeadline(); @endphp
+                    @switch($stt)
+                        @case('open')<span class="text-xs rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 font-medium">🔓 Dibuka</span>@break
+                        @case('scheduled')<span class="text-xs rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 font-medium">🗓️ Terjadwal</span>@break
+                        @case('ended')<span class="text-xs rounded-full bg-red-100 text-red-600 px-2 py-0.5 font-medium">⛔ Berakhir</span>@break
+                        @default<span class="text-xs rounded-full bg-slate-100 text-slate-400 px-2 py-0.5 font-medium">🔒 Belum dibuka</span>
+                    @endswitch
+                    @if($stt==='open' && $dl!==null)
+                        <span class="text-xs rounded-full px-2 py-0.5 font-medium {{ $dl<=3 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700' }}">⏰ {{ $dl<=0 ? 'hari ini' : $dl.' hari lagi' }}</span>
                     @endif
                 </div>
             </a>

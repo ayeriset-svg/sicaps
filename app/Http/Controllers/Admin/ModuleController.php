@@ -94,6 +94,8 @@ class ModuleController extends Controller
             'title' => ['required', 'string', 'max:255'],
             'attendance_week' => ['nullable', 'integer', 'between:1,16'],
             'attendance_session' => ['nullable', 'integer', 'between:1,2'],
+            'opens_at' => ['nullable', 'date'],
+            'closes_at' => ['nullable', 'date', 'after_or_equal:opens_at'],
             // Materi modul (rich HTML) mengikuti template dokumen.
             'objectives' => ['nullable', 'string'],
             'tools_materials' => ['nullable', 'string'],

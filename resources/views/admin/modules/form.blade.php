@@ -74,6 +74,18 @@
                     <input type="number" min="1" max="2" name="attendance_session" value="{{ old('attendance_session', $module->attendance_session ?? '') }}" placeholder="1-2" class="w-full rounded-lg border-rose-200 border px-3 py-2 text-sm"></div>
                 <p class="col-span-2 text-xs text-slate-400">Opsional: saat tugas ini di-PASS, mahasiswa otomatis HADIR pada slot presensi di atas. Kosongkan bila tak perlu.</p>
             </div>
+
+            {{-- Jadwal buka & tutup (deadline) — berlaku utk modul, tugas, & assessment --}}
+            <div class="pt-3 border-t border-rose-50">
+                <p class="text-sm font-medium text-slate-700 mb-2">🗓️ Jadwal (opsional)</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-xl">
+                    <div><label class="block text-xs font-medium mb-1">Dibuka mulai</label>
+                        <input type="datetime-local" name="opens_at" value="{{ old('opens_at', optional($module->opens_at ?? null)->format('Y-m-d\TH:i')) }}" class="w-full rounded-lg border-rose-200 border px-3 py-2 text-sm"></div>
+                    <div><label class="block text-xs font-medium mb-1">Ditutup / Deadline</label>
+                        <input type="datetime-local" name="closes_at" value="{{ old('closes_at', optional($module->closes_at ?? null)->format('Y-m-d\TH:i')) }}" class="w-full rounded-lg border-rose-200 border px-3 py-2 text-sm"></div>
+                </div>
+                <p class="text-xs text-slate-400 mt-1">Bila diisi, pengerjaan hanya dibuka dalam rentang ini. Setelah <em>Deadline</em>, mahasiswa tidak dapat submit lagi. Kosongkan = tanpa batas waktu.</p>
+            </div>
         </div>
     </div>
 

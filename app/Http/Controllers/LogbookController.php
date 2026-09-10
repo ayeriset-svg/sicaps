@@ -63,13 +63,14 @@ class LogbookController extends Controller
 
         $isLeader = Auth::id() === $team->leader_id;
         $isIndividual = $module->isIndividual();
-        // Boleh mengerjakan: modul dibuka + belum Approved + berhak (individu=semua anggota, tim=ketua).
-        $mayWork = $module->is_open
+        $scheduleState = $module->scheduleState();
+        // Boleh mengerjakan: modul dibuka & dalam jendela waktu + belum Approved + berhak.
+        $mayWork = $module->acceptsSubmission()
             && $logbook->status_approval !== 'Approved'
             && ($isIndividual ? true : $isLeader);
         $locked = $logbook->status_approval === 'Approved';
 
-        return view('logbook.show', compact('team', 'module', 'logbook', 'isLeader', 'isIndividual', 'mayWork', 'locked'));
+        return view('logbook.show', compact('team', 'module', 'logbook', 'isLeader', 'isIndividual', 'mayWork', 'locked', 'scheduleState'));
     }
 
     public function print(Module $module)
@@ -96,8 +97,8 @@ class LogbookController extends Controller
         abort_unless($team, 403);
         abort_unless($module->isLogbook(), 404);
 
-        // Gate #4: hanya bisa dikerjakan bila modul/tugas dibuka koordinator.
-        abort_unless($module->is_open, 403, 'Modul/tugas ini belum dibuka koordinator.');
+        // Gate #4: hanya bisa dikerjakan bila modul/tugas dibuka koordinator & dalam jendela waktu.
+        abort_unless($module->acceptsSubmission(), 403, 'Modul/tugas ini belum dibuka atau sudah melewati batas waktu (deadline).');
 
         // Izin pengerjaan: tugas individu = tiap anggota (isi miliknya); logbook tim = ketua saja.
         if (! $module->isIndividual()) {

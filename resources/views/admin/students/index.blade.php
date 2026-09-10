@@ -13,9 +13,10 @@
             <div class="bg-white rounded-xl p-6 w-full max-w-lg">
                 <h3 class="font-semibold mb-2">Import Master Mahasiswa + Nilai Historis</h3>
                 <p class="text-xs text-slate-500 mb-3">Header CSV:<br>
-                    <code class="text-[11px]">identity_number,name,email,angkatan,class_name,password,year,semester,final_score,grade_letter</code><br>
+                    <code class="text-[11px]">identity_number,name,angkatan,class_name,password,year,semester,final_score,grade_letter</code><br>
                     Kolom <code>year..grade_letter</code> opsional — bila diisi, dibuat nilai historis (tahun ajaran otomatis diarsipkan).
                 </p>
+                <a href="{{ route('admin.templates.students') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline">⬇️ Unduh template Excel/CSV</a>
                 <form method="POST" action="{{ route('admin.students.import') }}" enctype="multipart/form-data" class="space-y-3">
                     @csrf
                     <input type="file" name="file" accept=".csv,.txt" required class="w-full text-sm">
@@ -53,7 +54,7 @@
 <div class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-left">
-            <tr><th class="px-5 py-3 font-medium">NIM</th><th class="px-5 py-3 font-medium">Nama</th><th class="px-5 py-3 font-medium">Angkatan</th><th class="px-5 py-3 font-medium">Kelas</th><th class="px-5 py-3 font-medium">Email</th><th class="px-5 py-3 font-medium">Aktivasi</th></tr>
+            <tr><th class="px-5 py-3 font-medium">NIM</th><th class="px-5 py-3 font-medium">Nama</th><th class="px-5 py-3 font-medium">Angkatan</th><th class="px-5 py-3 font-medium">Kelas</th><th class="px-5 py-3 font-medium">Aktivasi</th></tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
             @forelse($students as $s)
@@ -62,7 +63,6 @@
                     <td class="px-5 py-3 font-medium text-slate-800">{{ $s->name }}</td>
                     <td class="px-5 py-3">{{ $s->angkatan ?? '—' }}</td>
                     <td class="px-5 py-3">{{ $s->class_name ?? '—' }}</td>
-                    <td class="px-5 py-3 text-slate-500">{{ $s->email }}</td>
                     <td class="px-5 py-3">
                         @if($s->must_change_password)
                             <span class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-0.5 text-xs font-semibold">⏳ Belum Aktivasi</span>
@@ -72,7 +72,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="px-5 py-8 text-center text-slate-400">Tidak ada data mahasiswa.</td></tr>
+                <tr><td colspan="5" class="px-5 py-8 text-center text-slate-400">Tidak ada data mahasiswa.</td></tr>
             @endforelse
         </tbody>
     </table>

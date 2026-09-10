@@ -43,17 +43,37 @@ class DashboardController extends Controller
     {
         $team = $user->activeTeam($ay?->id);
         $modules = collect();
-        $logbooks = collect();
+        $subs = [];
         $progress = 0;
+        $deadlines = collect();
 
         if ($ay && $team) {
             $modules = $ay->modules()->get();
-            $logbooks = $team->logbooks()->get()->keyBy('module_id');
+            $ids = $modules->pluck('id');
+
+            // Submission relevan per modul: tugas individu = milik user; lainnya = milik tim.
+            $teamLogbooks = $team->logbooks()->whereNull('user_id')->get()->keyBy('module_id');
+            $myLogbooks = ModuleLogbook::where('user_id', $user->id)->whereIn('module_id', $ids)->get()->keyBy('module_id');
+            foreach ($modules as $m) {
+                $subs[$m->id] = $m->isIndividual() ? ($myLogbooks[$m->id] ?? null) : ($teamLogbooks[$m->id] ?? null);
+            }
+
             $logbookModules = $modules->filter(fn ($m) => $m->isLogbook());
-            $approved = $logbookModules->filter(fn ($m) => optional($logbooks[$m->id] ?? null)->status_approval === 'Approved')->count();
+            $approved = $logbookModules->filter(fn ($m) => optional($subs[$m->id] ?? null)->status_approval === 'Approved')->count();
             $progress = $logbookModules->count() ? round($approved / $logbookModules->count() * 100) : 0;
+
+            // Notifikasi deadline: yang sedang berlangsung & punya batas waktu, terurut terdekat.
+            $deadlines = $modules
+                ->filter(fn ($m) => $m->closes_at && $m->scheduleState() === 'open')
+                ->sortBy('closes_at')
+                ->map(fn ($m) => (object) [
+                    'module' => $m,
+                    'status' => optional($subs[$m->id] ?? null)->status_approval ?? 'Not Started',
+                    'days' => $m->daysToDeadline(),
+                ])
+                ->values();
         }
 
-        return view('dashboard.mahasiswa', compact('ay', 'user', 'team', 'modules', 'logbooks', 'progress'));
+        return view('dashboard.mahasiswa', compact('ay', 'user', 'team', 'modules', 'subs', 'progress', 'deadlines'));
     }
 }

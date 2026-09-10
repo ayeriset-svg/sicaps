@@ -14,6 +14,51 @@
         <a href="{{ route('team.index') }}" class="inline-block rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-dark">Kelola Tim →</a>
     </div>
 @else
+
+{{-- Notifikasi deadline: modul/tugas/assessment yang sedang berlangsung & menuju batas waktu --}}
+@if($deadlines->isNotEmpty())
+    <div class="mb-6 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-rose-50 p-5">
+        <div class="flex items-center gap-2 mb-3">
+            <span class="text-xl">⏰</span>
+            <h2 class="font-semibold text-brand-dark">Menuju Deadline</h2>
+            <span class="text-xs text-slate-500">— {{ $deadlines->count() }} sedang berlangsung</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            @foreach($deadlines as $d)
+                @php
+                    $m = $d->module; $days = $d->days;
+                    $urgent = $days !== null && $days <= 3;
+                    $done = $d->status === 'Approved';
+                    $isAssessment = $m->type === 'assessment';
+                @endphp
+                <div class="rounded-xl bg-white border {{ $urgent && !$done ? 'border-red-200' : 'border-rose-100' }} p-4 flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                            <span class="text-xs font-medium text-slate-400">{{ $m->week_label }} · {{ $m->code }}</span>
+                            @if($isAssessment)<span class="text-[11px] rounded-full bg-pink-100 text-pink-700 px-1.5 py-0.5">Assessment</span>
+                            @elseif($m->isIndividual())<span class="text-[11px] rounded-full bg-indigo-100 text-indigo-700 px-1.5 py-0.5">Tugas</span>@endif
+                        </div>
+                        <p class="font-semibold text-slate-800 text-sm truncate">{{ $m->title }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Deadline: {{ $m->closes_at->translatedFormat('d M Y, H:i') }}</p>
+                        @unless($isAssessment)
+                            <span class="inline-block mt-1"><x-status-badge :status="$d->status" /></span>
+                        @endunless
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-2xl font-extrabold {{ $urgent && !$done ? 'text-red-600' : 'text-amber-600' }} leading-none">
+                            {{ $days <= 0 ? '!' : $days }}
+                        </div>
+                        <div class="text-[11px] text-slate-400">{{ $days <= 0 ? 'hari ini' : 'hari lagi' }}</div>
+                        @unless($isAssessment)
+                            <a href="{{ route('logbook.show', $m) }}" class="inline-block mt-2 text-xs text-brand hover:underline">{{ $done ? 'Lihat' : 'Kerjakan →' }}</a>
+                        @endunless
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 space-y-6">
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
@@ -25,7 +70,7 @@
 
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
                 @foreach($modules as $mod)
-                    @php $lb = $logbooks[$mod->id] ?? null; $st = $lb?->status_approval ?? 'Not Started'; @endphp
+                    @php $lb = $subs[$mod->id] ?? null; $st = $lb?->status_approval ?? 'Not Started'; @endphp
                     @if($mod->type === 'assessment')
                         <div class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-center">
                             <span class="block text-xs text-rose-400">{{ $mod->week_label }}</span>
