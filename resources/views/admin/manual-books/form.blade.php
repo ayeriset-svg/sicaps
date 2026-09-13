@@ -10,7 +10,7 @@
     <p class="text-slate-500">Isi panduan mendukung teks + gambar. Tampil ke seluruh pengguna bila berstatus "Terbit".</p>
 </div>
 
-<form method="POST" action="{{ $action }}" class="space-y-6">
+<form method="POST" action="{{ $action }}" class="space-y-6" enctype="multipart/form-data">
     @csrf
     @if($book)@method('PUT')@endif
 
@@ -30,6 +30,19 @@
     <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-6">
         <label class="block text-sm font-semibold text-brand-dark mb-2">Isi Panduan</label>
         <x-richtext name="content" :value="old('content', $book->content ?? '')" :minHeight="520" />
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-6">
+        <label class="block text-sm font-semibold text-brand-dark mb-2">Lampiran Berkas <span class="font-normal text-slate-400">(opsional)</span></label>
+        @if($book && $book->file_path)
+            <div class="mb-3 flex items-center gap-3 text-sm">
+                <a href="{{ route('file.show', $book->file_path) }}" class="text-brand hover:underline break-all">📎 {{ $book->file_name ?: basename($book->file_path) }}</a>
+                <label class="flex items-center gap-1.5 text-xs text-red-600"><input type="checkbox" name="remove_file" value="1"> Hapus berkas</label>
+            </div>
+        @endif
+        <input type="file" name="file" accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.zip"
+               class="w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-brand file:text-white file:px-3 file:py-1.5 file:text-sm">
+        <p class="text-xs text-slate-400 mt-1">PDF / Word / PowerPoint / Excel / gambar / ZIP, maks 20 MB.@if($book && $book->file_path) Unggah berkas baru untuk mengganti.@endif</p>
     </div>
 
     <div class="flex justify-end gap-2">

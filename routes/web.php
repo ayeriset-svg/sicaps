@@ -56,7 +56,6 @@ Route::middleware('auth')->group(function () {
 
     // Manual Book (panduan) — dapat dibaca semua pengguna terautentikasi.
     Route::get('/manual-book', [ManualBookController::class, 'publicIndex'])->name('manual.index');
-    Route::get('/manual-book/guide/{role}', [ManualBookController::class, 'guide'])->name('manual.guide');
     Route::get('/manual-book/{manualBook}', [ManualBookController::class, 'show'])->name('manual.show');
 
     /* ---------------- Mahasiswa ---------------- */

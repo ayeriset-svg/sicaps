@@ -92,7 +92,7 @@ Default tiap modul: 1 field richtext ("Uraian Pengerjaan / Dokumentasi") + 1 fie
 * **Tahun Ajaran & Angkatan:** buat/aktifkan/arsipkan. Membuat tahun ajaran otomatis menyemai modul RPS, stage A1/A2/A3 + kriteria, dan aturan penalti default.
 * **Master User & Master Mahasiswa:** CRUD + **import CSV**. Master Mahasiswa lengkap dengan **kelas & angkatan** untuk pemantauan per kelas — **tanpa kolom email** (identitas mahasiswa cukup NIM; email dibuat otomatis internal untuk kebutuhan autentikasi). Import mendukung **data + nilai historis** (kolom `year,semester,final_score,grade_letter` opsional → membuat tahun ajaran arsip + final grade).
 * **Template Import (FR-1.3):** setiap fitur import menyediakan **unduhan template** (CSV, kompatibel Excel/Google Sheets, ber-BOM UTF-8) berisi header + baris contoh — untuk Master Mahasiswa dan Master User. Endpoint: `admin.templates.students`, `admin.templates.users`.
-* **Manual Book / Panduan (FR-1.4):** superadmin **membuat & mengelola** entri manual book (judul, isi rich-text teks+gambar, urutan, status terbit/draf) di menu **Kelola Manual Book**. Seluruh pengguna (mahasiswa & superadmin) dapat **membaca** manual book yang berstatus *Terbit* lewat menu **Manual Book**. Isi disanitasi (anti-XSS) sebelum disimpan. Tersedia pula **Panduan lengkap step-by-step per role** (Superadmin & Mahasiswa) yang menjelaskan seluruh fitur beserta slot tangkapan layar — halaman siap **disimpan sebagai PDF** (terpisah per role via `manual.guide`), kontennya dikelola di `config/manual.php` dan gambar diletakkan di `public/img/manual/<role>/`.
+* **Manual Book / Panduan (FR-1.4):** superadmin **membuat & mengelola** entri manual book (judul, isi rich-text teks+gambar, **lampiran berkas opsional** PDF/Word/PPT/Excel/gambar/ZIP maks 20 MB, urutan, status terbit/draf) di menu **Kelola Manual Book**. Seluruh pengguna (mahasiswa & superadmin) dapat **membaca** manual book yang berstatus *Terbit* — beserta mengunduh lampirannya — lewat menu **Manual Book**. Isi disanitasi (anti-XSS) sebelum disimpan; berkas disimpan di private disk (`manual-books/`) dan diunduh via route terotorisasi.
 
 ### EPIC 2 — Master Mitra & Kelola Topik
 * **Master Mitra (FR-2.1):** jenis **Industri / Masyarakat Desa / Internal**; data: nama (wajib), logo (opsional), alamat (opsional), contact person.
@@ -169,7 +169,7 @@ Nilai bersifat **kelompok** (sama untuk seluruh anggota tim) melalui rubrik per 
 | :--- | :--- |
 | `academic_years` | Tahun ajaran (aktif/arsip). |
 | `users` | role ∈ {superadmin, mahasiswa}; +angkatan, class_name, is_active. Email mahasiswa tidak ditampilkan/di-input di Master Mahasiswa (dibuat otomatis saat import). |
-| `manual_books` | Panduan sistem: title, content (rich HTML), order_index, is_published, created_by. Dikelola superadmin, dibaca semua pengguna. |
+| `manual_books` | Panduan sistem: title, content (rich HTML), `file_path`/`file_name` (lampiran opsional), order_index, is_published, created_by. Dikelola superadmin, dibaca semua pengguna. |
 | `partners` | Master mitra (type: industri/masyarakat_desa/internal, logo, address). |
 | `topics` | Katalog + mandiri (partner_id, title, general_features, ai_features, origin, is_available). |
 | `teams` | +topic_id, topic_status (none/pending/approved/rejected), case_type; **tanpa** dosen_pembimbing. |

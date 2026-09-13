@@ -12,7 +12,7 @@ class FileController extends Controller
      * Gambar ditampilkan inline (untuk <img>), lainnya diunduh.
      */
     /** Prefix folder yang boleh diakses via route ini. */
-    private const ALLOWED_PREFIXES = ['partners/', 'topics/', 'logbooks/'];
+    private const ALLOWED_PREFIXES = ['partners/', 'topics/', 'logbooks/', 'manual-books/'];
 
     public function show(string $path)
     {

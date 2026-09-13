@@ -65,6 +65,14 @@ return [
     ],
 
     /*
+    | Lampiran berkas pada Manual Book (opsional).
+    */
+    'manual_file' => [
+        'mimes' => ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg', 'zip'],
+        'max_kb' => 20480, // 20 MB
+    ],
+
+    /*
     |--------------------------------------------------------------------------
     | Skala Lima Level Batasan Penggunaan AI (Tabel V.5)
     |--------------------------------------------------------------------------

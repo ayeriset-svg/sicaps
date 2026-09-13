@@ -7,11 +7,7 @@
         <h1 class="text-2xl font-bold text-brand-dark">Kelola Manual Book</h1>
         <p class="text-slate-500">Panduan penggunaan sistem yang tampil ke seluruh pengguna.</p>
     </div>
-    <div class="flex flex-wrap gap-2">
-        <a href="{{ route('manual.guide', 'superadmin') }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-4 py-2 text-sm hover:bg-rose-50">📕 Panduan Superadmin (PDF)</a>
-        <a href="{{ route('manual.guide', 'mahasiswa') }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-4 py-2 text-sm hover:bg-rose-50">📗 Panduan Mahasiswa (PDF)</a>
-        <a href="{{ route('admin.manual-books.create') }}" class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">+ Tambah Manual Book</a>
-    </div>
+    <a href="{{ route('admin.manual-books.create') }}" class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">+ Tambah Manual Book</a>
 </div>
 
 <div class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-x-auto">
@@ -23,7 +19,9 @@
             @forelse($books as $b)
                 <tr>
                     <td class="px-5 py-3 text-slate-400">{{ $b->order_index }}</td>
-                    <td class="px-5 py-3 font-medium text-slate-800">{{ $b->title }}</td>
+                    <td class="px-5 py-3 font-medium text-slate-800">{{ $b->title }}
+                        @if($b->file_path)<span class="ml-1 text-xs text-slate-400" title="{{ $b->file_name }}">📎</span>@endif
+                    </td>
                     <td class="px-5 py-3">
                         @if($b->is_published)
                             <span class="rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-xs font-medium">Terbit</span>

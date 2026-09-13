@@ -25,7 +25,8 @@
       "Bash(command -v pip pip3)",
       "Bash(npm --version)",
       "Bash(php -m)",
-      "Bash(grep -iE \"^\\(gd|imagick\\)$\")"
+      "Bash(grep -iE \"^\\(gd|imagick\\)$\")",
+      "Bash(php -l app/Models/ManualBook.php)"
     ]
   }
 }

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ManualBook extends Model
 {
     protected $fillable = [
-        'title', 'content', 'order_index', 'is_published', 'created_by',
+        'title', 'content', 'file_path', 'file_name', 'order_index', 'is_published', 'created_by',
     ];
 
     protected $casts = [
