@@ -73,14 +73,34 @@
     @if(request()->hasAny(['q','angkatan','class','activation','per_page']))<a href="{{ route('admin.students.index') }}" class="px-2 py-2 text-brand hover:underline">Reset</a>@endif
 </form>
 
-<div class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-x-auto">
+<div x-data="{ selected: [], allIds: @js($students->pluck('id')->map(fn ($i) => (string) $i)) }">
+    {{-- Bulk action bar --}}
+    <div x-show="selected.length" x-cloak class="mb-3 flex items-center justify-between gap-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5">
+        <span class="text-sm text-brand-dark"><strong x-text="selected.length"></strong> mahasiswa dipilih</span>
+        <div class="flex items-center gap-2">
+            <button type="button" @click="selected = []" class="text-sm text-slate-500 hover:underline">Batal pilih</button>
+            <form method="POST" action="{{ route('admin.students.bulk-destroy') }}"
+                  @submit="if(!confirm('Hapus '+selected.length+' mahasiswa terpilih? Yang masih tergabung tim akan dilewati. Tindakan ini tidak dapat dibatalkan.')){ $event.preventDefault(); }">
+                @csrf
+                <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
+                <button class="rounded-lg bg-red-600 text-white px-4 py-1.5 text-sm font-medium hover:bg-red-700">🗑️ Hapus Terpilih</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-left">
-            <tr><th class="px-5 py-3 font-medium">NIM</th><th class="px-5 py-3 font-medium">Nama</th><th class="px-5 py-3 font-medium">Angkatan</th><th class="px-5 py-3 font-medium">Kelas</th><th class="px-5 py-3 font-medium">Aktivasi</th><th class="px-5 py-3"></th></tr>
+            <tr>
+                <th class="px-5 py-3 w-8"><input type="checkbox" title="Pilih semua"
+                        :checked="allIds.length && selected.length === allIds.length"
+                        @change="selected = $event.target.checked ? [...allIds] : []"></th>
+                <th class="px-5 py-3 font-medium">NIM</th><th class="px-5 py-3 font-medium">Nama</th><th class="px-5 py-3 font-medium">Angkatan</th><th class="px-5 py-3 font-medium">Kelas</th><th class="px-5 py-3 font-medium">Aktivasi</th><th class="px-5 py-3"></th></tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
             @forelse($students as $s)
-                <tr x-data="{ edit:false }">
+                <tr x-data="{ edit:false }" :class="selected.includes('{{ $s->id }}') && 'bg-rose-50/50'">
+                    <td class="px-5 py-3"><input type="checkbox" value="{{ $s->id }}" x-model="selected"></td>
                     <td class="px-5 py-3 font-mono text-slate-600">{{ $s->identity_number }}</td>
                     <td class="px-5 py-3 font-medium text-slate-800">{{ $s->name }}</td>
                     <td class="px-5 py-3">{{ $s->angkatan ?? '—' }}</td>
@@ -119,10 +139,11 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="px-5 py-8 text-center text-slate-400">Tidak ada data mahasiswa.</td></tr>
+                <tr><td colspan="7" class="px-5 py-8 text-center text-slate-400">Tidak ada data mahasiswa.</td></tr>
             @endforelse
         </tbody>
     </table>
+    </div>
 </div>
 <div class="mt-4">{{ $students->links() }}</div>
 @endsection

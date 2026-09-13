@@ -120,6 +120,35 @@ class StudentController extends Controller
         return back()->with('success', 'Mahasiswa dihapus.');
     }
 
+    /** Hapus massal mahasiswa terpilih. Yang masih terkait tim dilewati (data tim aman). */
+    public function bulkDestroy(Request $request)
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $students = User::where('role', 'mahasiswa')->whereIn('id', $data['ids'])->get();
+        $deleted = 0;
+        $skipped = 0;
+        foreach ($students as $s) {
+            if ($s->ledTeams()->exists() || $s->memberships()->exists()) {
+                $skipped++;
+
+                continue;
+            }
+            $s->delete();
+            $deleted++;
+        }
+
+        $msg = "{$deleted} mahasiswa dihapus";
+        if ($skipped) {
+            $msg .= ", {$skipped} dilewati (masih tergabung/memimpin tim)";
+        }
+
+        return back()->with($deleted === 0 && $skipped > 0 ? 'error' : 'success', $msg . '.');
+    }
+
     /** Email internal otomatis (kolom email tidak dipakai di master mahasiswa). */
     private function autoEmail(string $nim): string
     {

@@ -30,7 +30,8 @@
       "Bash(git push *)",
       "Bash(php -r 'echo \"zip:\".\\(class_exists\\(\"ZipArchive\"\\)?\"Y\":\"N\"\\).\" simplexml:\".\\(function_exists\\(\"simplexml_load_string\"\\)?\"Y\":\"N\"\\).\" dom:\".\\(class_exists\\(\"DOMDocument\"\\)?\"Y\":\"N\"\\).\"\\\\n\";')",
       "Bash(php -l app/Http/Controllers/Admin/StudentController.php)",
-      "Bash(php -l app/Http/Controllers/TeamController.php)"
+      "Bash(php -l app/Http/Controllers/TeamController.php)",
+      "Bash(php -d display_errors=1 -r ' *)"
     ]
   }
 }
