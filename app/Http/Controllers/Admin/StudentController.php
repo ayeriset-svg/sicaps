@@ -10,6 +10,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
 {
@@ -47,6 +48,82 @@ class StudentController extends Controller
         $pendingCount = (clone $base)->where('must_change_password', true)->count();
 
         return view('admin.students.index', compact('students', 'angkatans', 'classes', 'pendingCount'));
+    }
+
+    /** Tambah satu mahasiswa manual. Email dibuat otomatis (tak ditampilkan). */
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'identity_number' => ['required', 'string', 'max:30', 'unique:users,identity_number'],
+            'name' => ['required', 'string', 'max:255'],
+            'angkatan' => ['nullable', 'string', 'max:10'],
+            'class_name' => ['nullable', 'string', 'max:30'],
+            'password' => ['nullable', 'string', 'min:6'],
+        ]);
+
+        $nim = $data['identity_number'];
+        User::create([
+            'identity_number' => $nim,
+            'name' => $data['name'],
+            'email' => $this->autoEmail($nim),
+            'role' => 'mahasiswa',
+            'angkatan' => $data['angkatan'] ?? null,
+            'class_name' => $data['class_name'] ?? null,
+            'password' => Hash::make($data['password'] ?? $nim),
+            // Sandi default = NIM → wajib diganti saat login pertama (aktivasi).
+            'must_change_password' => true,
+        ]);
+
+        return back()->with('success', 'Mahasiswa ditambahkan.');
+    }
+
+    /** Edit satu data mahasiswa (perbaikan setelah import). */
+    public function update(Request $request, User $student)
+    {
+        abort_unless($student->role === 'mahasiswa', 404);
+
+        $data = $request->validate([
+            'identity_number' => ['required', 'string', 'max:30', Rule::unique('users', 'identity_number')->ignore($student->id)],
+            'name' => ['required', 'string', 'max:255'],
+            'angkatan' => ['nullable', 'string', 'max:10'],
+            'class_name' => ['nullable', 'string', 'max:30'],
+            'password' => ['nullable', 'string', 'min:6'],
+        ]);
+
+        $update = [
+            'identity_number' => $data['identity_number'],
+            'name' => $data['name'],
+            'angkatan' => $data['angkatan'] ?? null,
+            'class_name' => $data['class_name'] ?? null,
+        ];
+        // Bila sandi diisi = reset → wajib ganti lagi saat login berikutnya.
+        if (! empty($data['password'])) {
+            $update['password'] = Hash::make($data['password']);
+            $update['must_change_password'] = true;
+        }
+        $student->update($update);
+
+        return back()->with('success', 'Data mahasiswa diperbarui.');
+    }
+
+    /** Hapus satu mahasiswa. Diblokir bila masih terkait tim (agar data tim tak ikut terhapus). */
+    public function destroy(User $student)
+    {
+        abort_unless($student->role === 'mahasiswa', 404);
+
+        if ($student->ledTeams()->exists() || $student->memberships()->exists()) {
+            return back()->with('error', 'Mahasiswa masih memimpin/tergabung dalam tim. Lepaskan dari tim terlebih dahulu sebelum menghapus.');
+        }
+
+        $student->delete();
+
+        return back()->with('success', 'Mahasiswa dihapus.');
+    }
+
+    /** Email internal otomatis (kolom email tidak dipakai di master mahasiswa). */
+    private function autoEmail(string $nim): string
+    {
+        return $nim . '@student.sicaps.local';
     }
 
     /**
