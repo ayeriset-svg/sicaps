@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ReadsCsv;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
 use App\Models\FinalGrade;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Hash;
 
 class StudentController extends Controller
 {
+    use ReadsCsv;
+
     /**
      * Master data mahasiswa lengkap (per kelas & angkatan).
      */
@@ -56,26 +59,29 @@ class StudentController extends Controller
      */
     public function import(Request $request)
     {
-        $request->validate(['file' => ['required', 'file', 'mimes:csv,txt', 'max:10240']]);
+        $request->validate(['file' => ['required', 'file', 'max:10240']]);
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (! in_array($ext, ['xlsx', 'csv', 'txt'], true)) {
+            return back()->with('error', 'Format berkas harus Excel (.xlsx) atau CSV.');
+        }
 
-        $handle = fopen($request->file('file')->getRealPath(), 'r');
-        $header = null;
+        $rows = $this->readImportRows($file);
+        if (empty($rows)) {
+            return back()->with('error', 'Berkas kosong atau tidak terbaca. Pastikan ada baris header + data.');
+        }
+        if (! array_key_exists('identity_number', $rows[0])) {
+            return back()->with('error', 'Kolom "identity_number" tidak ditemukan. Gunakan template yang disediakan (header baris pertama).');
+        }
+
         $created = 0;
         $grades = 0;
         $skipped = 0;
 
         DB::beginTransaction();
         try {
-            while (($row = fgetcsv($handle, 0, ',')) !== false) {
-                if ($header === null) {
-                    $header = array_map(fn ($h) => strtolower(trim($h)), $row);
-                    continue;
-                }
-                if (count(array_filter($row, fn ($v) => trim((string) $v) !== '')) === 0) {
-                    continue;
-                }
-                $d = @array_combine($header, array_pad($row, count($header), null));
-                $identity = trim($d['identity_number'] ?? '');
+            foreach ($rows as $d) {
+                $identity = trim((string) ($d['identity_number'] ?? ''));
                 if ($identity === '') {
                     $skipped++;
                     continue;
@@ -124,11 +130,9 @@ class StudentController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
-            fclose($handle);
 
             return back()->with('error', 'Import gagal: ' . $e->getMessage());
         }
-        fclose($handle);
 
         return back()->with('success', "Import selesai: {$created} mahasiswa baru, {$grades} nilai historis, {$skipped} dilewati.");
     }

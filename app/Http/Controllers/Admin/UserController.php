@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ReadsCsv;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -10,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
+    use ReadsCsv;
+
     public function index(Request $request)
     {
         $query = User::query()
@@ -91,26 +94,28 @@ class UserController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
+            'file' => ['required', 'file', 'max:5120'],
         ]);
+        $file = $request->file('file');
+        $ext = strtolower($file->getClientOriginalExtension());
+        if (! in_array($ext, ['xlsx', 'csv', 'txt'], true)) {
+            return back()->with('error', 'Format berkas harus Excel (.xlsx) atau CSV.');
+        }
 
-        $handle = fopen($request->file('file')->getRealPath(), 'r');
-        $header = null;
+        $rows = $this->readImportRows($file);
+        if (empty($rows)) {
+            return back()->with('error', 'Berkas kosong atau tidak terbaca. Pastikan ada baris header + data.');
+        }
+        if (! array_key_exists('identity_number', $rows[0]) || ! array_key_exists('email', $rows[0])) {
+            return back()->with('error', 'Kolom "identity_number" & "email" wajib ada. Gunakan template yang disediakan.');
+        }
+
         $created = 0;
         $skipped = 0;
 
-        while (($row = fgetcsv($handle, 0, ',')) !== false) {
-            if ($header === null) {
-                $header = array_map(fn ($h) => strtolower(trim($h)), $row);
-                continue;
-            }
-            if (count(array_filter($row, fn ($v) => trim((string) $v) !== '')) === 0) {
-                continue;
-            }
-
-            $rowData = @array_combine($header, array_pad($row, count($header), null));
-            $identity = trim($rowData['identity_number'] ?? '');
-            $email = trim($rowData['email'] ?? '');
+        foreach ($rows as $rowData) {
+            $identity = trim((string) ($rowData['identity_number'] ?? ''));
+            $email = trim((string) ($rowData['email'] ?? ''));
 
             if ($identity === '' || $email === '') {
                 $skipped++;
@@ -126,18 +131,17 @@ class UserController extends Controller
 
             User::create([
                 'identity_number' => $identity,
-                'name' => trim($rowData['name'] ?? $identity),
+                'name' => trim((string) ($rowData['name'] ?? '')) ?: $identity,
                 'email' => $email,
                 'role' => $role,
-                'angkatan' => trim($rowData['angkatan'] ?? '') ?: null,
-                'class_name' => trim($rowData['class_name'] ?? '') ?: null,
-                'password' => Hash::make(trim($rowData['password'] ?? '') ?: $identity),
+                'angkatan' => trim((string) ($rowData['angkatan'] ?? '')) ?: null,
+                'class_name' => trim((string) ($rowData['class_name'] ?? '')) ?: null,
+                'password' => Hash::make(trim((string) ($rowData['password'] ?? '')) ?: $identity),
                 // Sandi default = NIM/NIP → wajib diganti saat login pertama.
                 'must_change_password' => true,
             ]);
             $created++;
         }
-        fclose($handle);
 
         return back()->with('success', "Import selesai: {$created} user dibuat, {$skipped} dilewati (duplikat/invalid).");
     }

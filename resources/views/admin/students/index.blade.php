@@ -12,14 +12,14 @@
         <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="open=false">
             <div class="bg-white rounded-xl p-6 w-full max-w-lg">
                 <h3 class="font-semibold mb-2">Import Master Mahasiswa + Nilai Historis</h3>
-                <p class="text-xs text-slate-500 mb-3">Header CSV:<br>
-                    <code class="text-[11px]">identity_number,name,angkatan,class_name,password,year,semester,final_score,grade_letter</code><br>
-                    Kolom <code>year..grade_letter</code> opsional — bila diisi, dibuat nilai historis (tahun ajaran otomatis diarsipkan).
+                <p class="text-xs text-slate-500 mb-3">Kolom (baris pertama):<br>
+                    <code class="text-[11px]">identity_number, name, angkatan, class_name, password, year, semester, final_score, grade_letter</code><br>
+                    Kolom <code>year..grade_letter</code> opsional — bila diisi, dibuat nilai historis (tahun ajaran otomatis diarsipkan). Isi langsung di template Excel, lalu unggah.
                 </p>
-                <a href="{{ route('admin.templates.students') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline">⬇️ Unduh template Excel/CSV</a>
+                <a href="{{ route('admin.templates.students') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline">⬇️ Unduh Template Excel (.xlsx)</a>
                 <form method="POST" action="{{ route('admin.students.import') }}" enctype="multipart/form-data" class="space-y-3">
                     @csrf
-                    <input type="file" name="file" accept=".csv,.txt" required class="w-full text-sm">
+                    <input type="file" name="file" accept=".xlsx,.csv" required class="w-full text-sm">
                     <div class="flex justify-end gap-2"><button type="button" @click="open=false" class="px-4 py-2 text-sm">Batal</button><button class="rounded-lg bg-brand text-white px-4 py-2 text-sm">Import</button></div>
                 </form>
             </div>

@@ -13,12 +13,12 @@
 
         <div x-show="importOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="importOpen=false">
             <div class="bg-white rounded-xl p-6 w-full max-w-md">
-                <h3 class="font-semibold mb-2">Import User (CSV)</h3>
-                <p class="text-xs text-slate-500 mb-3">Header: <code>identity_number,name,email,role,angkatan,class_name,password</code>. Password kosong → default = NIM/NIP.</p>
-                <a href="{{ route('admin.templates.users') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline">⬇️ Unduh template Excel/CSV</a>
+                <h3 class="font-semibold mb-2">Import User (Excel)</h3>
+                <p class="text-xs text-slate-500 mb-3">Kolom: <code>identity_number, name, email, role, angkatan, class_name, password</code>. Password kosong → default = NIM/NIP. Isi di template Excel, lalu unggah.</p>
+                <a href="{{ route('admin.templates.users') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline">⬇️ Unduh Template Excel (.xlsx)</a>
                 <form method="POST" action="{{ route('admin.users.import') }}" enctype="multipart/form-data" class="space-y-3">
                     @csrf
-                    <input type="file" name="file" accept=".csv,.txt" required class="w-full text-sm">
+                    <input type="file" name="file" accept=".xlsx,.csv" required class="w-full text-sm">
                     <div class="flex justify-end gap-2">
                         <button type="button" @click="importOpen=false" class="px-4 py-2 text-sm">Batal</button>
                         <button class="rounded-lg bg-brand text-white px-4 py-2 text-sm">Import</button>
