@@ -7,10 +7,13 @@ use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\ModuleLogbook;
 use App\Services\AiDetectionService;
+use App\Services\HtmlSanitizer;
 use App\Services\LogbookWorkflowService;
 use App\Services\ProofreaderService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class LogbookReviewController extends Controller
@@ -38,6 +41,66 @@ class LogbookReviewController extends Controller
         $logbook->load('team.members.student', 'module', 'user', 'versions.author');
 
         return view('admin.logbook-review.show', compact('logbook'));
+    }
+
+    /** Form edit isi logbook oleh koordinator (mis. koreksi data). */
+    public function edit(ModuleLogbook $logbook)
+    {
+        $logbook->load('team', 'module', 'user');
+
+        return view('admin.logbook-review.edit', compact('logbook'));
+    }
+
+    /** Simpan hasil edit isi logbook oleh koordinator (payload disanitasi; file ditangani). */
+    public function updateContent(Request $request, ModuleLogbook $logbook, HtmlSanitizer $sanitizer)
+    {
+        $module = $logbook->module;
+        $existing = $logbook->payload_json ?? [];
+        $mimes = config('capstone.file_field.mimes', ['pdf', 'doc', 'docx']);
+        $maxKb = (int) config('capstone.file_field.max_kb', 10240);
+
+        $rules = [];
+        foreach ($module->fields() as $field) {
+            $key = $field['key'];
+            $type = $field['type'] ?? 'richtext';
+            if ($type === 'link') {
+                $rules["fields.$key"] = ['nullable', 'url', 'max:2048'];
+            } elseif ($type === 'file') {
+                $rules["files.$key"] = ['nullable', 'file', 'mimes:' . implode(',', $mimes), "max:{$maxKb}"];
+            } else {
+                $rules["fields.$key"] = ['nullable', 'string'];
+            }
+        }
+        $request->validate($rules);
+
+        $payload = [];
+        foreach ($module->fields() as $field) {
+            $key = $field['key'];
+            $type = $field['type'] ?? 'richtext';
+            if ($type === 'link') {
+                $payload[$key] = $request->input("fields.$key");
+            } elseif ($type === 'file') {
+                if ($request->hasFile("files.$key")) {
+                    if (! empty($existing[$key])) {
+                        Storage::disk('local')->delete($existing[$key]);
+                    }
+                    $file = $request->file("files.$key");
+                    $safe = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
+                    $name = $safe . '-' . now()->format('YmdHis') . '.' . $file->getClientOriginalExtension();
+                    $payload[$key] = $file->storeAs("logbooks/{$logbook->team_id}", $name, 'local');
+                    $payload[$key . '__name'] = $file->getClientOriginalName();
+                } else {
+                    $payload[$key] = $existing[$key] ?? null;
+                    $payload[$key . '__name'] = $existing[$key . '__name'] ?? null;
+                }
+            } else {
+                $payload[$key] = $sanitizer->clean($request->input("fields.$key"));
+            }
+        }
+
+        $logbook->update(['payload_json' => $payload, 'updated_by' => Auth::id()]);
+
+        return redirect()->route('admin.logbook-review.show', $logbook)->with('success', 'Isi logbook diperbarui oleh koordinator.');
     }
 
     public function review(Request $request, ModuleLogbook $logbook, LogbookWorkflowService $workflow)

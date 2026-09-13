@@ -13,7 +13,10 @@
             </span>
         @endif
     </div>
-    <a href="{{ route('admin.logbook-review.print', $logbook) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50">🖨️ Generate PDF</a>
+    <div class="flex items-center gap-2">
+        <a href="{{ route('admin.logbook-review.edit', $logbook) }}" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50">✏️ Edit Isi</a>
+        <a href="{{ route('admin.logbook-review.print', $logbook) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50">🖨️ Generate PDF</a>
+    </div>
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">

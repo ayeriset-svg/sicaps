@@ -64,7 +64,13 @@ class ScoreController extends Controller
         $criterionIds = $stage->criteria->pluck('id')->all();
 
         foreach ($request->input('scores', []) as $criterionId => $score) {
-            if (! in_array((int) $criterionId, $criterionIds, true) || $score === null || $score === '') {
+            if (! in_array((int) $criterionId, $criterionIds, true)) {
+                continue;
+            }
+            // Dikosongkan = hapus nilai (koreksi/edit ke kosong).
+            if ($score === null || $score === '') {
+                AssessmentScore::where(['criterion_id' => $criterionId, 'team_id' => $team->id])->delete();
+
                 continue;
             }
             AssessmentScore::updateOrCreate(

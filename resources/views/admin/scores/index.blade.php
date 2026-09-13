@@ -28,9 +28,15 @@
     <div class="space-y-6">
         @forelse($teams as $team)
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100">
-                <div class="px-5 py-4 border-b border-slate-100">
-                    <h2 class="font-semibold text-slate-800">{{ $team->team_name }}</h2>
-                    <p class="text-sm text-slate-500">{{ $team->members->pluck('student.name')->implode(', ') }}</p>
+                @php $sudahDinilai = ! empty($existing[$team->id]); @endphp
+                <div class="px-5 py-4 border-b border-slate-100 flex items-start justify-between gap-3">
+                    <div>
+                        <h2 class="font-semibold text-slate-800">{{ $team->team_name }}</h2>
+                        <p class="text-sm text-slate-500">{{ $team->members->pluck('student.name')->implode(', ') }}</p>
+                    </div>
+                    @if($sudahDinilai)
+                        <span class="shrink-0 rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-0.5 text-xs font-medium">✓ Sudah dinilai · dapat diedit</span>
+                    @endif
                 </div>
                 <form method="POST" action="{{ route('admin.scores.store') }}" class="p-5">
                     @csrf
@@ -46,7 +52,10 @@
                             </div>
                         @endforeach
                     </div>
-                    <button class="mt-4 rounded-lg bg-brand text-white px-4 py-1.5 text-sm hover:bg-brand-dark">Simpan Nilai {{ $stage->code }}</button>
+                    <div class="mt-4 flex items-center gap-3">
+                        <button class="rounded-lg bg-brand text-white px-4 py-1.5 text-sm hover:bg-brand-dark">{{ $sudahDinilai ? 'Perbarui' : 'Simpan' }} Nilai {{ $stage->code }}</button>
+                        @if($sudahDinilai)<span class="text-xs text-slate-400">Kosongkan kolom lalu simpan untuk menghapus nilai.</span>@endif
+                    </div>
                 </form>
             </div>
         @empty

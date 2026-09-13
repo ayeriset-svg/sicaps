@@ -118,6 +118,8 @@ Route::middleware('auth')->group(function () {
         // Tim
         Route::get('/teams', [AdminTeamController::class, 'index'])->name('teams.index');
         Route::post('/teams/{team}/hki', [AdminTeamController::class, 'toggleHki'])->name('teams.hki');
+        Route::put('/teams/{team}', [AdminTeamController::class, 'update'])->name('teams.update');
+        Route::delete('/teams/{team}', [AdminTeamController::class, 'destroy'])->name('teams.destroy');
 
         // Modul dinamis
         Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
@@ -143,6 +145,8 @@ Route::middleware('auth')->group(function () {
         // Review logbook + feedback
         Route::get('/logbook-review', [LogbookReviewController::class, 'index'])->name('logbook-review.index');
         Route::get('/logbook-review/{logbook}', [LogbookReviewController::class, 'show'])->name('logbook-review.show');
+        Route::get('/logbook-review/{logbook}/edit', [LogbookReviewController::class, 'edit'])->name('logbook-review.edit');
+        Route::put('/logbook-review/{logbook}/content', [LogbookReviewController::class, 'updateContent'])->name('logbook-review.update-content');
         Route::get('/logbook-review/{logbook}/print', [LogbookReviewController::class, 'print'])->name('logbook-review.print');
         Route::post('/logbook-review/{logbook}/check-ai', [LogbookReviewController::class, 'checkAi'])->name('logbook-review.check-ai');
         Route::post('/logbook-review/{logbook}/proofread', [LogbookReviewController::class, 'proofread'])->name('logbook-review.proofread');
