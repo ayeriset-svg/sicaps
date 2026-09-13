@@ -65,15 +65,22 @@
                 </div>
 
                 @if($isLeader && $team->members->count() < $maxMembers)
-                    <form method="POST" action="{{ route('team.members.add', $team) }}" class="mt-4 flex flex-col sm:flex-row gap-2">
-                        @csrf
-                        <select name="student_id" required class="flex-1 rounded-lg border-slate-300 border px-3 py-2 text-sm">
-                            <option value="">— Pilih mahasiswa —</option>
-                            @foreach($available as $s)<option value="{{ $s->id }}">{{ $s->identity_number }} — {{ $s->name }}</option>@endforeach
-                        </select>
-                        <input name="assigned_role" list="role-suggestions" required placeholder="Peran (boleh >1, pisah koma)" class="sm:w-64 rounded-lg border-slate-300 border px-3 py-2 text-sm">
-                        <button class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">Tambah</button>
-                    </form>
+                    <div class="mt-4 pt-4 border-t border-slate-100">
+                        <p class="text-xs text-slate-500 mb-2">➕ Tambah anggota — hanya mahasiswa <strong>kelas {{ $team->class_name ?? '-' }}</strong> yang dapat dipilih.</p>
+                        @if($available->isEmpty())
+                            <p class="text-sm text-slate-400">Tidak ada mahasiswa kelas {{ $team->class_name ?? '-' }} yang tersedia (semua sudah tergabung tim atau data kelas belum diatur).</p>
+                        @else
+                            <form method="POST" action="{{ route('team.members.add', $team) }}" class="flex flex-col sm:flex-row gap-2">
+                                @csrf
+                                <select name="student_id" required class="flex-1 rounded-lg border-slate-300 border px-3 py-2 text-sm">
+                                    <option value="">— Pilih mahasiswa (kelas {{ $team->class_name }}) —</option>
+                                    @foreach($available as $s)<option value="{{ $s->id }}">{{ $s->identity_number }} — {{ $s->name }}</option>@endforeach
+                                </select>
+                                <input name="assigned_role" list="role-suggestions" required placeholder="Peran (boleh >1, pisah koma)" class="sm:w-64 rounded-lg border-slate-300 border px-3 py-2 text-sm">
+                                <button class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">Tambah</button>
+                            </form>
+                        @endif
+                    </div>
                 @endif
             </div>
         </div>

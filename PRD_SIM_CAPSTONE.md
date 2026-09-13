@@ -32,7 +32,7 @@ SIM-CAPSTONE adalah platform tersentralisasi untuk mata kuliah Capstone Project 
 Hanya **2 role**: Superadmin dan Mahasiswa (role Dosen dihapus; seluruh fungsi review/penilaian dosen dialihkan ke Superadmin/Koordinator).
 
 * **Mahasiswa (Anggota Tim):** logbook (view), evaluasi peer 180° per tahap (bila dibuka), memantau status & nilai.
-* **Mahasiswa (Ketua Tim):** seluruh hak anggota + membuat/mengedit tim, memilih/mengajukan topik, submit Digital Logbook tim.
+* **Mahasiswa (Ketua Tim):** seluruh hak anggota + membuat/mengedit tim, memilih/mengajukan topik, submit Digital Logbook tim. **Pembentukan tim (Modul 0):** anggota yang dapat dipilih/ditambahkan **hanya mahasiswa dari kelas yang sama dengan ketua** (mahasiswa kelas lain tidak muncul & ditolak server); maksimal 6 orang per tim.
 * **Superadmin (Koordinator Capstone):** kontrol penuh — Master Data (User, Mahasiswa, Mitra, Topik), Manajemen Tahun Ajaran, **Kelola Modul dinamis**, review & feedback logbook, input nilai assessment, buka/tutup Peer 180° per tahap, pengaturan bobot & penalti, presensi, rekap & override nilai, Summary Report.
 
 ### Matrix Hak Akses

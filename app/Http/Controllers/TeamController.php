@@ -22,9 +22,13 @@ class TeamController extends Controller
         $team?->load(['members.student', 'leader']);
 
         $available = collect();
-        if ($team && $team->leader_id === $user->id) {
+        // Hanya ketua yang menambah anggota, dan pilihan dibatasi ke KELAS yang sama dengan ketua.
+        if ($team && $team->leader_id === $user->id && $user->class_name) {
             $usedIds = TeamMember::whereHas('team', fn ($q) => $q->where('academic_year_id', $ay->id))->pluck('student_id')->toArray();
-            $available = User::where('role', 'mahasiswa')->whereNotIn('id', $usedIds)->orderBy('name')->get();
+            $available = User::where('role', 'mahasiswa')
+                ->where('class_name', $user->class_name)
+                ->whereNotIn('id', $usedIds)
+                ->orderBy('name')->get();
         }
 
         return view('team.index', compact('team', 'ay', 'user', 'available'));
@@ -76,6 +80,15 @@ class TeamController extends Controller
             'student_id' => ['required', 'exists:users,id'],
             'assigned_role' => ['required', 'string', 'max:255'],
         ]);
+
+        // Anggota wajib mahasiswa & dari KELAS yang sama dengan ketua tim.
+        $candidate = User::where('id', $data['student_id'])->where('role', 'mahasiswa')->first();
+        if (! $candidate) {
+            return back()->with('error', 'Data mahasiswa tidak ditemukan.');
+        }
+        if ($candidate->class_name !== $team->class_name) {
+            return back()->with('error', 'Hanya mahasiswa dari kelas yang sama (' . ($team->class_name ?? '-') . ') yang dapat ditambahkan ke tim.');
+        }
 
         $already = TeamMember::where('student_id', $data['student_id'])
             ->whereHas('team', fn ($q) => $q->where('academic_year_id', $team->academic_year_id))->exists();
