@@ -4,9 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
+use App\Models\Attendance;
 use App\Models\Module;
+use App\Models\ModuleLogbook;
+use App\Models\SubClo;
+use App\Models\User;
 use App\Services\HtmlSanitizer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class ModuleController extends Controller
@@ -31,14 +36,15 @@ class ModuleController extends Controller
         abort_unless($ay, 404, 'Aktifkan tahun ajaran terlebih dahulu.');
         $module = null;
 
-        return view('admin.modules.form', compact('module', 'ay'));
+        return view('admin.modules.form', $this->formData($ay, null));
     }
 
     public function edit(Module $module)
     {
         $ay = AcademicYear::active();
+        $module->load('subClos');
 
-        return view('admin.modules.form', compact('module', 'ay'));
+        return view('admin.modules.form', $this->formData($ay, $module));
     }
 
     public function store(Request $request)
@@ -50,17 +56,20 @@ class ModuleController extends Controller
         $data['academic_year_id'] = $ay->id;
         $data['fields_json'] = $this->parseFields($request);
 
-        Module::create($data);
+        $module = Module::create($data);
+        $module->subClos()->sync($this->validSubCloIds($request, $ay));
 
         return redirect()->route('admin.modules.index')->with('success', 'Modul ditambahkan.');
     }
 
     public function update(Request $request, Module $module)
     {
+        $ay = AcademicYear::active();
         $data = $this->validated($request);
         $data['fields_json'] = $this->parseFields($request);
 
         $module->update($data);
+        $module->subClos()->sync($this->validSubCloIds($request, $ay));
 
         return redirect()->route('admin.modules.index')->with('success', 'Modul diperbarui.');
     }
@@ -82,6 +91,51 @@ class ModuleController extends Controller
             : "\"{$module->title}\" ditutup.");
     }
 
+    /** Preview dokumen modul (materi + field) siap disimpan sebagai PDF. */
+    public function preview(Module $module)
+    {
+        $module->load('subClos.clo.plo');
+        $ay = $module->academicYear;
+
+        return view('admin.modules.preview', compact('module', 'ay'));
+    }
+
+    /**
+     * Proses presensi tugas individu (dihitung sebagai presensi kelas):
+     * yang PASS → HADIR, sisanya (belum kumpul / lewat deadline / ditolak) → ALPA.
+     */
+    public function processAttendance(Module $module)
+    {
+        abort_unless(
+            $module->isIndividual() && $module->counts_as_attendance && $module->attendance_week && $module->attendance_session,
+            422, 'Modul ini bukan tugas individu yang dihitung sebagai presensi.'
+        );
+
+        $students = User::where('role', 'mahasiswa')
+            ->whereHas('memberships.team', fn ($q) => $q->where('academic_year_id', $module->academic_year_id))
+            ->get();
+        $approvedIds = ModuleLogbook::where('module_id', $module->id)
+            ->where('status_approval', 'Approved')->whereNotNull('user_id')->pluck('user_id')->all();
+
+        $present = 0;
+        $absent = 0;
+        foreach ($students as $s) {
+            $status = in_array($s->id, $approvedIds, true) ? 'present' : 'absent';
+            Attendance::updateOrCreate(
+                [
+                    'student_id' => $s->id,
+                    'academic_year_id' => $module->academic_year_id,
+                    'week_number' => $module->attendance_week,
+                    'session_number' => $module->attendance_session,
+                ],
+                ['status' => $status, 'recorded_by' => Auth::id()]
+            );
+            $status === 'present' ? $present++ : $absent++;
+        }
+
+        return back()->with('success', "Presensi tugas diproses: {$present} HADIR, {$absent} ALPA (belum mengumpulkan / lewat deadline / ditolak).");
+    }
+
     private function validated(Request $request): array
     {
         $data = $request->validate([
@@ -99,7 +153,6 @@ class ModuleController extends Controller
             // Materi modul (rich HTML) mengikuti template dokumen.
             'objectives' => ['nullable', 'string'],
             'tools_materials' => ['nullable', 'string'],
-            'ai_rules' => ['nullable', 'string'],
             'references' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
             'tasks' => ['nullable', 'string'],
@@ -108,6 +161,8 @@ class ModuleController extends Controller
         // Checkbox (hanya terkirim bila dicentang).
         $data['is_individual'] = $request->boolean('is_individual');
         $data['is_open'] = $request->boolean('is_open');
+        $data['requires_submission'] = $request->boolean('requires_submission');
+        $data['counts_as_attendance'] = $data['is_individual'] && $request->boolean('counts_as_attendance');
 
         // Slot presensi hanya relevan untuk tugas individu.
         if (! $data['is_individual']) {
@@ -123,6 +178,28 @@ class ModuleController extends Controller
         }
 
         return $data;
+    }
+
+    /** Data untuk view form (opsi Sub-CLO + terpilih). */
+    private function formData(?AcademicYear $ay, ?Module $module): array
+    {
+        $subClos = $ay
+            ? SubClo::with('clo')->where('academic_year_id', $ay->id)->orderBy('order_index')->orderBy('id')->get()->groupBy('clo_id')
+            : collect();
+        $selectedSubClos = $module ? $module->subClos->pluck('id')->all() : [];
+
+        return compact('module', 'ay', 'subClos', 'selectedSubClos');
+    }
+
+    /** Sub-CLO valid (milik tahun ajaran aktif). */
+    private function validSubCloIds(Request $request, ?AcademicYear $ay): array
+    {
+        if (! $ay) {
+            return [];
+        }
+        $ids = (array) $request->input('sub_clos', []);
+
+        return SubClo::where('academic_year_id', $ay->id)->whereIn('id', $ids)->pluck('id')->all();
     }
 
     /**

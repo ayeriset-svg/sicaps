@@ -4,14 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Module extends Model
 {
     protected $fillable = [
         'academic_year_id', 'order_index', 'week_label', 'code', 'type',
-        'assessment_stage', 'is_individual', 'is_open', 'opens_at', 'closes_at',
-        'attendance_week', 'attendance_session',
+        'assessment_stage', 'is_individual', 'requires_submission', 'is_open', 'opens_at', 'closes_at',
+        'attendance_week', 'attendance_session', 'counts_as_attendance',
         'ai_policy_level', 'title',
         'objectives', 'tools_materials', 'ai_rules', 'references', 'description', 'tasks',
         'fields_json',
@@ -26,7 +27,6 @@ class Module extends Model
     public const MATERIAL_FIELDS = [
         'objectives' => 'Tujuan',
         'tools_materials' => 'Alat dan Bahan',
-        'ai_rules' => 'Aturan Penggunaan AI',
         'references' => 'Referensi',
         'description' => 'Deskripsi / Materi Teori',
         'tasks' => 'Tugas / Pertanyaan',
@@ -35,7 +35,9 @@ class Module extends Model
     protected $casts = [
         'fields_json' => 'array',
         'is_individual' => 'boolean',
+        'requires_submission' => 'boolean',
         'is_open' => 'boolean',
+        'counts_as_attendance' => 'boolean',
         'opens_at' => 'datetime',
         'closes_at' => 'datetime',
     ];
@@ -50,9 +52,20 @@ class Module extends Model
         return $this->hasMany(ModuleLogbook::class);
     }
 
+    public function subClos(): BelongsToMany
+    {
+        return $this->belongsToMany(SubClo::class, 'module_sub_clo');
+    }
+
     public function isLogbook(): bool
     {
         return in_array($this->type, ['module', 'other'], true);
+    }
+
+    /** Apakah modul ini memerlukan pengerjaan (logbook) mahasiswa. */
+    public function requiresSubmission(): bool
+    {
+        return $this->isLogbook() && (bool) $this->requires_submission;
     }
 
     /** Tugas/assignment yang dikerjakan per mahasiswa (individu). */
@@ -103,7 +116,7 @@ class Module extends Model
     /** Boleh menerima submission mahasiswa saat ini (logbook/tugas dibuka & dalam jendela waktu). */
     public function acceptsSubmission(): bool
     {
-        return $this->isLogbook() && $this->scheduleState() === 'open';
+        return $this->requiresSubmission() && $this->scheduleState() === 'open';
     }
 
     /** Sisa hari menuju deadline (bulat ke atas); null bila tak ada closes_at. */

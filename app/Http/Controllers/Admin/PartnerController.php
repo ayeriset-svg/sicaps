@@ -14,7 +14,9 @@ class PartnerController extends Controller
     public function index()
     {
         $ay = AcademicYear::active();
-        $partners = Partner::withCount('topics')->orderBy('name')->get();
+        $partners = Partner::withCount('topics')
+            ->when($ay, fn ($q) => $q->where('academic_year_id', $ay->id))
+            ->orderBy('name')->get();
 
         return view('admin.partners.index', compact('partners', 'ay'));
     }

@@ -18,6 +18,17 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 space-y-6">
+        @if($module->subClos->isNotEmpty())
+            <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-4">
+                <p class="text-xs font-semibold text-brand-dark uppercase tracking-wide mb-2">🎯 Capaian Pembelajaran (Sub-CLO)</p>
+                <div class="flex flex-wrap gap-1.5">
+                    @foreach($module->subClos as $sc)
+                        <span class="text-xs rounded-full bg-rose-50 text-brand px-2 py-0.5" title="{{ $sc->description }}">{{ $sc->code }}@if($sc->clo) · {{ $sc->clo->code }}@endif</span>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
             <h2 class="font-semibold text-slate-800 mb-3">📘 Materi Modul</h2>
             @php $anyMaterial = false; @endphp
@@ -35,6 +46,12 @@
             </div>
         </div>
 
+        @if(! $requiresSubmission)
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                <h2 class="font-semibold text-slate-800 mb-1">📄 Modul Materi</h2>
+                <p class="text-sm text-slate-500">Modul ini hanya berisi materi untuk dipelajari — tidak ada logbook/isian yang perlu dikerjakan.</p>
+            </div>
+        @else
         <div class="bg-white rounded-2xl shadow-sm border {{ $isIndividual ? 'border-indigo-100' : 'border-rose-100' }} p-5">
             <div class="flex items-center justify-between mb-4 gap-2">
                 <h2 class="font-semibold text-slate-800">📝 {{ $isIndividual ? 'Tugas Individu' : 'Form Logbook Tim' }}</h2>
@@ -128,6 +145,7 @@
                 @endif
             @endif
         </div>
+        @endif
     </div>
 
     <div class="space-y-6">

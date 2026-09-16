@@ -55,6 +55,7 @@ class LogbookController extends Controller
         abort_unless($team, 403);
         abort_unless($module->academic_year_id === $ay->id, 404);
         abort_unless($module->isLogbook(), 404, 'Modul ini tidak memiliki logbook.');
+        $module->load('subClos.clo');
 
         $logbook = $this->resolveLogbook($module, $team, Auth::user(), false);
         if ($logbook->exists) {
@@ -63,6 +64,7 @@ class LogbookController extends Controller
 
         $isLeader = Auth::id() === $team->leader_id;
         $isIndividual = $module->isIndividual();
+        $requiresSubmission = $module->requiresSubmission();
         $scheduleState = $module->scheduleState();
         // Boleh mengerjakan: modul dibuka & dalam jendela waktu + belum Approved + berhak.
         $mayWork = $module->acceptsSubmission()
@@ -70,7 +72,7 @@ class LogbookController extends Controller
             && ($isIndividual ? true : $isLeader);
         $locked = $logbook->status_approval === 'Approved';
 
-        return view('logbook.show', compact('team', 'module', 'logbook', 'isLeader', 'isIndividual', 'mayWork', 'locked', 'scheduleState'));
+        return view('logbook.show', compact('team', 'module', 'logbook', 'isLeader', 'isIndividual', 'requiresSubmission', 'mayWork', 'locked', 'scheduleState'));
     }
 
     public function print(Module $module)

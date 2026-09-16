@@ -60,6 +60,10 @@
         <h2 class="font-semibold text-slate-800 mb-4">Pengerjaan & Akses</h2>
         <div class="space-y-3">
             <label class="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="requires_submission" value="1" class="mt-0.5" @checked(old('requires_submission', $module->requires_submission ?? true))>
+                <span><span class="font-medium">Membutuhkan pengerjaan mahasiswa (logbook)</span> — bila dimatikan, modul hanya menampilkan materi; <strong>form isian tidak muncul</strong> di sisi mahasiswa.</span>
+            </label>
+            <label class="flex items-start gap-2 text-sm">
                 <input type="checkbox" name="is_open" value="1" class="mt-0.5" @checked(old('is_open', $module->is_open ?? false))>
                 <span><span class="font-medium">Buka untuk dikerjakan mahasiswa</span> — bila dimatikan, mahasiswa belum bisa mengisi (hanya melihat materi).</span>
             </label>
@@ -73,6 +77,10 @@
                 <div><label class="block text-xs font-medium mb-1">Sesi ke-</label>
                     <input type="number" min="1" max="2" name="attendance_session" value="{{ old('attendance_session', $module->attendance_session ?? '') }}" placeholder="1-2" class="w-full rounded-lg border-rose-200 border px-3 py-2 text-sm"></div>
                 <p class="col-span-2 text-xs text-slate-400">Opsional: saat tugas ini di-PASS, mahasiswa otomatis HADIR pada slot presensi di atas. Kosongkan bila tak perlu.</p>
+                <label class="col-span-2 flex items-start gap-2 text-sm mt-1">
+                    <input type="checkbox" name="counts_as_attendance" value="1" class="mt-0.5" @checked(old('counts_as_attendance', $module->counts_as_attendance ?? false))>
+                    <span><span class="font-medium">Dihitung sebagai presensi kelas</span> — dikumpulkan tepat waktu &amp; <strong>PASS</strong> → otomatis <strong>HADIR</strong>; tidak mengumpulkan (lewat deadline) atau <strong>ditolak</strong> → otomatis <strong>ALPA</strong> pada slot presensi di atas.</span>
+                </label>
             </div>
 
             {{-- Jadwal buka & tutup (deadline) — berlaku utk modul, tugas, & assessment --}}
@@ -87,6 +95,28 @@
                 <p class="text-xs text-slate-400 mt-1">Bila diisi, pengerjaan hanya dibuka dalam rentang ini. Setelah <em>Deadline</em>, mahasiswa tidak dapat submit lagi. Kosongkan = tanpa batas waktu.</p>
             </div>
         </div>
+    </div>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-6">
+        <h2 class="font-semibold text-slate-800 mb-1">🎯 Capaian (Sub-CLO)</h2>
+        <p class="text-xs text-slate-400 mb-3">Pilih Sub-CLO yang diukur pada modul ini. Kelola daftar di menu <a href="{{ route('admin.outcomes.index') }}" class="text-brand underline">Capaian (CLO)</a>.</p>
+        @php $sel = old('sub_clos', $selectedSubClos ?? []); @endphp
+        @forelse($subClos as $group)
+            @php $clo = $group->first()->clo; @endphp
+            <div class="mb-3">
+                <p class="text-sm font-semibold text-brand-dark">{{ $clo?->code }}@if($clo?->plo) <span class="text-[11px] rounded bg-slate-100 px-1 text-slate-500">{{ $clo->plo->code }}</span>@endif</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 mt-1">
+                    @foreach($group as $sc)
+                        <label class="flex items-start gap-2 text-sm">
+                            <input type="checkbox" name="sub_clos[]" value="{{ $sc->id }}" class="mt-0.5" @checked(in_array($sc->id, $sel))>
+                            <span><span class="font-medium">{{ $sc->code }}</span> <span class="text-slate-500">{{ $sc->description }}</span></span>
+                        </label>
+                    @endforeach
+                </div>
+            </div>
+        @empty
+            <p class="text-sm text-slate-400">Belum ada Sub-CLO untuk tahun ajaran ini.</p>
+        @endforelse
     </div>
 
     <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-6">

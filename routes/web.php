@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\AttendanceController;
 use App\Http\Controllers\Admin\GradeController as AdminGradeController;
 use App\Http\Controllers\Admin\LogbookReviewController;
 use App\Http\Controllers\Admin\ModuleController;
+use App\Http\Controllers\Admin\OutcomeController;
 use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\Admin\PeerResultController;
 use App\Http\Controllers\Admin\PenaltyRuleController;
@@ -122,13 +123,27 @@ Route::middleware('auth')->group(function () {
         Route::put('/teams/{team}', [AdminTeamController::class, 'update'])->name('teams.update');
         Route::delete('/teams/{team}', [AdminTeamController::class, 'destroy'])->name('teams.destroy');
 
+        // Capaian pembelajaran (PLO/CLO/Sub-CLO)
+        Route::get('/outcomes', [OutcomeController::class, 'index'])->name('outcomes.index');
+        Route::post('/plos', [OutcomeController::class, 'storePlo'])->name('plos.store');
+        Route::put('/plos/{plo}', [OutcomeController::class, 'updatePlo'])->name('plos.update');
+        Route::delete('/plos/{plo}', [OutcomeController::class, 'destroyPlo'])->name('plos.destroy');
+        Route::post('/clos', [OutcomeController::class, 'storeClo'])->name('clos.store');
+        Route::put('/clos/{clo}', [OutcomeController::class, 'updateClo'])->name('clos.update');
+        Route::delete('/clos/{clo}', [OutcomeController::class, 'destroyClo'])->name('clos.destroy');
+        Route::post('/sub-clos', [OutcomeController::class, 'storeSubClo'])->name('sub-clos.store');
+        Route::put('/sub-clos/{subClo}', [OutcomeController::class, 'updateSubClo'])->name('sub-clos.update');
+        Route::delete('/sub-clos/{subClo}', [OutcomeController::class, 'destroySubClo'])->name('sub-clos.destroy');
+
         // Modul dinamis
         Route::get('/modules', [ModuleController::class, 'index'])->name('modules.index');
         Route::get('/modules/create', [ModuleController::class, 'create'])->name('modules.create');
         Route::get('/modules/{module}/edit', [ModuleController::class, 'edit'])->name('modules.edit');
+        Route::get('/modules/{module}/preview', [ModuleController::class, 'preview'])->name('modules.preview');
         Route::post('/modules', [ModuleController::class, 'store'])->name('modules.store');
         Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
         Route::post('/modules/{module}/toggle-open', [ModuleController::class, 'toggleOpen'])->name('modules.toggle-open');
+        Route::post('/modules/{module}/process-attendance', [ModuleController::class, 'processAttendance'])->name('modules.process-attendance');
         Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
 
         // Manual Book (kelola)
@@ -176,6 +191,7 @@ Route::middleware('auth')->group(function () {
 
         // Nilai & report
         Route::get('/grades', [AdminGradeController::class, 'index'])->name('grades.index');
+        Route::get('/grades/export', [AdminGradeController::class, 'export'])->name('grades.export');
         Route::post('/grades/recalculate', [AdminGradeController::class, 'recalculate'])->name('grades.recalculate');
         Route::put('/grades/{grade}/override', [AdminGradeController::class, 'override'])->name('grades.override');
 

@@ -24,16 +24,27 @@ class LogbookReviewController extends Controller
         abort_unless($ay, 404);
 
         $teamIds = $ay->teams()->pluck('id');
+        $tab = $request->input('tab') === 'reviewed' ? 'reviewed' : 'pending';
 
-        $logbooks = ModuleLogbook::with('team.leader', 'module', 'user')
-            ->whereIn('team_id', $teamIds)
+        $base = fn () => ModuleLogbook::whereIn('team_id', $teamIds)->where('status_approval', '!=', 'Not Started');
+        $pendingCount = $base()->where('status_approval', 'Pending')->count();
+        $reviewedCount = $base()->whereIn('status_approval', ['Approved', 'Revision Needed'])->count();
+
+        $logbooks = $base()->with('team.leader', 'module', 'user')
+            ->when($tab === 'reviewed',
+                fn ($q) => $q->whereIn('status_approval', ['Approved', 'Revision Needed']),
+                fn ($q) => $q->where('status_approval', 'Pending'))
             ->when($request->filled('status'), fn ($q) => $q->where('status_approval', $request->status))
-            ->where('status_approval', '!=', 'Not Started')
+            ->when($request->filled('module'), fn ($q) => $q->where('module_id', $request->module))
+            ->when($request->filled('class'), fn ($q) => $q->whereHas('team.leader', fn ($l) => $l->where('class_name', $request->class)))
             ->orderByRaw("FIELD(status_approval,'Pending','Revision Needed','Approved')")
             ->orderByDesc('submitted_at')
             ->get();
 
-        return view('admin.logbook-review.index', compact('logbooks', 'ay'));
+        $modules = $ay->modules()->where('type', '!=', 'assessment')->orderBy('order_index')->get(['id', 'code', 'title']);
+        $classes = \App\Models\User::where('role', 'mahasiswa')->whereNotNull('class_name')->distinct()->orderBy('class_name')->pluck('class_name');
+
+        return view('admin.logbook-review.index', compact('logbooks', 'ay', 'tab', 'pendingCount', 'reviewedCount', 'modules', 'classes'));
     }
 
     public function show(ModuleLogbook $logbook)
@@ -112,11 +123,16 @@ class LogbookReviewController extends Controller
 
         $workflow->review($logbook, $data['status_approval'], $data['feedback'] ?? null, Auth::user());
 
+        $fresh = $logbook->fresh('module');
         $msg = 'Review logbook disimpan.';
-        if ($this->syncAttendance($logbook->fresh('module'))) {
-            $msg = $data['status_approval'] === 'Approved'
-                ? 'Review disimpan. Tugas individu PASS → mahasiswa otomatis ditandai HADIR pada presensi.'
-                : 'Review disimpan. Status bukan PASS → penanda hadir otomatis (jika ada) dibatalkan.';
+        if ($this->syncAttendance($fresh)) {
+            if ($data['status_approval'] === 'Approved') {
+                $msg = 'Review disimpan. Tugas individu PASS → mahasiswa otomatis ditandai HADIR pada presensi.';
+            } elseif ($fresh->module->counts_as_attendance) {
+                $msg = 'Review disimpan. Tugas ditolak → mahasiswa ditandai ALPA pada presensi.';
+            } else {
+                $msg = 'Review disimpan. Status bukan PASS → penanda hadir otomatis (jika ada) dibatalkan.';
+            }
         }
 
         return back()->with('success', $msg);
@@ -144,6 +160,9 @@ class LogbookReviewController extends Controller
 
         if ($logbook->status_approval === 'Approved') {
             Attendance::updateOrCreate($slot, ['status' => 'present', 'recorded_by' => Auth::id()]);
+        } elseif ($module->counts_as_attendance) {
+            // Tugas dihitung presensi & ditolak → tandai ALPA.
+            Attendance::updateOrCreate($slot, ['status' => 'absent', 'recorded_by' => Auth::id()]);
         } else {
             // Batalkan hanya penanda "present" pada slot khusus tugas ini.
             Attendance::where($slot)->where('status', 'present')->delete();

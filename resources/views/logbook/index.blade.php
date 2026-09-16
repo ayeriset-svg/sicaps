@@ -17,16 +17,18 @@
                     <span class="text-xs rounded-full bg-pink-200 text-pink-800 px-2 py-0.5 font-medium">Assessment</span>
                 </div>
                 <h3 class="font-semibold text-brand-dark leading-snug">{{ $mod->title }}</h3>
-                <p class="text-sm text-brand mt-1">{{ \Illuminate\Support\Str::limit($mod->description, 80) }}</p>
+                <p class="text-sm text-brand mt-1">{{ \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags($mod->description ?? ''))), 80) }}</p>
             </div>
         @else
+            @php $needsWork = $mod->requiresSubmission(); @endphp
             <a href="{{ route('logbook.show', $mod) }}" class="block bg-white rounded-2xl shadow-sm border {{ $mod->isIndividual() ? 'border-indigo-100' : 'border-rose-100' }} p-5 hover:shadow-md transition">
                 <div class="flex items-center justify-between mb-2 gap-2">
                     <span class="text-xs font-medium text-slate-400">{{ $mod->week_label }} · {{ $mod->code }}</span>
-                    <x-status-badge :status="$st" />
+                    @if($needsWork)<x-status-badge :status="$st" />@else<span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium">📄 Materi saja</span>@endif
                 </div>
                 <h3 class="font-semibold text-slate-800 leading-snug">{{ $mod->title }}</h3>
-                <p class="text-sm text-slate-500 mt-1">{{ \Illuminate\Support\Str::limit($mod->description, 80) }}</p>
+                <p class="text-sm text-slate-500 mt-1">{{ \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags($mod->description ?? ''))), 80) }}</p>
+                @if($needsWork)
                 <div class="mt-3 flex flex-wrap items-center gap-1.5">
                     @if($mod->isIndividual())
                         <span class="text-xs rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 font-medium">👤 Tugas Individu</span>
@@ -44,6 +46,7 @@
                         <span class="text-xs rounded-full px-2 py-0.5 font-medium {{ $dl<=3 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700' }}">⏰ {{ $dl<=0 ? 'hari ini' : $dl.' hari lagi' }}</span>
                     @endif
                 </div>
+                @endif
             </a>
         @endif
     @endforeach

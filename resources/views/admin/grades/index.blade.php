@@ -14,6 +14,7 @@
                 @foreach($classes as $c)<option value="{{ $c }}" @selected(request('class')==$c)>{{ $c }}</option>@endforeach
             </select>
         </form>
+        <a href="{{ route('admin.grades.export', ['class' => request('class')]) }}" class="rounded-lg border border-emerald-200 text-emerald-700 px-4 py-2 text-sm font-medium hover:bg-emerald-50">⬇️ Export Excel</a>
         <form method="POST" action="{{ route('admin.grades.recalculate') }}">@csrf<button class="rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-dark">🔄 Rekalkulasi</button></form>
     </div>
 </div>
@@ -25,13 +26,15 @@
     @foreach($grades as $g)<form id="ovr-{{ $g->id }}" method="POST" action="{{ route('admin.grades.override', $g) }}">@csrf @method('PUT')</form>@endforeach
     <table class="min-w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-left">
-            <tr><th class="px-4 py-3 font-medium">#</th><th class="px-4 py-3 font-medium">Mahasiswa</th><th class="px-4 py-3 font-medium text-right">NA</th><th class="px-4 py-3 font-medium text-right">Alpa</th><th class="px-4 py-3 font-medium text-right">Penalti</th><th class="px-4 py-3 font-medium text-right">Akhir</th><th class="px-4 py-3 font-medium text-center">Indeks</th><th class="px-4 py-3 font-medium">Override</th></tr>
+            <tr><th class="px-4 py-3 font-medium">#</th><th class="px-4 py-3 font-medium">Mahasiswa</th>@foreach($stages as $s)<th class="px-3 py-3 font-medium text-right" title="{{ $s->name }}">{{ $s->code }}</th>@endforeach<th class="px-4 py-3 font-medium text-right">NA</th><th class="px-4 py-3 font-medium text-right">Alpa</th><th class="px-4 py-3 font-medium text-right">Penalti</th><th class="px-4 py-3 font-medium text-right">Akhir</th><th class="px-4 py-3 font-medium text-center">Indeks</th><th class="px-4 py-3 font-medium">Override</th></tr>
         </thead>
         <tbody class="divide-y divide-slate-100">
             @foreach($grades as $i => $g)
+                @php $bd = collect($g->breakdown_json ?? [])->keyBy('code'); @endphp
                 <tr>
                     <td class="px-4 py-3 text-slate-400">{{ $i+1 }}</td>
                     <td class="px-4 py-3 font-medium text-slate-800">{{ $g->student->name }}<span class="block text-xs text-slate-400">{{ $g->student->identity_number }} · {{ $g->student->class_name }}</span></td>
+                    @foreach($stages as $s)<td class="px-3 py-3 text-right text-slate-600">{{ isset($bd[$s->code]) ? number_format((float)$bd[$s->code]['stage_score'],1) : '—' }}</td>@endforeach
                     <td class="px-4 py-3 text-right">{{ number_format($g->raw_score,1) }}</td>
                     <td class="px-4 py-3 text-right {{ $g->absent_days > 10 ? 'text-red-700 font-semibold' : '' }}">{{ $g->absent_days }}</td>
                     <td class="px-4 py-3 text-right">{{ $g->penalty_points > 0 ? '−'.number_format($g->penalty_points,0) : ($g->penalty_level && str_contains($g->penalty_level,'Berat') ? 'FAIL' : '0') }}</td>

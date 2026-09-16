@@ -56,6 +56,10 @@
                     </td>
                     <td class="px-4 py-3 text-right whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
+                            @if($m->isIndividual() && $m->counts_as_attendance && $m->attendance_week)
+                                <form method="POST" action="{{ route('admin.modules.process-attendance', $m) }}" class="inline" onsubmit="return confirm('Proses presensi tugas ini? PASS → HADIR, sisanya (belum kumpul/lewat deadline/ditolak) → ALPA pada Mgg {{ $m->attendance_week }}/Sesi {{ $m->attendance_session }}.')">@csrf<button title="Proses presensi tugas" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50">🗓️</button></form>
+                            @endif
+                            <a href="{{ route('admin.modules.preview', $m) }}" target="_blank" title="Preview / PDF" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"><x-icon name="eye" /></a>
                             <a href="{{ route('admin.modules.edit', $m) }}" title="Edit" class="p-1.5 rounded-lg text-brand hover:bg-rose-50"><x-icon name="edit" /></a>
                             <form method="POST" action="{{ route('admin.modules.destroy', $m) }}" class="inline" onsubmit="return confirm('Hapus modul?')">@csrf @method('DELETE')<button title="Hapus" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50"><x-icon name="trash" /></button></form>
                         </div>

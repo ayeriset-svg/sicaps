@@ -30,6 +30,7 @@
     {!! $item('admin.partners.index', 'Kelola Mitra', '🏢') !!}
     {!! $item('admin.topics.index', 'Kelola Topik', '💡') !!}
     {!! $item('admin.teams.index', 'Manajemen Tim', '👥') !!}
+    {!! $item('admin.outcomes.index', 'Capaian (CLO)', '🎯') !!}
     {!! $item('admin.modules.index', 'Kelola Modul', '🗂️') !!}
 
     {!! $header('Penilaian') !!}

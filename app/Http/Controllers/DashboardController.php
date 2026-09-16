@@ -58,13 +58,14 @@ class DashboardController extends Controller
                 $subs[$m->id] = $m->isIndividual() ? ($myLogbooks[$m->id] ?? null) : ($teamLogbooks[$m->id] ?? null);
             }
 
-            $logbookModules = $modules->filter(fn ($m) => $m->isLogbook());
+            $logbookModules = $modules->filter(fn ($m) => $m->requiresSubmission());
             $approved = $logbookModules->filter(fn ($m) => optional($subs[$m->id] ?? null)->status_approval === 'Approved')->count();
             $progress = $logbookModules->count() ? round($approved / $logbookModules->count() * 100) : 0;
 
             // Notifikasi deadline: yang sedang berlangsung & punya batas waktu, terurut terdekat.
             $deadlines = $modules
-                ->filter(fn ($m) => $m->closes_at && $m->scheduleState() === 'open')
+                ->filter(fn ($m) => $m->closes_at && $m->scheduleState() === 'open'
+                    && ($m->type === 'assessment' || $m->requiresSubmission()))
                 ->sortBy('closes_at')
                 ->map(fn ($m) => (object) [
                     'module' => $m,
