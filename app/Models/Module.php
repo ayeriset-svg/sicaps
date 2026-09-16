@@ -14,7 +14,7 @@ class Module extends Model
         'assessment_stage', 'is_individual', 'requires_submission', 'is_open', 'opens_at', 'closes_at',
         'attendance_week', 'attendance_session', 'counts_as_attendance',
         'ai_policy_level', 'title',
-        'objectives', 'tools_materials', 'ai_rules', 'references', 'description', 'tasks',
+        'objectives', 'tools_materials', 'references', 'description', 'tasks',
         'fields_json',
     ];
 

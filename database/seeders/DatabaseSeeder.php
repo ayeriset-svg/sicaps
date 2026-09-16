@@ -115,7 +115,6 @@ class DatabaseSeeder extends Seeder
             'ai_policy_level' => 2,
             'objectives' => '<p>Mahasiswa mampu membentuk tim, menetapkan peran, dan memilih ranah studi kasus.</p>',
             'tools_materials' => '<ul><li>Akun SIM-CAPSTONE</li><li>Template dokumen proyek</li></ul>',
-            'ai_rules' => '<p>AI boleh digunakan untuk brainstorming ide tim, wajib dicantumkan penggunaannya.</p>',
             'references' => '<p>Panduan Capstone Project D3 SIA 2026.</p>',
             'description' => '<p>Pembentukan tim (maks 6 orang), pembagian peran, dan penetapan ranah usaha (Jasa/Dagang/Manufaktur).</p>',
             'tasks' => '<ol><li>Bentuk tim & tetapkan peran tiap anggota.</li><li>Tentukan ranah studi kasus.</li></ol>',
