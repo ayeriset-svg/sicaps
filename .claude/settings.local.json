@@ -39,7 +39,8 @@
       "Bash(php -r 'require \"vendor/autoload.php\";$a=require \"bootstrap/app.php\";$a->make\\(Illuminate\\\\Contracts\\\\Console\\\\Kernel::class\\)->bootstrap\\(\\);$m=App\\\\Models\\\\Module::where\\(\"type\",\"assessment\"\\)->where\\(\"academic_year_id\",App\\\\Models\\\\AcademicYear::active\\(\\)->id\\)->first\\(\\);echo \"assessment module id=\".$m->id.\" code=\".$m->code.\"\\\\n\";')",
       "Bash(php -r 'require \"vendor/autoload.php\";$a=require \"bootstrap/app.php\";$a->make\\(Illuminate\\\\Contracts\\\\Console\\\\Kernel::class\\)->bootstrap\\(\\);foreach\\(App\\\\Models\\\\Module::where\\(\"type\",\"assessment\"\\)->get\\(\\) as $m\\){echo $m->code.\": reqSub=\".\\($m->requires_submission?1:0\\).\" fields=\".count\\($m->fields_json ?? []\\).\"\\\\n\";}')",
       "Bash(php -l app/Http/Controllers/Admin/LogbookReviewController.php)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
