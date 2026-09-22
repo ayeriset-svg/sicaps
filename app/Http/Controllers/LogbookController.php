@@ -99,7 +99,7 @@ class LogbookController extends Controller
         $ay = AcademicYear::active();
         $team = Auth::user()->activeTeam($ay?->id);
         abort_unless($team, 403);
-        abort_unless($module->isLogbook(), 404);
+        abort_unless($module->requiresSubmission(), 404, 'Modul ini tidak memiliki pengerjaan.');
 
         // Gate #4: hanya bisa dikerjakan bila modul/tugas dibuka koordinator & dalam jendela waktu.
         abort_unless($module->acceptsSubmission(), 403, 'Modul/tugas ini belum dibuka atau sudah melewati batas waktu (deadline).');

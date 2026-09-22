@@ -30,28 +30,28 @@
                         <span class="rounded-full px-2 py-0.5 text-xs {{ $tc }}">{{ $m->type }}{{ $m->assessment_stage ? ' · '.$m->assessment_stage : '' }}</span>
                         @if($m->isIndividual())<span class="block mt-1 rounded-full px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 w-fit">👤 Tugas Individu</span>@endif
                     </td>
-                    <td class="px-4 py-3 text-slate-500">{{ $m->isLogbook() ? count($m->fields()).' field' : '—' }}</td>
+                    <td class="px-4 py-3 text-slate-500">{{ $m->requiresSubmission() ? count($m->fields()).' field' : '—' }}</td>
                     <td class="px-4 py-3">
-                        @if($m->isLogbook())
+                        @if($m->requiresSubmission())
                             <form method="POST" action="{{ route('admin.modules.toggle-open', $m) }}">@csrf
                                 <button title="{{ $m->is_open ? 'Klik untuk menutup' : 'Klik untuk membuka' }}"
                                         class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ $m->is_open ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
                                     {{ $m->is_open ? '🔓 Dibuka' : '🔒 Ditutup' }}
                                 </button>
                             </form>
-                        @endif
-                        @if($m->opens_at || $m->closes_at)
-                            @php
-                                $stt = $m->scheduleState();
-                                $sc = ['scheduled'=>'text-sky-600','open'=>'text-emerald-600','ended'=>'text-red-500'][$stt] ?? 'text-slate-400';
-                            @endphp
-                            <div class="mt-1 text-[11px] {{ $sc }} leading-tight">
-                                @if($m->opens_at)<div>▶ {{ $m->opens_at->format('d/m/y H:i') }}</div>@endif
-                                @if($m->closes_at)<div>⏹ {{ $m->closes_at->format('d/m/y H:i') }}</div>@endif
-                                <div class="font-semibold">{{ ['scheduled'=>'Terjadwal','open'=>'Berlangsung','ended'=>'Berakhir','closed'=>'Ditutup','none'=>''][$stt] ?? '' }}</div>
-                            </div>
-                        @elseif(! $m->isLogbook())
-                            <span class="text-slate-300 text-xs">—</span>
+                            @if($m->opens_at || $m->closes_at)
+                                @php
+                                    $stt = $m->scheduleState();
+                                    $sc = ['scheduled'=>'text-sky-600','open'=>'text-emerald-600','ended'=>'text-red-500'][$stt] ?? 'text-slate-400';
+                                @endphp
+                                <div class="mt-1 text-[11px] {{ $sc }} leading-tight">
+                                    @if($m->opens_at)<div>▶ {{ $m->opens_at->format('d/m/y H:i') }}</div>@endif
+                                    @if($m->closes_at)<div>⏹ {{ $m->closes_at->format('d/m/y H:i') }}</div>@endif
+                                    <div class="font-semibold">{{ ['scheduled'=>'Terjadwal','open'=>'Berlangsung','ended'=>'Berakhir','closed'=>'Ditutup'][$stt] ?? '' }}</div>
+                                </div>
+                            @endif
+                        @else
+                            <span class="text-slate-300 text-xs">materi saja</span>
                         @endif
                     </td>
                     <td class="px-4 py-3 text-right whitespace-nowrap">

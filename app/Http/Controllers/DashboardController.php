@@ -82,8 +82,7 @@ class DashboardController extends Controller
 
             // Notifikasi deadline: yang sedang berlangsung & punya batas waktu, terurut terdekat.
             $deadlines = $modules
-                ->filter(fn ($m) => $m->closes_at && $m->scheduleState() === 'open'
-                    && ($m->type === 'assessment' || $m->requiresSubmission()))
+                ->filter(fn ($m) => $m->closes_at && $m->scheduleState() === 'open' && $m->requiresSubmission())
                 ->sortBy('closes_at')
                 ->map(fn ($m) => (object) [
                     'module' => $m,

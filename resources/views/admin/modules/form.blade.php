@@ -137,7 +137,7 @@
             <h2 class="font-semibold text-slate-800">Field Logbook</h2>
             <button type="button" @click="fields.push({label:'',type:'richtext',required:false})" class="text-sm text-brand hover:underline">+ Tambah Field</button>
         </div>
-        <p class="text-xs text-slate-400 mb-3">Field diabaikan untuk tipe "assessment". "Teks + Gambar" = editor dokumen; "Link" = input URL; "Unggah Berkas" = mahasiswa upload PDF/Word (maks 10 MB).</p>
+        <p class="text-xs text-slate-400 mb-3">Field muncul di sisi mahasiswa bila "Membutuhkan pengerjaan" dicentang (berlaku untuk semua tipe, termasuk assessment). "Teks + Gambar" = editor dokumen; "Link" = input URL; "Unggah Berkas" = mahasiswa upload PDF/Word (maks 10 MB).</p>
         <div class="space-y-2">
             <template x-for="(f, i) in fields" :key="i">
                 <div class="flex items-center gap-2">

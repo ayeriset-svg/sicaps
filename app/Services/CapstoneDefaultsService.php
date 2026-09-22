@@ -36,6 +36,8 @@ class CapstoneDefaultsService
                 'description' => $m['description'],
                 // Modul RPS default dibuka agar tim langsung dapat mengerjakan (koordinator dapat menutup).
                 'is_open' => true,
+                // Assessment (milestone) default TANPA pengerjaan logbook; koordinator dapat mengaktifkan.
+                'requires_submission' => $m['type'] !== 'assessment',
                 'fields_json' => $m['type'] === 'assessment' ? [] : $fields,
             ]);
         }

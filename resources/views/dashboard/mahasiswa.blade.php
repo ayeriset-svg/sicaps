@@ -40,18 +40,14 @@
                         </div>
                         <p class="font-semibold text-slate-800 text-sm truncate">{{ $m->title }}</p>
                         <p class="text-xs text-slate-500 mt-0.5">Deadline: {{ $m->closes_at->translatedFormat('d M Y, H:i') }}</p>
-                        @unless($isAssessment)
-                            <span class="inline-block mt-1"><x-status-badge :status="$d->status" /></span>
-                        @endunless
+                        <span class="inline-block mt-1"><x-status-badge :status="$d->status" /></span>
                     </div>
                     <div class="text-right shrink-0">
                         <div class="text-2xl font-extrabold {{ $urgent && !$done ? 'text-red-600' : 'text-amber-600' }} leading-none">
                             {{ $days <= 0 ? '!' : $days }}
                         </div>
                         <div class="text-[11px] text-slate-400">{{ $days <= 0 ? 'hari ini' : 'hari lagi' }}</div>
-                        @unless($isAssessment)
-                            <a href="{{ route('logbook.show', $m) }}" class="inline-block mt-2 text-xs text-brand hover:underline">{{ $done ? 'Lihat' : 'Kerjakan →' }}</a>
-                        @endunless
+                        <a href="{{ route('logbook.show', $m) }}" class="inline-block mt-2 text-xs text-brand hover:underline">{{ $done ? 'Lihat' : 'Kerjakan →' }}</a>
                     </div>
                 </div>
             @endforeach

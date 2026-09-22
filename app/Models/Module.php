@@ -63,16 +63,20 @@ class Module extends Model
         return in_array($this->type, ['module', 'other'], true);
     }
 
-    /** Apakah modul ini memerlukan pengerjaan (logbook) mahasiswa. */
+    /**
+     * Apakah modul ini memerlukan pengerjaan (form isian) mahasiswa — ditentukan
+     * OLEH FLAG, bukan tipe. Modul/tugas/assessment sama-sama bisa punya form
+     * bila koordinator mencentang "Membutuhkan pengerjaan".
+     */
     public function requiresSubmission(): bool
     {
-        return $this->isLogbook() && (bool) $this->requires_submission;
+        return (bool) $this->requires_submission;
     }
 
     /** Tugas/assignment yang dikerjakan per mahasiswa (individu). */
     public function isIndividual(): bool
     {
-        return (bool) $this->is_individual && $this->isLogbook();
+        return (bool) $this->is_individual;
     }
 
     /** Label ringkas jenis pengerjaan. */
@@ -82,24 +86,12 @@ class Module extends Model
     }
 
     /**
-     * Status jadwal: 'closed' (ditutup manual), 'scheduled' (belum mulai),
-     * 'open' (sedang berlangsung), 'ended' (deadline lewat), 'none' (tanpa jadwal).
-     * Assessment murni memakai jendela tanggal (tanpa gate is_open).
+     * Status jadwal (SERAGAM untuk semua tipe): 'closed' (belum dibuka),
+     * 'scheduled' (belum mulai), 'open' (berlangsung), 'ended' (deadline lewat).
      */
     public function scheduleState(): string
     {
         $now = now();
-
-        if ($this->type === 'assessment') {
-            if ($this->opens_at && $now->lt($this->opens_at)) {
-                return 'scheduled';
-            }
-            if ($this->closes_at && $now->gt($this->closes_at)) {
-                return 'ended';
-            }
-
-            return ($this->opens_at || $this->closes_at) ? 'open' : 'none';
-        }
 
         if (! $this->is_open) {
             return 'closed';
