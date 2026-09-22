@@ -28,16 +28,16 @@ class LogbookReviewController extends Controller
 
         $base = fn () => ModuleLogbook::whereIn('team_id', $teamIds)->where('status_approval', '!=', 'Not Started');
         $pendingCount = $base()->where('status_approval', 'Pending')->count();
-        $reviewedCount = $base()->whereIn('status_approval', ['Approved', 'Revision Needed'])->count();
+        $reviewedCount = $base()->whereIn('status_approval', ['Approved', 'Revision Needed', 'Rejected'])->count();
 
         $logbooks = $base()->with('team.leader', 'module', 'user')
             ->when($tab === 'reviewed',
-                fn ($q) => $q->whereIn('status_approval', ['Approved', 'Revision Needed']),
+                fn ($q) => $q->whereIn('status_approval', ['Approved', 'Revision Needed', 'Rejected']),
                 fn ($q) => $q->where('status_approval', 'Pending'))
             ->when($request->filled('status'), fn ($q) => $q->where('status_approval', $request->status))
             ->when($request->filled('module'), fn ($q) => $q->where('module_id', $request->module))
             ->when($request->filled('class'), fn ($q) => $q->whereHas('team.leader', fn ($l) => $l->where('class_name', $request->class)))
-            ->orderByRaw("FIELD(status_approval,'Pending','Revision Needed','Approved')")
+            ->orderByRaw("FIELD(status_approval,'Pending','Revision Needed','Rejected','Approved')")
             ->orderByDesc('submitted_at')
             ->get();
 

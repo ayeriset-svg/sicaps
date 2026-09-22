@@ -12,18 +12,18 @@
         @php $lb = $subs[$mod->id] ?? null; $st = $lb?->status_approval ?? 'Not Started'; $needsWork = $mod->requiresSubmission(); $isAsmt = $mod->type === 'assessment'; @endphp
         @if(! $needsWork)
             {{-- Materi saja (modul/assessment tanpa pengerjaan) --}}
-            <a href="{{ route('logbook.show', $mod) }}" class="block rounded-2xl shadow-sm border p-5 hover:shadow-md transition {{ $isAsmt ? 'border-pink-200 bg-gradient-to-br from-pink-50 to-rose-50' : 'border-rose-100 bg-white' }}">
+            <a href="{{ route('logbook.show', $mod) }}" class="block rounded-2xl shadow-sm border p-5 hover:shadow-md transition {{ $isAsmt ? 'border-blue-200 bg-blue-50' : 'border-rose-100 bg-white' }}">
                 <div class="flex items-center justify-between mb-2 gap-2">
-                    <span class="text-xs font-medium {{ $isAsmt ? 'text-pink-500' : 'text-slate-400' }}">{{ $mod->week_label }} · {{ $mod->code }}</span>
-                    @if($isAsmt)<span class="text-xs rounded-full bg-pink-200 text-pink-800 px-2 py-0.5 font-medium">Assessment</span>@else<span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium">📄 Materi saja</span>@endif
+                    <span class="text-xs font-medium {{ $isAsmt ? 'text-blue-500' : 'text-slate-400' }}">{{ $mod->week_label }} · {{ $mod->code }}</span>
+                    @if($isAsmt)<span class="text-xs rounded-full bg-blue-100 text-blue-700 px-2 py-0.5 font-medium">Assessment</span>@else<span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium">📄 Materi saja</span>@endif
                 </div>
-                <h3 class="font-semibold {{ $isAsmt ? 'text-brand-dark' : 'text-slate-800' }} leading-snug">{{ $mod->title }}</h3>
-                <p class="text-sm {{ $isAsmt ? 'text-brand' : 'text-slate-500' }} mt-1">{{ \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags($mod->description ?? ''))), 80) }}</p>
+                <h3 class="font-semibold {{ $isAsmt ? 'text-blue-900' : 'text-slate-800' }} leading-snug">{{ $mod->title }}</h3>
+                <p class="text-sm {{ $isAsmt ? 'text-blue-700' : 'text-slate-500' }} mt-1">{{ \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags($mod->description ?? ''))), 80) }}</p>
                 <span class="block mt-3 text-sm text-brand">Lihat materi →</span>
             </a>
         @else
             {{-- Ada pengerjaan (logbook tim / tugas individu / assessment bersubmisi) --}}
-            <a href="{{ route('logbook.show', $mod) }}" class="block bg-white rounded-2xl shadow-sm border {{ $mod->isIndividual() ? 'border-indigo-100' : 'border-rose-100' }} p-5 hover:shadow-md transition">
+            <a href="{{ route('logbook.show', $mod) }}" class="block rounded-2xl shadow-sm border p-5 hover:shadow-md transition {{ $isAsmt ? 'border-blue-200 bg-blue-50' : ($mod->isIndividual() ? 'border-orange-200 bg-orange-50' : 'border-rose-100 bg-white') }}">
                 <div class="flex items-center justify-between mb-2 gap-2">
                     <span class="text-xs font-medium text-slate-400">{{ $mod->week_label }} · {{ $mod->code }}</span>
                     <x-status-badge :status="$st" />
@@ -32,10 +32,10 @@
                 <p class="text-sm text-slate-500 mt-1">{{ \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags($mod->description ?? ''))), 80) }}</p>
                 <div class="mt-3 flex flex-wrap items-center gap-1.5">
                     @if($isAsmt)
-                        <span class="text-xs rounded-full bg-pink-100 text-pink-700 px-2 py-0.5 font-medium">Assessment</span>
+                        <span class="text-xs rounded-full bg-blue-100 text-blue-700 px-2 py-0.5 font-medium">Assessment</span>
                     @endif
                     @if($mod->isIndividual())
-                        <span class="text-xs rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 font-medium">👤 Tugas Individu</span>
+                        <span class="text-xs rounded-full bg-orange-100 text-orange-700 px-2 py-0.5 font-medium">👤 Tugas Individu</span>
                     @else
                         <span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium">👥 {{ $isAsmt ? 'Kelompok' : 'Logbook Tim' }}</span>
                     @endif

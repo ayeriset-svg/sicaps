@@ -33,7 +33,7 @@
     </select>
     <select name="status" onchange="this.form.submit()" class="rounded-lg border-slate-300 border px-3 py-2">
         <option value="">Semua Status</option>
-        @foreach(['Pending'=>'Menunggu Review','Revision Needed'=>'Perlu Revisi','Approved'=>'Disetujui'] as $k=>$v)<option value="{{ $k }}" @selected(request('status')===$k)>{{ $v }}</option>@endforeach
+        @foreach(['Pending'=>'Menunggu Review','Revision Needed'=>'Perlu Revisi','Approved'=>'Disetujui','Rejected'=>'Ditolak'] as $k=>$v)<option value="{{ $k }}" @selected(request('status')===$k)>{{ $v }}</option>@endforeach
     </select>
     @if(request()->hasAny(['module','class','status']))<a href="{{ route('admin.logbook-review.index', ['tab'=>$tab]) }}" class="px-2 py-2 text-brand hover:underline">Reset</a>@endif
 </form>
