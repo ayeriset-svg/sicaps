@@ -44,6 +44,7 @@
 
     {!! $header('Laporan') !!}
     {!! $item('admin.reports.index', 'Summary Report', '📈') !!}
+    {!! $item('admin.activity-logs.index', 'Audit Log', '🧾') !!}
 
     {!! $header('Panduan') !!}
     {!! $item('admin.manual-books.index', 'Manual Book', '📘') !!}

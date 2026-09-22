@@ -12,7 +12,7 @@ class Module extends Model
     protected $fillable = [
         'academic_year_id', 'order_index', 'week_label', 'code', 'type',
         'assessment_stage', 'is_individual', 'requires_submission', 'is_open', 'opens_at', 'closes_at',
-        'attendance_week', 'attendance_session', 'counts_as_attendance',
+        'attendance_week', 'attendance_session', 'counts_as_attendance', 'attendance_finalized_at',
         'ai_policy_level', 'title',
         'objectives', 'tools_materials', 'references', 'description', 'tasks',
         'fields_json',
@@ -40,6 +40,7 @@ class Module extends Model
         'counts_as_attendance' => 'boolean',
         'opens_at' => 'datetime',
         'closes_at' => 'datetime',
+        'attendance_finalized_at' => 'datetime',
     ];
 
     public function academicYear(): BelongsTo

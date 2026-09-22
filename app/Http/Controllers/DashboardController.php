@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
+use App\Models\Attendance;
 use App\Models\ModuleLogbook;
 use App\Models\Team;
 use App\Models\Topic;
@@ -46,6 +47,23 @@ class DashboardController extends Controller
         $subs = [];
         $progress = 0;
         $deadlines = collect();
+        $attendance = null;
+
+        // Rekap presensi mahasiswa (untuk semua mahasiswa, walau belum bertim).
+        if ($ay) {
+            $rows = Attendance::where('student_id', $user->id)->where('academic_year_id', $ay->id)->get();
+            $totalSessions = (int) config('capstone.total_weeks', 16) * (int) config('capstone.sessions_per_week', 2);
+            $present = $rows->where('status', 'present')->count();
+            $attendance = [
+                'present' => $present,
+                'permit' => $rows->where('status', 'permit')->count(),
+                'sick' => $rows->where('status', 'sick')->count(),
+                'absent' => $rows->where('status', 'absent')->count(),
+                'recorded' => $rows->count(),
+                'total' => $totalSessions,
+                'percent' => $totalSessions ? round($present / $totalSessions * 100) : 0,
+            ];
+        }
 
         if ($ay && $team) {
             $modules = $ay->modules()->get();
@@ -75,6 +93,6 @@ class DashboardController extends Controller
                 ->values();
         }
 
-        return view('dashboard.mahasiswa', compact('ay', 'user', 'team', 'modules', 'subs', 'progress', 'deadlines'));
+        return view('dashboard.mahasiswa', compact('ay', 'user', 'team', 'modules', 'subs', 'progress', 'deadlines', 'attendance'));
     }
 }

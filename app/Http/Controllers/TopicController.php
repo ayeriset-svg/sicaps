@@ -22,18 +22,17 @@ class TopicController extends Controller
 
         $team->load('topic.partner');
 
-        // Katalog topik yang tersedia (belum diambil tim lain).
-        $takenTopicIds = $ay->teams()->whereNotNull('topic_id')->where('id', '!=', $team->id)->pluck('topic_id');
-        $catalog = Topic::with('partner')
+        // Katalog topik boleh dipilih >1 kelompok; tampilkan jumlah tim yang mengajukan.
+        $catalog = Topic::with('partner')->withCount('teams')
             ->where('academic_year_id', $ay->id)
             ->where('origin', 'katalog')
             ->where('is_available', true)
-            ->whereNotIn('id', $takenTopicIds)
             ->orderBy('title')->get();
 
         $partners = \App\Models\Partner::orderBy('name')->get();
+        $caseTypes = config('capstone.case_types');
 
-        return view('topic.index', compact('team', 'catalog', 'partners', 'ay'));
+        return view('topic.index', compact('team', 'catalog', 'partners', 'ay', 'caseTypes'));
     }
 
     /**
@@ -71,11 +70,15 @@ class TopicController extends Controller
         $data = $request->validate([
             'custom_general_features' => ['nullable', 'string'],
             'custom_ai_features' => ['nullable', 'string'],
+            'case_type' => ['nullable', Rule::in(array_keys(config('capstone.case_types')))],
         ]);
 
+        // Mengedit fitur/jenis perusahaan = ajukan ulang untuk ditinjau koordinator.
+        $data['topic_status'] = 'pending';
+        $data['topic_review_note'] = null;
         $team->update($data);
 
-        return back()->with('success', 'Daftar fitur tim diperbarui (master topik tidak berubah).');
+        return back()->with('success', 'Data topik tim diperbarui & diajukan ulang untuk ditinjau koordinator.');
     }
 
     /**
@@ -93,7 +96,10 @@ class TopicController extends Controller
             'general_features' => ['nullable', 'string'],
             'ai_features' => ['nullable', 'string'],
             'description' => ['nullable', 'string'],
+            'case_type' => ['nullable', Rule::in(array_keys(config('capstone.case_types')))],
         ]);
+        $caseType = $data['case_type'] ?? null;
+        unset($data['case_type']);
         $data['partner_id'] = null;
 
         // Perbarui topik mandiri lama milik tim bila ada, else buat baru.
@@ -109,7 +115,12 @@ class TopicController extends Controller
             ])
         );
 
-        $team->update(['topic_id' => $topic->id, 'topic_status' => 'pending', 'topic_review_note' => null]);
+        $team->update([
+            'topic_id' => $topic->id,
+            'topic_status' => 'pending',
+            'topic_review_note' => null,
+            'case_type' => $caseType ?? $team->case_type,
+        ]);
 
         return back()->with('success', 'Topik mandiri diajukan & menunggu persetujuan koordinator.');
     }

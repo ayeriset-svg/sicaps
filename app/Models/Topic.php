@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Topic extends Model
@@ -36,6 +37,12 @@ class Topic extends Model
     public function team(): HasOne
     {
         return $this->hasOne(Team::class);
+    }
+
+    /** Semua tim yang memilih topik ini (katalog bisa dipilih >1 kelompok). */
+    public function teams(): HasMany
+    {
+        return $this->hasMany(Team::class);
     }
 
     public function creator(): BelongsTo

@@ -117,7 +117,7 @@ class LogbookReviewController extends Controller
     public function review(Request $request, ModuleLogbook $logbook, LogbookWorkflowService $workflow)
     {
         $data = $request->validate([
-            'status_approval' => ['required', Rule::in(['Approved', 'Revision Needed'])],
+            'status_approval' => ['required', Rule::in(['Approved', 'Revision Needed', 'Rejected'])],
             'feedback' => ['nullable', 'string'],
         ]);
 
@@ -126,13 +126,11 @@ class LogbookReviewController extends Controller
         $fresh = $logbook->fresh('module');
         $msg = 'Review logbook disimpan.';
         if ($this->syncAttendance($fresh)) {
-            if ($data['status_approval'] === 'Approved') {
-                $msg = 'Review disimpan. Tugas individu PASS → mahasiswa otomatis ditandai HADIR pada presensi.';
-            } elseif ($fresh->module->counts_as_attendance) {
-                $msg = 'Review disimpan. Tugas ditolak → mahasiswa ditandai ALPA pada presensi.';
-            } else {
-                $msg = 'Review disimpan. Status bukan PASS → penanda hadir otomatis (jika ada) dibatalkan.';
-            }
+            $msg = match ($data['status_approval']) {
+                'Approved' => 'Review disimpan. Tugas individu PASS → mahasiswa otomatis ditandai HADIR pada presensi.',
+                'Rejected' => 'Review disimpan. Tugas DITOLAK → mahasiswa otomatis ditandai ALPA pada presensi.',
+                default => 'Review disimpan. Penanda hadir otomatis (jika ada) dibatalkan.',
+            };
         }
 
         return back()->with('success', $msg);
@@ -160,11 +158,11 @@ class LogbookReviewController extends Controller
 
         if ($logbook->status_approval === 'Approved') {
             Attendance::updateOrCreate($slot, ['status' => 'present', 'recorded_by' => Auth::id()]);
-        } elseif ($module->counts_as_attendance) {
-            // Tugas dihitung presensi & ditolak → tandai ALPA.
+        } elseif ($logbook->status_approval === 'Rejected') {
+            // Tugas ditolak → ALPA.
             Attendance::updateOrCreate($slot, ['status' => 'absent', 'recorded_by' => Auth::id()]);
         } else {
-            // Batalkan hanya penanda "present" pada slot khusus tugas ini.
+            // Revision Needed / lainnya → batalkan penanda "present" (belum final).
             Attendance::where($slot)->where('status', 'present')->delete();
         }
 

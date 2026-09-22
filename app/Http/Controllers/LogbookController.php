@@ -66,11 +66,12 @@ class LogbookController extends Controller
         $isIndividual = $module->isIndividual();
         $requiresSubmission = $module->requiresSubmission();
         $scheduleState = $module->scheduleState();
-        // Boleh mengerjakan: modul dibuka & dalam jendela waktu + belum Approved + berhak.
+        // Boleh mengerjakan: modul dibuka & dalam jendela waktu + belum final + berhak.
+        $finalStatuses = ['Approved', 'Rejected'];
         $mayWork = $module->acceptsSubmission()
-            && $logbook->status_approval !== 'Approved'
+            && ! in_array($logbook->status_approval, $finalStatuses, true)
             && ($isIndividual ? true : $isLeader);
-        $locked = $logbook->status_approval === 'Approved';
+        $locked = in_array($logbook->status_approval, $finalStatuses, true);
 
         return view('logbook.show', compact('team', 'module', 'logbook', 'isLeader', 'isIndividual', 'requiresSubmission', 'mayWork', 'locked', 'scheduleState'));
     }
@@ -110,7 +111,7 @@ class LogbookController extends Controller
         $logbook = $this->resolveLogbook($module, $team, Auth::user(), true);
 
         // Lock #2: yang sudah disetujui (Approved) tidak dapat diedit lagi.
-        abort_if($logbook->status_approval === 'Approved', 403, 'Sudah disetujui — tidak dapat diubah lagi.');
+        abort_if(in_array($logbook->status_approval, ['Approved', 'Rejected'], true), 403, 'Status sudah final (disetujui/ditolak) — tidak dapat diubah lagi.');
 
         $existing = $logbook->payload_json ?? [];
 

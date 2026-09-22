@@ -42,19 +42,20 @@ class LogbookWorkflowService
      */
     public function review(ModuleLogbook $logbook, string $status, ?string $feedback, User $reviewer): ModuleLogbook
     {
-        $allowed = ['Approved', 'Revision Needed', 'Pending', 'Not Started'];
+        $allowed = ['Approved', 'Revision Needed', 'Rejected', 'Pending', 'Not Started'];
         abort_unless(in_array($status, $allowed, true), 422, 'Status tidak valid.');
-
-        // Snapshot kondisi sebelum keputusan review disimpan (riwayat).
-        if ($logbook->payload_json !== null) {
-            $this->snapshot($logbook, $reviewer);
-        }
 
         $logbook->update([
             'status_approval' => $status,
             'feedback' => $feedback,
             'reviewed_at' => now(),
         ]);
+
+        // Snapshot SETELAH keputusan → riwayat mencatat status final (mis. Approved/Done)
+        // beserta komentar review & waktu persetujuan, bukan lagi 'Pending'.
+        if ($logbook->payload_json !== null) {
+            $this->snapshot($logbook, $reviewer);
+        }
 
         return $logbook;
     }

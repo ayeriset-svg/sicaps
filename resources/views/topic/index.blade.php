@@ -43,11 +43,16 @@
                     <label class="block text-sm font-medium mb-1">Fitur AI</label>
                     <textarea name="custom_ai_features" rows="3" class="w-full rounded-lg border-rose-200 border px-3 py-2">{{ $team->custom_ai_features }}</textarea>
                 </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1">Jenis / Bidang Perusahaan</label>
+                    <select name="case_type" class="w-full rounded-lg border-rose-200 border px-3 py-2">
+                        <option value="">— Pilih —</option>
+                        @foreach($caseTypes as $k => $v)<option value="{{ $k }}" @selected($team->case_type===$k)>{{ $v }}</option>@endforeach
+                    </select>
+                </div>
                 <div class="md:col-span-2 flex items-center gap-3">
-                    <button class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">Simpan Fitur Tim</button>
-                    @if($topic->origin==='katalog' && ($topic->general_features || $topic->ai_features))
-                        <span class="text-xs text-slate-400">Master: {{ \Illuminate\Support\Str::limit($topic->general_features, 60) }}</span>
-                    @endif
+                    <button class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">Simpan &amp; Ajukan Ulang</button>
+                    <span class="text-xs text-amber-600">Menyimpan perubahan akan mengajukan ulang topik untuk ditinjau.</span>
                 </div>
             </form>
         @else
@@ -68,7 +73,10 @@
     <div x-show="tab==='katalog'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         @forelse($catalog as $t)
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-                <h3 class="font-semibold text-slate-800">{{ $t->title }}</h3>
+                <div class="flex items-start justify-between gap-2">
+                    <h3 class="font-semibold text-slate-800">{{ $t->title }}</h3>
+                    <span class="shrink-0 text-xs rounded-full {{ $t->teams_count > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500' }} px-2 py-0.5">👥 {{ $t->teams_count }} tim</span>
+                </div>
                 @if($t->partner)<p class="text-sm text-slate-500">{{ $t->partner->name }} · {{ $t->partner->type_label }}</p>@endif
                 @if($t->general_features)<p class="text-sm mt-2 text-slate-600"><span class="text-slate-400">Fitur:</span> {{ \Illuminate\Support\Str::limit($t->general_features, 90) }}</p>@endif
                 @if($t->ai_features)<p class="text-sm text-slate-600"><span class="text-slate-400">AI:</span> {{ \Illuminate\Support\Str::limit($t->ai_features, 90) }}</p>@endif
@@ -106,10 +114,17 @@
                 <textarea name="ai_features" rows="2" class="w-full rounded-lg border-slate-300 border px-3 py-2">{{ old('ai_features', $topic->ai_features ?? '') }}</textarea>
             </div>
             <div>
+                <label class="block text-sm font-medium mb-1">Jenis / Bidang Perusahaan</label>
+                <select name="case_type" class="w-full rounded-lg border-slate-300 border px-3 py-2">
+                    <option value="">— Pilih —</option>
+                    @foreach($caseTypes as $k => $v)<option value="{{ $k }}" @selected($team->case_type===$k)>{{ $v }}</option>@endforeach
+                </select>
+            </div>
+            <div>
                 <label class="block text-sm font-medium mb-1">Deskripsi / Latar Belakang</label>
                 <textarea name="description" rows="3" class="w-full rounded-lg border-slate-300 border px-3 py-2">{{ old('description', $topic->description ?? '') }}</textarea>
             </div>
-            <button class="rounded-lg bg-brand text-white px-5 py-2 font-medium hover:bg-brand-dark">Ajukan Topik Mandiri</button>
+            <button class="rounded-lg bg-brand text-white px-5 py-2 font-medium hover:bg-brand-dark">{{ $topic && $topic->origin==='mandiri' ? 'Simpan & Ajukan Ulang' : 'Ajukan Topik Mandiri' }}</button>
         </form>
     </div>
 </div>

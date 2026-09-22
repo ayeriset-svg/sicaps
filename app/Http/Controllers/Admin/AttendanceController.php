@@ -12,10 +12,13 @@ use Illuminate\Support\Facades\Auth;
 
 class AttendanceController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, \App\Services\AssignmentAttendanceService $assignmentAttendance)
     {
         $ay = AcademicYear::active();
         abort_unless($ay, 404, 'Aktifkan tahun ajaran terlebih dahulu.');
+
+        // Otomatis finalisasi presensi tugas yang deadline-nya sudah lewat (tanpa cron).
+        $assignmentAttendance->finalizeDue($ay);
 
         // Filter kelompok (tim) — bila dipilih, hanya anggota tim tsb.
         $memberIds = null;
@@ -31,7 +34,10 @@ class AttendanceController extends Controller
             ->orderBy('class_name')->orderBy('name')->get();
 
         $classes = User::where('role', 'mahasiswa')->whereNotNull('class_name')->distinct()->orderBy('class_name')->pluck('class_name');
-        $allTeams = Team::where('academic_year_id', $ay->id)->orderBy('team_name')->get(['id', 'team_name']);
+        // Filter kelompok mengikuti kelas terpilih (dependent dropdown).
+        $allTeams = Team::where('academic_year_id', $ay->id)
+            ->when($request->filled('class'), fn ($q) => $q->whereHas('leader', fn ($l) => $l->where('class_name', $request->class)))
+            ->orderBy('team_name')->get(['id', 'team_name']);
 
         $totalWeeks = config('capstone.total_weeks');
         $sessions = config('capstone.sessions_per_week');

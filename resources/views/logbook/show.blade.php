@@ -79,6 +79,11 @@
                 <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
                     ⛔ <span class="font-semibold">Batas waktu berakhir.</span> Deadline {{ $module->closes_at->translatedFormat('d M Y H:i') }} telah lewat — pengerjaan ditutup.
                 </div>
+            @elseif($logbook->status_approval === 'Rejected')
+                <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
+                    ⛔ <span class="font-semibold">Ditolak (Rejected) & terkunci.</span> {{ $isIndividual ? 'Tugas' : 'Logbook' }} tidak dapat diubah lagi.
+                    @if($logbook->feedback)<p class="mt-1">Catatan: {{ $logbook->feedback }}</p>@endif
+                </div>
             @elseif($locked)
                 <div class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700 mb-4">
                     ✅ <span class="font-semibold">Sudah disetujui (PASS) & terkunci.</span> {{ $isIndividual ? 'Tugas' : 'Logbook' }} tidak dapat diubah lagi.
@@ -175,6 +180,17 @@
                         Gambar {{ $logbook->ai_image_percentage!==null ? number_format($logbook->ai_image_percentage,1).'%' : '—' }}
                     </p>
                     <p class="text-[11px] text-slate-400 mt-2">⚠️ Estimasi indikatif, bukan vonis. Diperiksa {{ $logbook->ai_checked_at->format('d M Y H:i') }}.</p>
+                </div>
+            @endif
+
+            {{-- Hasil pemeriksaan tata tulis --}}
+            @if($logbook->proofread_checked_at && $logbook->proofread_score !== null)
+                @php $ps = (int) $logbook->proofread_score; $pband = $ps>=80?'emerald':($ps>=60?'amber':'red'); @endphp
+                <div class="mt-4 rounded-xl border p-4 bg-{{ $pband }}-50 border-{{ $pband }}-200">
+                    <p class="text-xs uppercase tracking-wide text-{{ $pband }}-700/70">Skor Tata Tulis</p>
+                    <p class="text-2xl font-extrabold text-{{ $pband }}-700">{{ $ps }}/100</p>
+                    @if(!empty($logbook->proofread_json['summary']))<p class="text-xs text-slate-500 mt-1">{{ $logbook->proofread_json['summary'] }}</p>@endif
+                    <p class="text-[11px] text-slate-400 mt-2">Diperiksa {{ $logbook->proofread_checked_at->format('d M Y H:i') }}.</p>
                 </div>
             @endif
         </div>

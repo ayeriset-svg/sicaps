@@ -48,11 +48,22 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
+        \App\Models\ActivityLog::create([
+            'user_id' => Auth::id(), 'action' => 'login', 'description' => 'Login ke sistem',
+            'method' => 'POST', 'route' => 'login', 'url' => $request->fullUrl(), 'ip' => $request->ip(),
+        ]);
+
         return redirect()->intended(route('dashboard'));
     }
 
     public function logout(Request $request)
     {
+        if (Auth::check()) {
+            \App\Models\ActivityLog::create([
+                'user_id' => Auth::id(), 'action' => 'logout', 'description' => 'Logout dari sistem',
+                'method' => 'POST', 'route' => 'logout', 'url' => $request->fullUrl(), 'ip' => $request->ip(),
+            ]);
+        }
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

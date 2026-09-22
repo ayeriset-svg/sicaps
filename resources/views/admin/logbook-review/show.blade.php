@@ -38,6 +38,22 @@
     </div>
 
     <div class="space-y-6">
+        {{-- Peringatan kemiripan jawaban antar mahasiswa (tugas individu) --}}
+        @if($logbook->similarity_checked_at && $logbook->similarity_max !== null && $logbook->similarity_max >= 70 && !empty($logbook->similarity_json))
+            <div class="rounded-2xl border-2 border-red-300 bg-red-50 p-4">
+                <p class="font-bold text-red-700 text-sm">🚨 Terindikasi jawaban MIRIP/SAMA dengan mahasiswa lain</p>
+                <p class="text-xs text-red-600 mt-0.5">Kemiripan tertinggi <strong>{{ number_format($logbook->similarity_max,0) }}%</strong> — periksa kemungkinan menyontek.</p>
+                <ul class="mt-2 text-xs text-red-700 space-y-0.5">
+                    @foreach(array_slice($logbook->similarity_json, 0, 5) as $s)
+                        <li>• {{ number_format($s['percent'],0) }}% mirip dengan <strong>{{ $s['name'] }}</strong></li>
+                    @endforeach
+                </ul>
+                <p class="text-[11px] text-red-400 mt-2">Diperiksa {{ $logbook->similarity_checked_at->format('d M Y H:i') }} (rule-based similarity).</p>
+            </div>
+        @elseif($logbook->similarity_checked_at)
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs text-emerald-700">✔ Kemiripan jawaban: {{ $logbook->similarity_max!==null ? number_format($logbook->similarity_max,0).'% (aman)' : 'tidak ada pembanding' }}.</div>
+        @endif
+
         {{-- Pemeriksaan indikasi AI --}}
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
             <div class="flex items-center justify-between mb-2">
@@ -148,6 +164,7 @@
                 <select name="status_approval" class="w-full rounded-lg border-slate-300 border px-3 py-2">
                     <option value="Approved" @selected($logbook->status_approval==='Approved')>Approved / Pass</option>
                     <option value="Revision Needed" @selected($logbook->status_approval==='Revision Needed')>Revision Needed</option>
+                    <option value="Rejected" @selected($logbook->status_approval==='Rejected')>Rejected / Ditolak</option>
                 </select>
                 <textarea name="feedback" rows="5" placeholder="Feedback / catatan revisi..." class="w-full rounded-lg border-slate-300 border px-3 py-2">{{ $logbook->feedback }}</textarea>
                 <button class="rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-dark">Simpan Review</button>

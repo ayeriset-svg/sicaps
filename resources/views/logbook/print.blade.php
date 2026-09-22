@@ -161,6 +161,22 @@
                 <span class="empty">Belum diperiksa.</span>
             @endif
         </div>
+
+        {{-- Skor tata tulis (proofreader) --}}
+        <div class="field-label">SKOR TATA TULIS</div>
+        <div class="box">
+            @if($logbook && $logbook->proofread_checked_at && $logbook->proofread_score !== null)
+                @php $ps = (int) $logbook->proofread_score; $pcol = $ps>=80?'#15803d':($ps>=60?'#b45309':'#be123c'); @endphp
+                <div class="review">
+                    <span class="badge" style="background:{{ $pcol }}1a;color:{{ $pcol }};">Skor Tata Tulis: {{ $ps }}/100</span>
+                    <span>{{ $logbook->proofread_json['total_issues'] ?? 0 }} catatan</span>
+                </div>
+                @if(!empty($logbook->proofread_json['summary']))<div style="margin-top:5px;">{{ $logbook->proofread_json['summary'] }}</div>@endif
+                <div class="dates">Diperiksa: {{ $logbook->proofread_checked_at->format('d F Y, H:i') }} · <em>Pemeriksaan tata tulis (rule-based).</em></div>
+            @else
+                <span class="empty">Belum diperiksa.</span>
+            @endif
+        </div>
     </div>
 </body>
 </html>

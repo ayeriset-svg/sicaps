@@ -56,6 +56,9 @@
                     </td>
                     <td class="px-4 py-3 text-right whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
+                            @if($m->isIndividual())
+                                <form method="POST" action="{{ route('admin.modules.check-similarity', $m) }}" class="inline" onsubmit="return confirm('Cek kemiripan jawaban antar mahasiswa untuk tugas ini? Hasil muncul di Review Logbook.')">@csrf<button title="Cek kemiripan jawaban antar mahasiswa" class="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50">🔍</button></form>
+                            @endif
                             @if($m->isIndividual() && $m->counts_as_attendance && $m->attendance_week)
                                 <form method="POST" action="{{ route('admin.modules.process-attendance', $m) }}" class="inline" onsubmit="return confirm('Proses presensi tugas ini? PASS → HADIR, sisanya (belum kumpul/lewat deadline/ditolak) → ALPA pada Mgg {{ $m->attendance_week }}/Sesi {{ $m->attendance_session }}.')">@csrf<button title="Proses presensi tugas" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50">🗓️</button></form>
                             @endif

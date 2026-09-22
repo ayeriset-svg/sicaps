@@ -13,6 +13,7 @@ class ModuleLogbook extends Model
         'feedback', 'updated_by', 'submitted_at', 'reviewed_at', 'revision_count',
         'ai_percentage', 'ai_text_percentage', 'ai_image_percentage', 'ai_detail_json', 'ai_checked_at',
         'proofread_score', 'proofread_json', 'proofread_checked_at',
+        'similarity_max', 'similarity_json', 'similarity_checked_at',
     ];
 
     protected $casts = [
@@ -26,6 +27,9 @@ class ModuleLogbook extends Model
         'ai_image_percentage' => 'decimal:2',
         'proofread_json' => 'array',
         'proofread_checked_at' => 'datetime',
+        'similarity_json' => 'array',
+        'similarity_checked_at' => 'datetime',
+        'similarity_max' => 'decimal:2',
     ];
 
     public function team(): BelongsTo

@@ -144,6 +144,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/modules/{module}', [ModuleController::class, 'update'])->name('modules.update');
         Route::post('/modules/{module}/toggle-open', [ModuleController::class, 'toggleOpen'])->name('modules.toggle-open');
         Route::post('/modules/{module}/process-attendance', [ModuleController::class, 'processAttendance'])->name('modules.process-attendance');
+        Route::post('/modules/{module}/check-similarity', [ModuleController::class, 'checkSimilarity'])->name('modules.check-similarity');
         Route::delete('/modules/{module}', [ModuleController::class, 'destroy'])->name('modules.destroy');
 
         // Manual Book (kelola)
@@ -196,6 +197,9 @@ Route::middleware('auth')->group(function () {
         Route::put('/grades/{grade}/override', [AdminGradeController::class, 'override'])->name('grades.override');
 
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+
+        // Audit log aktivitas pengguna
+        Route::get('/activity-logs', [\App\Http\Controllers\Admin\ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
     }); // ensure.password
 }); // auth

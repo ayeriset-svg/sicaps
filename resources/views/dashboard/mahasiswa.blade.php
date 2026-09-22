@@ -99,6 +99,24 @@
                 <div class="flex justify-between"><dt class="text-slate-500">Topik</dt><dd><x-status-badge :status="$team->topic_status" /></dd></div>
             </dl>
         </div>
+        @if($attendance)
+            @php $pc = $attendance['percent']; $pcol = $pc>=80?'emerald':($pc>=60?'amber':'red'); @endphp
+            <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
+                <h2 class="font-semibold text-slate-800 mb-3">🗓️ Rekap Presensi</h2>
+                <div class="flex items-center gap-4 mb-3">
+                    <div class="text-3xl font-extrabold text-{{ $pcol }}-600">{{ $pc }}%</div>
+                    <div class="text-xs text-slate-500">Kehadiran<br>({{ $attendance['present'] }} dari {{ $attendance['total'] }} sesi)</div>
+                </div>
+                <div class="h-2 rounded-full bg-slate-200 overflow-hidden mb-3"><div class="h-full bg-{{ $pcol }}-500" style="width: {{ $pc }}%"></div></div>
+                <div class="grid grid-cols-4 gap-1 text-center text-xs">
+                    <div class="rounded-lg bg-emerald-50 py-1.5"><span class="block font-bold text-emerald-700">{{ $attendance['present'] }}</span>Hadir</div>
+                    <div class="rounded-lg bg-sky-50 py-1.5"><span class="block font-bold text-sky-700">{{ $attendance['permit'] }}</span>Izin</div>
+                    <div class="rounded-lg bg-amber-50 py-1.5"><span class="block font-bold text-amber-700">{{ $attendance['sick'] }}</span>Sakit</div>
+                    <div class="rounded-lg bg-red-50 py-1.5"><span class="block font-bold text-red-700">{{ $attendance['absent'] }}</span>Alpa</div>
+                </div>
+                @if($attendance['absent'] > 10)<p class="mt-2 text-[11px] text-red-600">⚠️ Alpa &gt; 10 hari berisiko nilai E.</p>@endif
+            </div>
+        @endif
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
             <h2 class="font-semibold text-slate-800 mb-2">Aksi Cepat</h2>
             <div class="space-y-2 text-sm">

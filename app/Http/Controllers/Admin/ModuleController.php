@@ -10,6 +10,7 @@ use App\Models\ModuleLogbook;
 use App\Models\SubClo;
 use App\Models\User;
 use App\Services\HtmlSanitizer;
+use App\Services\SimilarityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -91,6 +92,15 @@ class ModuleController extends Controller
             : "\"{$module->title}\" ditutup.");
     }
 
+    /** Cek kemiripan jawaban antar mahasiswa pada tugas individu. */
+    public function checkSimilarity(Module $module, SimilarityService $svc)
+    {
+        abort_unless($module->isIndividual(), 422, 'Pengecekan kemiripan hanya untuk tugas individu.');
+        $r = $svc->check($module);
+
+        return back()->with('success', "Pengecekan kemiripan selesai: {$r['submissions']} jawaban diperiksa, {$r['flagged']} terindikasi mirip (≥{$r['threshold']}%). Detail muncul di Review Logbook.");
+    }
+
     /** Preview dokumen modul (materi + field) siap disimpan sebagai PDF. */
     public function preview(Module $module)
     {
@@ -104,36 +114,16 @@ class ModuleController extends Controller
      * Proses presensi tugas individu (dihitung sebagai presensi kelas):
      * yang PASS → HADIR, sisanya (belum kumpul / lewat deadline / ditolak) → ALPA.
      */
-    public function processAttendance(Module $module)
+    public function processAttendance(Module $module, \App\Services\AssignmentAttendanceService $svc)
     {
         abort_unless(
             $module->isIndividual() && $module->counts_as_attendance && $module->attendance_week && $module->attendance_session,
             422, 'Modul ini bukan tugas individu yang dihitung sebagai presensi.'
         );
 
-        $students = User::where('role', 'mahasiswa')
-            ->whereHas('memberships.team', fn ($q) => $q->where('academic_year_id', $module->academic_year_id))
-            ->get();
-        $approvedIds = ModuleLogbook::where('module_id', $module->id)
-            ->where('status_approval', 'Approved')->whereNotNull('user_id')->pluck('user_id')->all();
+        $r = $svc->finalize($module);
 
-        $present = 0;
-        $absent = 0;
-        foreach ($students as $s) {
-            $status = in_array($s->id, $approvedIds, true) ? 'present' : 'absent';
-            Attendance::updateOrCreate(
-                [
-                    'student_id' => $s->id,
-                    'academic_year_id' => $module->academic_year_id,
-                    'week_number' => $module->attendance_week,
-                    'session_number' => $module->attendance_session,
-                ],
-                ['status' => $status, 'recorded_by' => Auth::id()]
-            );
-            $status === 'present' ? $present++ : $absent++;
-        }
-
-        return back()->with('success', "Presensi tugas diproses: {$present} HADIR, {$absent} ALPA (belum mengumpulkan / lewat deadline / ditolak).");
+        return back()->with('success', "Presensi tugas diproses: {$r['present']} HADIR, {$r['absent']} ALPA (belum mengumpulkan / lewat deadline / ditolak).");
     }
 
     private function validated(Request $request): array

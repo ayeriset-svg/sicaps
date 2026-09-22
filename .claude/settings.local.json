@@ -32,7 +32,10 @@
       "Bash(php -l app/Http/Controllers/Admin/StudentController.php)",
       "Bash(php -l app/Http/Controllers/TeamController.php)",
       "Bash(php -d display_errors=1 -r ' *)",
-      "Bash(grep -nE \"FR-3.1|FR-3.3|FR-3.7|FR-1.5|Tujuan.*Alat|Rekap & Override|modules\\\\` \\\\||EPIC 6|Summary Report|materi \\\\\\(Tujuan\" PRD_SIM_CAPSTONE.md)"
+      "Bash(grep -nE \"FR-3.1|FR-3.3|FR-3.7|FR-1.5|Tujuan.*Alat|Rekap & Override|modules\\\\` \\\\||EPIC 6|Summary Report|materi \\\\\\(Tujuan\" PRD_SIM_CAPSTONE.md)",
+      "Bash(php -l app/Http/Controllers/LogbookController.php)",
+      "Bash(grep -nE \"FR-3.2|FR-3.3|FR-3.5|FR-3.7|Pemilihan Topik|FR-2.2|module_logbooks\\\\` \\\\||status_approval|Audit|EPIC 3\" PRD_SIM_CAPSTONE.md)",
+      "Bash(grep -nE \"FR-5.2|Presensi|Aktivasi Akun|wajib ganti|Notifikasi Deadline|activity_logs|manual_books\\\\` \\\\|\" PRD_SIM_CAPSTONE.md)"
     ]
   }
 }

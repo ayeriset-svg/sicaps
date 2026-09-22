@@ -9,12 +9,12 @@
 
 <div class="mb-4 flex flex-wrap items-center gap-3 text-xs text-slate-500">
     <form method="GET" class="flex gap-2">
-        <select name="class" onchange="this.form.submit()" class="rounded-lg border-rose-200 border px-3 py-1.5 text-sm bg-white">
+        <select name="class" onchange="this.form.team.value=''; this.form.submit()" class="rounded-lg border-rose-200 border px-3 py-1.5 text-sm bg-white">
             <option value="">Semua Kelas</option>
             @foreach($classes as $c)<option value="{{ $c }}" @selected(request('class')==$c)>{{ $c }}</option>@endforeach
         </select>
         <select name="team" onchange="this.form.submit()" class="rounded-lg border-rose-200 border px-3 py-1.5 text-sm bg-white">
-            <option value="">Semua Kelompok</option>
+            <option value="">{{ request('class') ? 'Semua Kelompok '.request('class') : 'Semua Kelompok' }}</option>
             @foreach($allTeams as $t)<option value="{{ $t->id }}" @selected(request('team')==$t->id)>{{ $t->team_name }}</option>@endforeach
         </select>
         @if(request('class') || request('team'))<a href="{{ route('admin.attendance.index') }}" class="px-2 py-1.5 text-brand hover:underline">Reset</a>@endif
