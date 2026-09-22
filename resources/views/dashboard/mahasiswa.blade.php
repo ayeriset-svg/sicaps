@@ -72,10 +72,10 @@
                 @foreach($modules as $mod)
                     @php $lb = $subs[$mod->id] ?? null; $st = $lb?->status_approval ?? 'Not Started'; @endphp
                     @if($mod->type === 'assessment')
-                        <div class="rounded-lg border border-rose-200 bg-rose-50 p-3 text-center">
+                        <a href="{{ route('logbook.show', $mod) }}" class="block rounded-lg border border-rose-200 bg-rose-50 p-3 text-center hover:shadow transition">
                             <span class="block text-xs text-rose-400">{{ $mod->week_label }}</span>
                             <span class="block font-semibold text-brand text-sm">{{ $mod->code }}</span>
-                        </div>
+                        </a>
                     @else
                         <a href="{{ route('logbook.show', $mod) }}" class="block rounded-lg border p-3 text-center hover:shadow transition
                             {{ $st==='Approved' ? 'border-green-300 bg-green-50' : ($st==='Revision Needed' ? 'border-orange-300 bg-orange-50' : ($st==='Pending' ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white')) }}">

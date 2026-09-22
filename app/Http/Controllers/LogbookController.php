@@ -54,7 +54,8 @@ class LogbookController extends Controller
         $team = Auth::user()->activeTeam($ay?->id);
         abort_unless($team, 403);
         abort_unless($module->academic_year_id === $ay->id, 404);
-        abort_unless($module->isLogbook(), 404, 'Modul ini tidak memiliki logbook.');
+        // Modul (logbook/tugas) & assessment sama-sama dapat dibuka untuk melihat materi.
+        abort_unless($module->isLogbook() || $module->type === 'assessment', 404, 'Modul tidak ditemukan.');
         $module->load('subClos.clo');
 
         $logbook = $this->resolveLogbook($module, $team, Auth::user(), false);
@@ -82,7 +83,7 @@ class LogbookController extends Controller
         $team = Auth::user()->activeTeam($ay?->id);
         abort_unless($team, 403);
         abort_unless($module->academic_year_id === $ay->id, 404);
-        abort_unless($module->isLogbook(), 404);
+        abort_unless($module->isLogbook() || $module->type === 'assessment', 404);
 
         $team->load('members.student', 'leader', 'topic.partner');
         $logbook = $this->resolveLogbook($module, $team, Auth::user(), false);

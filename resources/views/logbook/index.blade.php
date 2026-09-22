@@ -11,14 +11,15 @@
     @foreach($modules as $mod)
         @php $lb = $subs[$mod->id] ?? null; $st = $lb?->status_approval ?? 'Not Started'; @endphp
         @if($mod->type === 'assessment')
-            <div class="block rounded-2xl shadow-sm border border-pink-200 bg-gradient-to-br from-pink-50 to-rose-50 p-5">
+            <a href="{{ route('logbook.show', $mod) }}" class="block rounded-2xl shadow-sm border border-pink-200 bg-gradient-to-br from-pink-50 to-rose-50 p-5 hover:shadow-md transition">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-xs font-medium text-pink-500">{{ $mod->week_label }} · {{ $mod->code }}</span>
                     <span class="text-xs rounded-full bg-pink-200 text-pink-800 px-2 py-0.5 font-medium">Assessment</span>
                 </div>
                 <h3 class="font-semibold text-brand-dark leading-snug">{{ $mod->title }}</h3>
                 <p class="text-sm text-brand mt-1">{{ \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags($mod->description ?? ''))), 80) }}</p>
-            </div>
+                <span class="block mt-3 text-sm text-brand">Lihat materi →</span>
+            </a>
         @else
             @php $needsWork = $mod->requiresSubmission(); @endphp
             <a href="{{ route('logbook.show', $mod) }}" class="block bg-white rounded-2xl shadow-sm border {{ $mod->isIndividual() ? 'border-indigo-100' : 'border-rose-100' }} p-5 hover:shadow-md transition">
