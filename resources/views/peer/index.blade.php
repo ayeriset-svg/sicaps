@@ -17,6 +17,15 @@
 
 <div x-data="{ stage: '{{ $openStages->first()->id ?? '' }}' }">
     @if($openStages->isNotEmpty())
+        <div class="mb-5 rounded-xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-900">
+            <p class="font-semibold mb-1">ℹ️ Cara mengisi</p>
+            <ul class="list-disc list-inside space-y-0.5 text-sky-800">
+                <li>Setiap komponen dinilai pada <span class="font-semibold">skala 0–100</span> (bukan dibagi, jadi tiap komponen berdiri sendiri).</li>
+                <li>Contoh: 85 = sangat baik, 70 = cukup, di bawah 60 = perlu perbaikan.</li>
+                <li><span class="font-semibold">Nilai akhir peer = rata-rata</span> dari ke-4 komponen di bawah.</li>
+                <li>Nilai anggota tim <span class="font-semibold">termasuk diri sendiri</span> secara jujur & objektif.</li>
+            </ul>
+        </div>
         <div class="flex flex-wrap gap-2 mb-5">
             @foreach($openStages as $s)
                 <button @click="stage='{{ $s->id }}'" :class="stage==='{{ $s->id }}' ? 'bg-brand text-white' : 'bg-white text-slate-600 border border-slate-200'" class="rounded-lg px-4 py-2 text-sm">{{ $s->code }} — {{ $s->name }}</button>
@@ -48,7 +57,8 @@
                             <div class="flex items-center gap-3">
                                 <label class="flex-1 text-sm text-slate-600">{{ $label }}</label>
                                 <input type="number" min="0" max="100" step="0.5" name="{{ $field }}" required
-                                       value="{{ $ev->$field ?? '' }}" class="w-28 rounded-lg border-slate-300 border px-3 py-2">
+                                       placeholder="0–100" value="{{ $ev->$field ?? '' }}" class="w-28 rounded-lg border-slate-300 border px-3 py-2">
+                                <span class="text-xs text-slate-400 w-16">skala 0–100</span>
                             </div>
                         @endforeach
                         <div>
