@@ -28,7 +28,7 @@
                 toolbar: 'undo redo | blocks fontfamily fontsizeinput | bold italic underline strikethrough subscript superscript | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote link image table charmap | removeformat code fullscreen',
                 toolbar_mode: 'wrap',
                 font_size_formats: '10px 11px 12px 14px 16px 18px 20px 24px 30px 36px',
-                font_family_formats: 'Plus Jakarta Sans=Plus Jakarta Sans,sans-serif; Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times,serif; Calibri=calibri,sans-serif; Courier New=courier new,courier,monospace',
+                font_family_formats: 'Inter=Inter,sans-serif; Arial=arial,helvetica,sans-serif; Times New Roman=times new roman,times,serif; Calibri=calibri,sans-serif; Courier New=courier new,courier,monospace',
                 image_caption: true,
                 automatic_uploads: false,
                 paste_data_images: true,
@@ -48,9 +48,10 @@
                     input.click();
                 },
                 content_style:
+                    "@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');" +
                     "html{background:#eef0f2;padding:18px 0;}" +
                     "body{background:#fff;max-width:820px;margin:0 auto;padding:40px 56px;" +
-                    "box-shadow:0 2px 14px rgba(0,0,0,.12);font-family:'Plus Jakarta Sans',Arial,sans-serif;" +
+                    "box-shadow:0 2px 14px rgba(0,0,0,.12);font-family:'Inter',Arial,sans-serif;" +
                     "font-size:14px;line-height:1.65;color:#1f2937;}" +
                     "img{max-width:100%;height:auto;}" +
                     "table{border-collapse:collapse;}table td,table th{border:1px solid #cbd5e1;padding:6px 8px;}" +

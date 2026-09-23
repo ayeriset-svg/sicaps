@@ -14,15 +14,17 @@
                     canvas: '#FDF6F6',
                     brand: { DEFAULT: '#A61010', dark: '#7E0B0B', night: '#5C0808', light: '#C6413F' },
                 },
-                fontFamily: { sans: ['Plus Jakarta Sans', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+                fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
             } }
         }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         [x-cloak]{display:none}
-        body{font-family:'Plus Jakarta Sans','Inter',ui-sans-serif,system-ui,sans-serif}
+        body{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-feature-settings:'cv11','ss01'}
+        /* Angka rata lebar di tabel agar kolom nilai/presensi tersusun lurus */
+        table{font-variant-numeric:tabular-nums}
         .rt-content{color:#1f2937;line-height:1.65}
         .rt-content img{max-width:100%;height:auto;border-radius:8px;margin:4px 0}
         .rt-content ul{list-style:disc;padding-left:1.5rem;margin:.5rem 0}
