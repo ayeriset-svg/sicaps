@@ -17,3 +17,10 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# Arsip lokal (jangan ikut ter-deploy)
+/pcov.zip
+
+# Dokumentasi & pengaturan tool lokal (tidak ikut ter-deploy)
+/*.md
+/.claude/
