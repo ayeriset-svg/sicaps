@@ -66,20 +66,8 @@
                 </div>
             @endif
 
-            {{-- Banner status/akses --}}
-            @if($scheduleState === 'closed')
-                <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 mb-4">
-                    🔒 <span class="font-semibold">Belum dibuka koordinator.</span> Anda belum dapat mengerjakan {{ $isIndividual ? 'tugas' : 'logbook' }} ini. Materi tetap dapat dipelajari.
-                </div>
-            @elseif($scheduleState === 'scheduled')
-                <div class="rounded-lg bg-sky-50 border border-sky-200 px-4 py-3 text-sm text-sky-800 mb-4">
-                    🗓️ <span class="font-semibold">Belum waktunya.</span> Pengerjaan dibuka mulai {{ $module->opens_at->translatedFormat('d M Y H:i') }}.
-                </div>
-            @elseif($scheduleState === 'ended')
-                <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
-                    ⛔ <span class="font-semibold">Batas waktu berakhir.</span> Deadline {{ $module->closes_at->translatedFormat('d M Y H:i') }} telah lewat — pengerjaan ditutup.
-                </div>
-            @elseif($logbook->status_approval === 'Rejected')
+            {{-- Banner status/akses: status final & revisi didahulukan agar catatan koordinator selalu terlihat --}}
+            @if($logbook->status_approval === 'Rejected')
                 <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
                     ⛔ <span class="font-semibold">Ditolak (Rejected) & terkunci.</span> {{ $isIndividual ? 'Tugas' : 'Logbook' }} tidak dapat diubah lagi.
                     @if($logbook->feedback)<p class="mt-1">Catatan: {{ $logbook->feedback }}</p>@endif
@@ -92,6 +80,30 @@
                 <div class="rounded-lg bg-pink-50 border border-pink-200 px-4 py-3 text-sm text-pink-800 mb-4">
                     <p class="font-semibold">🔁 Perlu Revisi — silakan kerjakan ulang & submit lagi.</p>
                     @if($logbook->feedback)<p class="mt-1">Catatan: {{ $logbook->feedback }}</p>@endif
+                    @if($scheduleState === 'ended')
+                        <p class="mt-1 text-xs">Deadline sudah lewat, namun revisi tetap dapat dikirim selama modul masih dibuka koordinator.</p>
+                    @elseif($scheduleState === 'closed')
+                        <p class="mt-1 text-xs">Modul sedang ditutup koordinator — revisi dapat dikirim setelah modul dibuka kembali.</p>
+                    @endif
+                </div>
+            @elseif($scheduleState === 'closed')
+                <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 mb-4">
+                    🔒 <span class="font-semibold">Belum dibuka koordinator.</span> Anda belum dapat mengerjakan {{ $isIndividual ? 'tugas' : 'logbook' }} ini. Materi tetap dapat dipelajari.
+                </div>
+            @elseif($scheduleState === 'scheduled')
+                <div class="rounded-lg bg-sky-50 border border-sky-200 px-4 py-3 text-sm text-sky-800 mb-4">
+                    🗓️ <span class="font-semibold">Belum waktunya.</span> Pengerjaan dibuka mulai {{ $module->opens_at->translatedFormat('d M Y H:i') }}.
+                </div>
+            @elseif($scheduleState === 'ended')
+                <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
+                    ⛔ <span class="font-semibold">Batas waktu berakhir.</span> Deadline {{ $module->closes_at->translatedFormat('d M Y H:i') }} telah lewat — pengerjaan ditutup.
+                    @if($logbook->status_approval === 'Pending')<p class="mt-1">Isian Anda sudah terkirim dan menunggu review koordinator.</p>@endif
+                </div>
+            @endif
+            @if(! $isIndividual && $team->topic_status !== 'approved')
+                <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-800 mb-4">
+                    📌 Topik tim {{ $team->topic_status === 'rejected' ? 'DITOLAK' : ($team->topic_status === 'pending' ? 'masih menunggu persetujuan' : 'belum dipilih') }}.
+                    Logbook tetap dapat diisi, namun pastikan topik segera <a href="{{ route('topic.index') }}" class="underline font-medium">diajukan / diperbaiki</a>.
                 </div>
             @endif
             @if(! $isIndividual && ! $isLeader)
@@ -192,6 +204,24 @@
                     @if(!empty($logbook->proofread_json['summary']))<p class="text-xs text-slate-500 mt-1">{{ $logbook->proofread_json['summary'] }}</p>@endif
                     <p class="text-[11px] text-slate-400 mt-2">Diperiksa {{ $logbook->proofread_checked_at->format('d M Y H:i') }}.</p>
                 </div>
+
+                {{-- Daftar catatan tata tulis + saran perbaikan (agar mahasiswa tahu apa yang harus diperbaiki) --}}
+                @php $prIssues = $logbook->proofread_json['issues'] ?? []; @endphp
+                @if(!empty($prIssues))
+                    <div x-data="{ open: false }" class="mt-2">
+                        <button type="button" @click="open=!open" class="text-xs text-brand hover:underline" x-text="open ? '▲ Sembunyikan catatan tata tulis' : '▼ Lihat {{ count($prIssues) }} catatan tata tulis & saran perbaikan'"></button>
+                        <div x-show="open" x-cloak class="mt-2 space-y-2 max-h-96 overflow-y-auto pr-1">
+                            @foreach($prIssues as $it)
+                                <div class="rounded-lg border border-slate-200 p-2.5 text-xs">
+                                    <span class="inline-block rounded bg-slate-100 text-slate-600 px-1.5 py-0.5 font-medium mb-1">{{ str_replace('_',' ',$it['category'] ?? '') }}</span>
+                                    @if(!empty($it['original_text']))<p class="text-slate-500 line-through decoration-rose-300">{{ $it['original_text'] }}</p>@endif
+                                    @if(!empty($it['suggestion']))<p class="text-emerald-700 mt-1">✔ {{ $it['suggestion'] }}</p>@endif
+                                    @if(!empty($it['explanation']))<p class="text-slate-400 mt-1">{{ $it['explanation'] }}</p>@endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             @endif
         </div>
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
@@ -204,7 +234,10 @@
                 <h2 class="font-semibold text-slate-800 mb-3">🕓 Riwayat Versi</h2>
                 <ul class="space-y-2 text-sm">
                     @foreach($logbook->versions as $v)
-                        <li class="flex justify-between text-slate-500"><span>v{{ $v->version_number }} · {{ $v->status_snapshot }}</span><span>{{ $v->created_at->format('d/m H:i') }}</span></li>
+                        <li class="text-slate-500">
+                            <div class="flex justify-between"><span>v{{ $v->version_number }} · <x-status-badge :status="$v->status_snapshot" /></span><span>{{ $v->created_at->format('d/m H:i') }}</span></div>
+                            @if($v->feedback_snapshot)<p class="mt-1 text-xs text-slate-600 whitespace-pre-line border-l-2 border-rose-200 pl-2">{{ $v->feedback_snapshot }}</p>@endif
+                        </li>
                     @endforeach
                 </ul>
             </div>

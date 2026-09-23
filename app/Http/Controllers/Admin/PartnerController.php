@@ -68,7 +68,8 @@ class PartnerController extends Controller
             'type' => ['required', Rule::in(array_keys(config('capstone.partner_types')))],
             'address' => ['nullable', 'string'],
             'contact_person' => ['nullable', 'string', 'max:100'],
-            'logo' => ['nullable', 'image', 'max:2048'],
+            // SVG ditolak: dapat membawa skrip (XSS) saat ditampilkan langsung.
+            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
         ]);
     }
 }

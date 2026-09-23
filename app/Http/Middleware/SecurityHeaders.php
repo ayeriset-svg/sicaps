@@ -43,6 +43,12 @@ class SecurityHeaders
         ]);
         $headers->set('Content-Security-Policy', $csp);
 
+        // HSTS: paksa browser selalu memakai HTTPS (hanya bila diakses via HTTPS,
+        // agar pengembangan lokal http:// tidak terpengaruh).
+        if ($request->isSecure()) {
+            $headers->set('Strict-Transport-Security', 'max-age=31536000');
+        }
+
         return $response;
     }
 }

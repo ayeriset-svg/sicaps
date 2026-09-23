@@ -77,6 +77,12 @@ class ModuleController extends Controller
 
     public function destroy(Module $module)
     {
+        // Cegah hilangnya pekerjaan mahasiswa: modul yang sudah punya isian tidak boleh dihapus.
+        $submitted = $module->logbooks()->whereNotNull('payload_json')->count();
+        if ($submitted > 0) {
+            return back()->with('error', "Modul \"{$module->title}\" tidak dapat dihapus karena sudah memiliki {$submitted} isian mahasiswa. Tutup modul (Buka/Tutup) bila tidak ingin dipakai lagi.");
+        }
+
         $module->delete();
 
         return back()->with('success', 'Modul dihapus.');
@@ -123,7 +129,15 @@ class ModuleController extends Controller
 
         $r = $svc->finalize($module);
 
-        return back()->with('success', "Presensi tugas diproses: {$r['present']} HADIR, {$r['absent']} ALPA (belum mengumpulkan / lewat deadline / ditolak).");
+        $msg = "Presensi tugas diproses: {$r['present']} HADIR, {$r['absent']} ALPA (tidak mengumpulkan / ditolak).";
+        if ($r['waiting']) {
+            $msg .= " {$r['waiting']} menunggu review (presensi ditetapkan saat direview).";
+        }
+        if ($r['kept']) {
+            $msg .= " {$r['kept']} izin/sakit dipertahankan.";
+        }
+
+        return back()->with('success', $msg);
     }
 
     private function validated(Request $request): array
@@ -193,22 +207,36 @@ class ModuleController extends Controller
     }
 
     /**
-     * Field logbook dikirim sebagai array paralel: field_label[], field_type[], field_required[].
+     * Field logbook dikirim sebagai array paralel: field_key[], field_label[], field_type[], field_required[].
+     * Kunci field lama dipertahankan (label boleh diganti tanpa memutus jawaban yang sudah masuk);
+     * field baru mendapat kunci dari label, dan kunci ganda diberi akhiran agar tidak bertabrakan.
      */
     private function parseFields(Request $request): array
     {
+        $keys = $request->input('field_key', []);
         $labels = $request->input('field_label', []);
         $types = $request->input('field_type', []);
         $required = $request->input('field_required', []);
 
         $fields = [];
+        $used = [];
         foreach ($labels as $i => $label) {
             $label = trim((string) $label);
             if ($label === '') {
                 continue;
             }
+            $key = (string) ($keys[$i] ?? '');
+            if (! preg_match('/^[a-z0-9_]+$/', $key)) {
+                $key = \Illuminate\Support\Str::slug($label, '_') ?: 'field_' . $i;
+            }
+            $base = $key;
+            for ($n = 2; in_array($key, $used, true) || str_ends_with($key, '__name'); $n++) {
+                $key = $base . '_' . $n;
+            }
+            $used[] = $key;
+
             $fields[] = [
-                'key' => \Illuminate\Support\Str::slug($label, '_') ?: 'field_' . $i,
+                'key' => $key,
                 'label' => $label,
                 'type' => in_array($types[$i] ?? 'richtext', ['richtext', 'link', 'file'], true) ? $types[$i] : 'richtext',
                 'required' => isset($required[$i]) && $required[$i],

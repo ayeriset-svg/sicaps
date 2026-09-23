@@ -45,6 +45,11 @@
                     <h2 class="font-semibold text-slate-800">Anggota Tim ({{ $team->members->count() }}/{{ $maxMembers }})</h2>
                     @if($isLeader)<span class="text-xs text-slate-400">Anda ketua tim</span>@endif
                 </div>
+                @if($locked)
+                    <div class="mb-4 rounded-lg bg-slate-50 border border-slate-200 px-4 py-2 text-sm text-slate-600">
+                        🔒 Susunan anggota sudah <strong>terkunci</strong> karena Assessment 1 tim ini sudah mulai dinilai. Perubahan anggota hanya dapat dilakukan koordinator.
+                    </div>
+                @endif
                 <div class="space-y-2">
                     @foreach($team->members as $m)
                         <div class="flex items-center justify-between rounded-lg border border-slate-200 px-4 py-3">
@@ -54,7 +59,7 @@
                                 </p>
                                 <p class="text-sm text-slate-500">{{ $m->student->identity_number }} · {{ $m->role_label }}</p>
                             </div>
-                            @if($isLeader && $m->student_id !== $team->leader_id)
+                            @if($isLeader && ! $locked && $m->student_id !== $team->leader_id)
                                 <form method="POST" action="{{ route('team.members.remove', [$team, $m]) }}" onsubmit="return confirm('Hapus anggota ini?')">
                                     @csrf @method('DELETE')
                                     <button title="Hapus anggota" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50"><x-icon name="trash" /></button>
@@ -64,7 +69,7 @@
                     @endforeach
                 </div>
 
-                @if($isLeader && $team->members->count() < $maxMembers)
+                @if($isLeader && ! $locked && $team->members->count() < $maxMembers)
                     <div class="mt-4 pt-4 border-t border-slate-100">
                         <p class="text-xs text-slate-500 mb-2">➕ Tambah anggota — hanya mahasiswa <strong>kelas {{ $team->class_name ?? '-' }}</strong> yang dapat dipilih.</p>
                         @if($available->isEmpty())

@@ -16,6 +16,10 @@
     </form>
 </div>
 
+<datalist id="admin-role-suggestions">
+    @foreach(config('capstone.team_roles') as $r)<option value="{{ $r }}">@endforeach
+</datalist>
+
 <div class="bg-white rounded-2xl shadow-sm border border-rose-100 overflow-x-auto">
     <table class="min-w-full text-sm">
         <thead class="bg-rose-50/60 text-brand-dark/70 text-left">
@@ -57,7 +61,7 @@
 
                         {{-- Modal edit tim --}}
                         <div x-show="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
-                            <div class="bg-white rounded-xl p-6 w-full max-w-md">
+                            <div class="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                                 <h3 class="font-semibold mb-4">Edit Tim — {{ $team->team_name }}</h3>
                                 <form method="POST" action="{{ route('admin.teams.update', $team) }}" class="space-y-3">
                                     @csrf @method('PUT')
@@ -78,6 +82,39 @@
                                         <button class="rounded-lg bg-brand text-white px-4 py-2 text-sm">Simpan</button>
                                     </div>
                                 </form>
+
+                                {{-- Kelola anggota oleh koordinator (tetap bisa walau susunan tim terkunci untuk mahasiswa) --}}
+                                <div class="mt-5 pt-4 border-t border-slate-100">
+                                    <p class="text-xs font-semibold text-slate-600 mb-2">Anggota Tim ({{ $team->members->count() }}/{{ config('capstone.team_max_members') }})</p>
+                                    <ul class="space-y-1 mb-3">
+                                        @foreach($team->members as $m)
+                                            <li class="flex items-center justify-between gap-2 text-sm">
+                                                <span>{{ $m->student?->name }} <span class="text-xs text-slate-400">{{ $m->student?->identity_number }}</span>@if($m->student_id === $team->leader_id)<span class="ml-1 text-[11px] bg-rose-100 text-brand rounded px-1">Ketua</span>@endif</span>
+                                                @if($m->student_id !== $team->leader_id)
+                                                    <form method="POST" action="{{ route('admin.teams.members.remove', [$team, $m]) }}" onsubmit="return confirm('Keluarkan {{ $m->student?->name }} dari tim? Nilai akhirnya pada tim ini ikut dihapus.')">@csrf @method('DELETE')<button title="Keluarkan" class="p-1 rounded text-red-600 hover:bg-red-50"><x-icon name="trash" /></button></form>
+                                                @endif
+                                            </li>
+                                        @endforeach
+                                    </ul>
+                                    @php $cands = $availableByClass->get($team->class_name, collect()); @endphp
+                                    @if($team->members->count() < config('capstone.team_max_members'))
+                                        @if($cands->isEmpty())
+                                            <p class="text-xs text-slate-400">Tidak ada mahasiswa kelas {{ $team->class_name ?? '-' }} yang belum bertim.</p>
+                                        @else
+                                            <form method="POST" action="{{ route('admin.teams.members.add', $team) }}" class="space-y-2">
+                                                @csrf
+                                                <select name="student_id" required class="w-full rounded-lg border-slate-300 border px-3 py-2 text-sm">
+                                                    <option value="">— Tambah mahasiswa kelas {{ $team->class_name }} —</option>
+                                                    @foreach($cands as $s)<option value="{{ $s->id }}">{{ $s->identity_number }} — {{ $s->name }}</option>@endforeach
+                                                </select>
+                                                <div class="flex gap-2">
+                                                    <input name="assigned_role" list="admin-role-suggestions" required placeholder="Peran" class="flex-1 rounded-lg border-slate-300 border px-3 py-2 text-sm">
+                                                    <button class="rounded-lg border border-brand text-brand px-3 py-2 text-sm hover:bg-rose-50">Tambah</button>
+                                                </div>
+                                            </form>
+                                        @endif
+                                    @endif
+                                </div>
                             </div>
                         </div>
                     </td>

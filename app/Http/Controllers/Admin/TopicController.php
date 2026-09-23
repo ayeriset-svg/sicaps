@@ -85,6 +85,10 @@ class TopicController extends Controller
             'topic_review_note' => ['nullable', 'string'],
         ]);
 
+        if (! $team->topic_id) {
+            return back()->with('error', "Tim {$team->team_name} belum memilih/mengajukan topik, sehingga belum dapat direview.");
+        }
+
         $team->update($data);
 
         return back()->with('success', 'Status topik tim diperbarui.');

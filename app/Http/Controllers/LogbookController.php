@@ -25,7 +25,9 @@ class LogbookController extends Controller
         $ay = AcademicYear::active();
         abort_unless($ay, 404);
         $team = Auth::user()->activeTeam($ay->id);
-        abort_unless($team, 403, 'Anda harus tergabung dalam tim.');
+        if (! $team) {
+            return $this->redirectNoTeam();
+        }
 
         $modules = $ay->modules()->get();
         $moduleIds = $modules->pluck('id');
@@ -52,7 +54,9 @@ class LogbookController extends Controller
     {
         $ay = AcademicYear::active();
         $team = Auth::user()->activeTeam($ay?->id);
-        abort_unless($team, 403);
+        if (! $team) {
+            return $this->redirectNoTeam();
+        }
         abort_unless($module->academic_year_id === $ay->id, 404);
         // Modul (logbook/tugas) & assessment sama-sama dapat dibuka untuk melihat materi.
         abort_unless($module->isLogbook() || $module->type === 'assessment', 404, 'Modul tidak ditemukan.');
@@ -69,7 +73,7 @@ class LogbookController extends Controller
         $scheduleState = $module->scheduleState();
         // Boleh mengerjakan: modul dibuka & dalam jendela waktu + belum final + berhak.
         $finalStatuses = ['Approved', 'Rejected'];
-        $mayWork = $module->acceptsSubmission()
+        $mayWork = $module->acceptsWorkFor($logbook->status_approval)
             && ! in_array($logbook->status_approval, $finalStatuses, true)
             && ($isIndividual ? true : $isLeader);
         $locked = in_array($logbook->status_approval, $finalStatuses, true);
@@ -99,15 +103,18 @@ class LogbookController extends Controller
         $ay = AcademicYear::active();
         $team = Auth::user()->activeTeam($ay?->id);
         abort_unless($team, 403);
+        abort_unless($module->academic_year_id === $ay->id, 404);
         abort_unless($module->requiresSubmission(), 404, 'Modul ini tidak memiliki pengerjaan.');
-
-        // Gate #4: hanya bisa dikerjakan bila modul/tugas dibuka koordinator & dalam jendela waktu.
-        abort_unless($module->acceptsSubmission(), 403, 'Modul/tugas ini belum dibuka atau sudah melewati batas waktu (deadline).');
 
         // Izin pengerjaan: tugas individu = tiap anggota (isi miliknya); logbook tim = ketua saja.
         if (! $module->isIndividual()) {
             abort_unless(Auth::id() === $team->leader_id, 403, 'Hanya ketua tim yang dapat submit logbook tim.');
         }
+
+        // Gate #4: hanya bisa dikerjakan bila modul/tugas dibuka koordinator & dalam jendela waktu.
+        // Pengecualian: revisi ("Perlu Revisi") tetap boleh dikirim walau deadline lewat.
+        $current = $this->resolveLogbook($module, $team, Auth::user(), false);
+        abort_unless($module->acceptsWorkFor($current->status_approval), 403, 'Modul/tugas ini belum dibuka atau sudah melewati batas waktu (deadline).');
 
         $logbook = $this->resolveLogbook($module, $team, Auth::user(), true);
 
@@ -147,12 +154,9 @@ class LogbookController extends Controller
                 $payload[$key] = $request->input("fields.$key");
             } elseif ($type === 'file') {
                 if ($request->hasFile("files.$key")) {
-                    if (! empty($existing[$key])) {
-                        \Illuminate\Support\Facades\Storage::disk('local')->delete($existing[$key]);
-                    }
+                    // Berkas lama TIDAK dihapus: isi sebelumnya disimpan sebagai riwayat versi saat submit ulang.
                     $file = $request->file("files.$key");
-                    $safe = \Illuminate\Support\Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-                    $name = $safe . '-' . now()->format('YmdHis') . '.' . $file->getClientOriginalExtension();
+                    $name = \App\Support\UploadName::make($file, $mimes);
                     $payload[$key] = $file->storeAs("logbooks/{$team->id}", $name, 'local');
                     $payload[$key . '__name'] = $file->getClientOriginalName();
                 } else {
@@ -169,6 +173,13 @@ class LogbookController extends Controller
         $what = $module->isIndividual() ? 'Tugas' : 'Logbook';
 
         return redirect()->route('logbook.show', $module)->with('success', "{$what} disubmit & menunggu review.");
+    }
+
+    /** Logbook & tugas individu disimpan per tim, jadi mahasiswa wajib bertim dulu. */
+    private function redirectNoTeam()
+    {
+        return redirect()->route('team.index')->with('error',
+            'Anda belum tergabung dalam tim. Logbook tim maupun tugas individu baru dapat dikerjakan setelah Anda bergabung ke tim — buat tim (bila ketua) atau minta ketua menambahkan Anda.');
     }
 
     /**

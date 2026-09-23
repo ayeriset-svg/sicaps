@@ -11,27 +11,59 @@ use Illuminate\Support\Facades\Auth;
 
 /**
  * Finalisasi presensi untuk tugas individu yang "dihitung sebagai presensi kelas":
- *  PASS → HADIR; belum kumpul / lewat deadline / ditolak → ALPA.
+ *  PASS → HADIR; tidak mengumpulkan / ditolak → ALPA.
+ *  Sudah mengumpulkan tapi belum final direview (Pending / Perlu Revisi) → dibiarkan;
+ *  status presensinya ditetapkan saat review (lihat LogbookReviewController).
+ *  Izin/Sakit yang dicatat manual koordinator tidak pernah ditimpa menjadi ALPA.
  */
 class AssignmentAttendanceService
 {
-    /** Finalisasi satu modul (menandai present/absent seluruh mahasiswa target). */
-    public function finalize(Module $module): array
+    /** Status presensi manual yang tidak boleh ditimpa proses otomatis. */
+    public const PROTECTED_STATUSES = ['permit', 'sick'];
+
+    public function __construct(private GradeCalculationService $grades)
     {
+    }
+
+    /** Finalisasi satu modul (menandai present/absent seluruh mahasiswa target). */
+    public function finalize(Module $module, bool $recalculate = true): array
+    {
+        $result = ['present' => 0, 'absent' => 0, 'waiting' => 0, 'kept' => 0];
         if (! ($module->isIndividual() && $module->counts_as_attendance && $module->attendance_week && $module->attendance_session)) {
-            return ['present' => 0, 'absent' => 0];
+            return $result;
         }
 
         $students = User::where('role', 'mahasiswa')
             ->whereHas('memberships.team', fn ($q) => $q->where('academic_year_id', $module->academic_year_id))
             ->get();
-        $approvedIds = ModuleLogbook::where('module_id', $module->id)
-            ->where('status_approval', 'Approved')->whereNotNull('user_id')->pluck('user_id')->all();
+        $subs = ModuleLogbook::where('module_id', $module->id)->whereNotNull('user_id')
+            ->get(['user_id', 'status_approval', 'submitted_at'])->keyBy('user_id');
+        $existing = Attendance::where('academic_year_id', $module->academic_year_id)
+            ->where('week_number', $module->attendance_week)
+            ->where('session_number', $module->attendance_session)
+            ->pluck('status', 'student_id');
 
-        $present = 0;
-        $absent = 0;
+        $changed = [];
         foreach ($students as $s) {
-            $status = in_array($s->id, $approvedIds, true) ? 'present' : 'absent';
+            $sub = $subs[$s->id] ?? null;
+            $st = $sub?->status_approval;
+
+            if ($st === 'Approved') {
+                $status = 'present';
+            } elseif ($sub && $sub->submitted_at && in_array($st, ['Pending', 'Revision Needed'], true)) {
+                $result['waiting']++; // sudah kumpul, tunggu keputusan review
+
+                continue;
+            } else {
+                $status = 'absent'; // tidak mengumpulkan / ditolak
+            }
+
+            if ($status === 'absent' && in_array($existing[$s->id] ?? null, self::PROTECTED_STATUSES, true)) {
+                $result['kept']++; // izin/sakit manual dipertahankan
+
+                continue;
+            }
+
             Attendance::updateOrCreate(
                 [
                     'student_id' => $s->id,
@@ -41,12 +73,19 @@ class AssignmentAttendanceService
                 ],
                 ['status' => $status, 'recorded_by' => Auth::id()]
             );
-            $status === 'present' ? $present++ : $absent++;
+            $result[$status]++;
+            if (($existing[$s->id] ?? null) !== $status) {
+                $changed[] = $s->id;
+            }
         }
 
         $module->update(['attendance_finalized_at' => now()]);
 
-        return ['present' => $present, 'absent' => $absent];
+        if ($recalculate && $changed && $module->academicYear) {
+            $this->grades->recalculateStudentIds($changed, $module->academicYear);
+        }
+
+        return $result;
     }
 
     /**

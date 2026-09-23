@@ -49,6 +49,11 @@ class AcademicYearController extends Controller
 
     public function archive(AcademicYear $academicYear)
     {
+        // Tanpa tahun ajaran aktif, seluruh halaman mahasiswa tidak dapat dibuka.
+        if ($academicYear->is_active) {
+            return back()->with('error', "Tahun ajaran {$academicYear->label} sedang aktif. Aktifkan tahun ajaran lain terlebih dahulu sebelum mengarsipkannya.");
+        }
+
         $academicYear->update(['is_active' => false, 'is_archived' => true]);
 
         return back()->with('success', "Tahun ajaran {$academicYear->label} diarsipkan.");

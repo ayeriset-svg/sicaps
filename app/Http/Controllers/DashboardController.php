@@ -54,14 +54,26 @@ class DashboardController extends Controller
             $rows = Attendance::where('student_id', $user->id)->where('academic_year_id', $ay->id)->get();
             $totalSessions = (int) config('capstone.total_weeks', 16) * (int) config('capstone.sessions_per_week', 2);
             $present = $rows->where('status', 'present')->count();
+            $absent = $rows->where('status', 'absent')->count();
+            $recorded = $rows->count();
+
+            // Peringatan mengikuti aturan penalti yang diatur koordinator (bukan angka tetap).
+            $rules = $ay->penaltyRules()->get();
+            $currentRule = $rules->first(fn ($r) => $r->matches($absent) && $r->penalty_type !== 'none');
+            $nextRule = $rules->first(fn ($r) => $r->min_days > $absent && $r->penalty_type !== 'none');
+
             $attendance = [
                 'present' => $present,
                 'permit' => $rows->where('status', 'permit')->count(),
                 'sick' => $rows->where('status', 'sick')->count(),
-                'absent' => $rows->where('status', 'absent')->count(),
-                'recorded' => $rows->count(),
+                'absent' => $absent,
+                'recorded' => $recorded,
                 'total' => $totalSessions,
-                'percent' => $totalSessions ? round($present / $totalSessions * 100) : 0,
+                // Persentase dari sesi yang SUDAH tercatat (bukan 32 sesi penuh), agar tidak
+                // tampak rendah di awal semester.
+                'percent' => $recorded ? round($present / $recorded * 100) : null,
+                'current_rule' => $currentRule,
+                'next_rule' => $nextRule,
             ];
         }
 

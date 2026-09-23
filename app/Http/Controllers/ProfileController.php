@@ -6,6 +6,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
 {
@@ -37,8 +38,18 @@ class ProfileController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', Rule::unique('users', 'email')->ignore($user->id)],
-            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
+            // Aturan sama dengan aktivasi: min. 8 karakter, bukan NIM, & wajib sandi lama.
+            'current_password' => ['nullable', 'required_with:password', 'current_password'],
+            'password' => ['nullable', 'string', 'confirmed', Password::min(8)],
+        ], [
+            'current_password.required_with' => 'Masukkan kata sandi saat ini untuk mengganti kata sandi.',
+            'current_password.current_password' => 'Kata sandi saat ini tidak sesuai.',
         ]);
+
+        if (! empty($data['password']) && $user->identity_number
+            && strcasecmp($data['password'], (string) $user->identity_number) === 0) {
+            return back()->withErrors(['password' => 'Kata sandi baru tidak boleh sama dengan NIM/identitas Anda.']);
+        }
 
         $user->name = $data['name'];
         $user->email = $data['email'];

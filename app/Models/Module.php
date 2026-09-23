@@ -112,6 +112,23 @@ class Module extends Model
         return $this->requiresSubmission() && $this->scheduleState() === 'open';
     }
 
+    /**
+     * Revisi (status "Revision Needed") tetap boleh dikirim walau deadline lewat,
+     * selama modul masih dibuka koordinator & sudah melewati jadwal buka.
+     */
+    public function acceptsRevision(?string $status): bool
+    {
+        return $status === 'Revision Needed'
+            && $this->requiresSubmission()
+            && in_array($this->scheduleState(), ['open', 'ended'], true);
+    }
+
+    /** Boleh submit untuk submission dengan status tsb (pengerjaan normal atau revisi). */
+    public function acceptsWorkFor(?string $status): bool
+    {
+        return $this->acceptsSubmission() || $this->acceptsRevision($status);
+    }
+
     /** Sisa hari menuju deadline (bulat ke atas); null bila tak ada closes_at. */
     public function daysToDeadline(): ?int
     {

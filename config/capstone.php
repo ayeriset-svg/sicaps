@@ -24,6 +24,10 @@ return [
 
     'team_max_members' => 6,
 
+    // Batas aktivasi akun (hari). Akun yang belum mengganti sandi awal (NIM) dalam
+    // rentang ini tidak dapat login sampai sandinya direset koordinator.
+    'activation_days' => (int) env('CAPSTONE_ACTIVATION_DAYS', 7),
+
     'case_types' => [
         'jasa'       => 'Perusahaan Jasa',
         'dagang'     => 'Perusahaan Dagang',

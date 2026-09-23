@@ -8,6 +8,7 @@ use App\Models\AssessmentScore;
 use App\Models\AssessmentStage;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\GradeCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -48,11 +49,10 @@ class ScoreController extends Controller
         return view('admin.scores.index', compact('stages', 'stage', 'teams', 'existing', 'ay', 'classes', 'allTeams'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, GradeCalculationService $grades)
     {
         $ay = AcademicYear::active();
-        $stage = AssessmentStage::findOrFail($request->stage_id);
-        $team = Team::findOrFail($request->team_id);
+        abort_unless($ay, 404);
 
         $request->validate([
             'stage_id' => ['required', 'exists:assessment_stages,id'],
@@ -60,6 +60,10 @@ class ScoreController extends Controller
             'scores' => ['required', 'array'],       // criterion_id => score
             'scores.*' => ['nullable', 'numeric', 'min:0', 'max:100'],
         ]);
+
+        // Tahap & tim wajib berada pada tahun ajaran aktif yang sama.
+        $stage = AssessmentStage::where('academic_year_id', $ay->id)->findOrFail($request->stage_id);
+        $team = Team::where('academic_year_id', $ay->id)->findOrFail($request->team_id);
 
         $criterionIds = $stage->criteria->pluck('id')->all();
 
@@ -79,6 +83,8 @@ class ScoreController extends Controller
             );
         }
 
-        return back()->with('success', "Nilai {$stage->code} untuk tim {$team->team_name} tersimpan.");
+        $grades->recalculateTeam($team);
+
+        return back()->with('success', "Nilai {$stage->code} untuk tim {$team->team_name} tersimpan & nilai akhir anggota diperbarui.");
     }
 }

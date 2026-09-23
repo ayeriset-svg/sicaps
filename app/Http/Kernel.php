@@ -38,6 +38,8 @@ class Kernel extends HttpKernel
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\LogActivity::class,
+            \App\Http\Middleware\EnsureAccountUsable::class,
+            \App\Http\Middleware\ObserveModeReadOnly::class,
         ],
 
         'api' => [

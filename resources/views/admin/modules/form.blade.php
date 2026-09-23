@@ -141,6 +141,8 @@
         <div class="space-y-2">
             <template x-for="(f, i) in fields" :key="i">
                 <div class="flex items-center gap-2">
+                    {{-- Kunci field dipertahankan agar jawaban mahasiswa tidak "hilang" saat label diganti --}}
+                    <input type="hidden" :name="'field_key['+i+']'" :value="f.key || ''">
                     <input :name="'field_label['+i+']'" x-model="f.label" placeholder="Label field" class="flex-1 rounded-lg border-rose-200 border px-3 py-2 text-sm">
                     <select :name="'field_type['+i+']'" x-model="f.type" class="rounded-lg border-rose-200 border px-3 py-2 text-sm">
                         <option value="richtext">Teks + Gambar</option>

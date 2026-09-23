@@ -43,7 +43,10 @@
                     @switch($stt)
                         @case('open')<span class="text-xs rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 font-medium">🔓 Dibuka</span>@break
                         @case('scheduled')<span class="text-xs rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 font-medium">🗓️ Terjadwal</span>@break
-                        @case('ended')<span class="text-xs rounded-full bg-red-100 text-red-600 px-2 py-0.5 font-medium">⛔ Berakhir</span>@break
+                        @case('ended')
+                            @if($st === 'Revision Needed')<span class="text-xs rounded-full bg-pink-100 text-pink-700 px-2 py-0.5 font-medium">🔁 Revisi dibuka</span>
+                            @else<span class="text-xs rounded-full bg-red-100 text-red-600 px-2 py-0.5 font-medium">⛔ Berakhir</span>@endif
+                            @break
                         @default<span class="text-xs rounded-full bg-slate-100 text-slate-400 px-2 py-0.5 font-medium">🔒 Belum dibuka</span>
                     @endswitch
                     @if($stt==='open' && $dl!==null)

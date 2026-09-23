@@ -7,12 +7,14 @@ use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\ModuleLogbook;
 use App\Services\AiDetectionService;
+use App\Services\AssignmentAttendanceService;
+use App\Services\GradeCalculationService;
 use App\Services\HtmlSanitizer;
 use App\Services\LogbookWorkflowService;
 use App\Services\ProofreaderService;
+use App\Support\UploadName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
@@ -41,7 +43,10 @@ class LogbookReviewController extends Controller
             ->orderByDesc('submitted_at')
             ->get();
 
-        $modules = $ay->modules()->where('type', '!=', 'assessment')->orderBy('order_index')->get(['id', 'code', 'title']);
+        // Semua modul yang punya pengerjaan (termasuk assessment bersubmisi) atau sudah punya isian.
+        $modules = $ay->modules()
+            ->where(fn ($q) => $q->where('requires_submission', true)->orWhereHas('logbooks'))
+            ->orderBy('order_index')->get(['id', 'code', 'title']);
         $classes = \App\Models\User::where('role', 'mahasiswa')->whereNotNull('class_name')->distinct()->orderBy('class_name')->pluck('class_name');
 
         return view('admin.logbook-review.index', compact('logbooks', 'ay', 'tab', 'pendingCount', 'reviewedCount', 'modules', 'classes'));
@@ -63,7 +68,7 @@ class LogbookReviewController extends Controller
     }
 
     /** Simpan hasil edit isi logbook oleh koordinator (payload disanitasi; file ditangani). */
-    public function updateContent(Request $request, ModuleLogbook $logbook, HtmlSanitizer $sanitizer)
+    public function updateContent(Request $request, ModuleLogbook $logbook, HtmlSanitizer $sanitizer, LogbookWorkflowService $workflow)
     {
         $module = $logbook->module;
         $existing = $logbook->payload_json ?? [];
@@ -92,12 +97,9 @@ class LogbookReviewController extends Controller
                 $payload[$key] = $request->input("fields.$key");
             } elseif ($type === 'file') {
                 if ($request->hasFile("files.$key")) {
-                    if (! empty($existing[$key])) {
-                        Storage::disk('local')->delete($existing[$key]);
-                    }
+                    $workflow->deleteFileIfUnreferenced($logbook, $existing[$key] ?? null);
                     $file = $request->file("files.$key");
-                    $safe = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-                    $name = $safe . '-' . now()->format('YmdHis') . '.' . $file->getClientOriginalExtension();
+                    $name = UploadName::make($file, $mimes);
                     $payload[$key] = $file->storeAs("logbooks/{$logbook->team_id}", $name, 'local');
                     $payload[$key . '__name'] = $file->getClientOriginalName();
                 } else {
@@ -114,22 +116,32 @@ class LogbookReviewController extends Controller
         return redirect()->route('admin.logbook-review.show', $logbook)->with('success', 'Isi logbook diperbarui oleh koordinator.');
     }
 
-    public function review(Request $request, ModuleLogbook $logbook, LogbookWorkflowService $workflow)
+    public function review(Request $request, ModuleLogbook $logbook, LogbookWorkflowService $workflow, GradeCalculationService $grades)
     {
         $data = $request->validate([
             'status_approval' => ['required', Rule::in(['Approved', 'Revision Needed', 'Rejected'])],
             'feedback' => ['nullable', 'string'],
         ]);
 
+        // Belum ada isian = belum ada yang bisa direview (mencegah PASS + HADIR tanpa pengumpulan).
+        if ($logbook->payload_json === null || $logbook->status_approval === 'Not Started') {
+            return back()->with('error', 'Logbook/tugas ini belum dikumpulkan, sehingga belum dapat direview.');
+        }
+
+        $previousStatus = $logbook->status_approval;
         $workflow->review($logbook, $data['status_approval'], $data['feedback'] ?? null, Auth::user());
 
         $fresh = $logbook->fresh('module');
         $msg = 'Review logbook disimpan.';
-        if ($this->syncAttendance($fresh)) {
-            $msg = match ($data['status_approval']) {
-                'Approved' => 'Review disimpan. Tugas individu PASS → mahasiswa otomatis ditandai HADIR pada presensi.',
-                'Rejected' => 'Review disimpan. Tugas DITOLAK → mahasiswa otomatis ditandai ALPA pada presensi.',
-                default => 'Review disimpan. Penanda hadir otomatis (jika ada) dibatalkan.',
+        if ($this->syncAttendance($fresh, $previousStatus)) {
+            $ay = $fresh->module->academicYear;
+            if ($ay) {
+                $grades->recalculateStudentIds([$fresh->user_id], $ay);
+            }
+            $msg = match (true) {
+                $data['status_approval'] === 'Approved' => 'Review disimpan. Tugas individu PASS → mahasiswa otomatis ditandai HADIR pada presensi.',
+                $data['status_approval'] === 'Rejected' && (bool) $fresh->module->counts_as_attendance => 'Review disimpan. Tugas DITOLAK → mahasiswa ditandai ALPA pada presensi (izin/sakit manual tetap dipertahankan).',
+                default => 'Review disimpan. Penanda hadir otomatis dari PASS sebelumnya dibatalkan.',
             };
         }
 
@@ -137,11 +149,15 @@ class LogbookReviewController extends Controller
     }
 
     /**
-     * Sinkronkan presensi untuk TUGAS INDIVIDU: PASS → hadir pada slot presensi
-     * yang ditentukan modul; selain PASS → penanda hadir otomatis dibatalkan.
-     * Return true bila modul ini memang memicu presensi otomatis.
+     * Sinkronkan presensi untuk TUGAS INDIVIDU pada slot presensi modul:
+     *  - PASS → HADIR.
+     *  - Ditolak → ALPA, hanya bila modul "dihitung sebagai presensi kelas"
+     *    (izin/sakit manual tidak ditimpa).
+     *  - Status dibatalkan dari PASS → penanda HADIR otomatis dicabut
+     *    (hanya bila sebelumnya memang PASS, agar isian manual tidak terhapus).
+     * Return true bila presensi mahasiswa mungkin berubah.
      */
-    private function syncAttendance(ModuleLogbook $logbook): bool
+    private function syncAttendance(ModuleLogbook $logbook, ?string $previousStatus): bool
     {
         $module = $logbook->module;
         if (! $module || ! $module->isIndividual() || ! $logbook->user_id
@@ -155,18 +171,31 @@ class LogbookReviewController extends Controller
             'week_number' => $module->attendance_week,
             'session_number' => $module->attendance_session,
         ];
+        $status = $logbook->status_approval;
+        $wasApproved = $previousStatus === 'Approved';
 
-        if ($logbook->status_approval === 'Approved') {
+        if ($status === 'Approved') {
             Attendance::updateOrCreate($slot, ['status' => 'present', 'recorded_by' => Auth::id()]);
-        } elseif ($logbook->status_approval === 'Rejected') {
-            // Tugas ditolak → ALPA.
-            Attendance::updateOrCreate($slot, ['status' => 'absent', 'recorded_by' => Auth::id()]);
-        } else {
-            // Revision Needed / lainnya → batalkan penanda "present" (belum final).
-            Attendance::where($slot)->where('status', 'present')->delete();
+
+            return true;
         }
 
-        return true;
+        if ($status === 'Rejected' && $module->counts_as_attendance) {
+            $current = Attendance::where($slot)->value('status');
+            if (! in_array($current, AssignmentAttendanceService::PROTECTED_STATUSES, true)) {
+                Attendance::updateOrCreate($slot, ['status' => 'absent', 'recorded_by' => Auth::id()]);
+            }
+
+            return true;
+        }
+
+        if ($wasApproved) {
+            Attendance::where($slot)->where('status', 'present')->delete();
+
+            return true;
+        }
+
+        return false;
     }
 
     /**

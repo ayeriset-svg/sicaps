@@ -122,6 +122,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/teams/{team}/hki', [AdminTeamController::class, 'toggleHki'])->name('teams.hki');
         Route::put('/teams/{team}', [AdminTeamController::class, 'update'])->name('teams.update');
         Route::delete('/teams/{team}', [AdminTeamController::class, 'destroy'])->name('teams.destroy');
+        Route::post('/teams/{team}/members', [AdminTeamController::class, 'addMember'])->name('teams.members.add');
+        Route::delete('/teams/{team}/members/{member}', [AdminTeamController::class, 'removeMember'])->name('teams.members.remove');
 
         // Capaian pembelajaran (PLO/CLO/Sub-CLO)
         Route::get('/outcomes', [OutcomeController::class, 'index'])->name('outcomes.index');

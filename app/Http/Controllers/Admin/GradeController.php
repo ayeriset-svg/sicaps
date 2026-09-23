@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
 use App\Models\FinalGrade;
+use App\Services\AssignmentAttendanceService;
 use App\Services\GradeCalculationService;
 use App\Support\Xlsx;
 use Illuminate\Http\Request;
@@ -67,25 +68,30 @@ class GradeController extends Controller
 
     private function grades(AcademicYear $ay, ?string $class)
     {
+        // Filter kelas mengikuti kelas TIM (kelas ketua) — konsisten dengan Review, Topik, & Input Nilai.
         return FinalGrade::with('student')
             ->where('academic_year_id', $ay->id)
-            ->when($class, fn ($q) => $q->whereHas('student', fn ($s) => $s->where('class_name', $class)))
+            ->when($class, fn ($q) => $q->whereHas('student.memberships.team', fn ($t) => $t
+                ->where('academic_year_id', $ay->id)
+                ->whereHas('leader', fn ($l) => $l->where('class_name', $class))))
             ->get()
             ->sortByDesc(fn ($g) => $g->effective_score)
             ->values();
     }
 
-    public function recalculate(GradeCalculationService $service)
+    public function recalculate(GradeCalculationService $service, AssignmentAttendanceService $assignmentAttendance)
     {
         $ay = AcademicYear::active();
         abort_unless($ay, 404);
 
+        // Finalisasi presensi tugas yang deadline-nya lewat dulu, agar hari alpa akurat.
+        $assignmentAttendance->finalizeDue($ay);
         $count = $service->recalculateAll($ay);
 
         return back()->with('success', "Rekalkulasi selesai untuk {$count} mahasiswa.");
     }
 
-    public function override(Request $request, FinalGrade $grade)
+    public function override(Request $request, FinalGrade $grade, GradeCalculationService $service)
     {
         $data = $request->validate([
             'override_score' => ['nullable', 'numeric', 'min:0', 'max:100'],
@@ -96,6 +102,14 @@ class GradeController extends Controller
             'override_score' => $data['override_score'] ?? null,
             'override_note' => $data['override_note'] ?? null,
         ]);
+
+        // Huruf indeks mengikuti nilai efektif (override bila ada).
+        $ay = $grade->academicYear;
+        if ($ay && $grade->student?->activeTeam($ay->id)) {
+            $service->recalculateStudent($grade->student, $ay);
+        } else {
+            $grade->update(['grade_letter' => $service->gradeLetter((float) ($grade->override_score ?? $grade->final_score))]);
+        }
 
         return back()->with('success', 'Override nilai disimpan.');
     }

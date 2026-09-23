@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AcademicYear;
 use App\Models\AssessmentCriterion;
 use App\Models\AssessmentStage;
+use App\Services\GradeCalculationService;
 use Illuminate\Http\Request;
 
 class AssessmentStageController extends Controller
@@ -30,8 +31,9 @@ class AssessmentStageController extends Controller
         ]);
 
         $stage->update($data);
+        $this->recalculate($stage->academicYear);
 
-        return back()->with('success', 'Bobot stage diperbarui. Jalankan rekalkulasi nilai.');
+        return back()->with('success', 'Bobot stage diperbarui & nilai akhir dihitung ulang.');
     }
 
     /**
@@ -51,14 +53,25 @@ class AssessmentStageController extends Controller
             'name' => $data['name'],
             'order_index' => ($stage->criteria()->max('order_index') ?? 0) + 1,
         ]);
+        $this->recalculate($stage->academicYear);
 
         return back()->with('success', 'Kriteria ditambahkan.');
     }
 
     public function destroyCriterion(AssessmentCriterion $criterion)
     {
+        $ay = $criterion->stage?->academicYear;
         $criterion->delete();
+        $this->recalculate($ay);
 
         return back()->with('success', 'Kriteria dihapus.');
+    }
+
+    /** Bobot/kriteria berubah → nilai akhir seluruh mahasiswa dihitung ulang. */
+    private function recalculate(?AcademicYear $ay): void
+    {
+        if ($ay) {
+            app(GradeCalculationService::class)->recalculateAll($ay);
+        }
     }
 }

@@ -35,8 +35,50 @@ class GradeCalculationService
             $this->recalculateStudent($student, $ay, $stages, $rules);
         }
 
+        // Nilai hasil hitung milik mahasiswa yang sudah tidak bertim (tim dihapus /
+        // dikeluarkan) dibersihkan. Nilai histori hasil import (tanpa breakdown) tetap aman.
+        FinalGrade::where('academic_year_id', $ay->id)
+            ->whereNotNull('breakdown_json')
+            ->whereNotIn('student_id', $students->pluck('id'))
+            ->delete();
+
         return $students->count();
     }
+
+    /** Rekalkulasi sebagian mahasiswa (mis. anggota satu tim) setelah data nilai/presensi berubah. */
+    public function recalculateStudentIds(iterable $studentIds, AcademicYear $ay): void
+    {
+        $stages = $ay->stages()->with('criteria')->get();
+        $rules = $ay->penaltyRules()->get();
+
+        foreach (User::whereIn('id', collect($studentIds)->all())->get() as $student) {
+            if ($student->activeTeam($ay->id)) {
+                $this->recalculateStudent($student, $ay, $stages, $rules);
+            }
+        }
+    }
+
+    /** Rekalkulasi seluruh anggota sebuah tim. */
+    public function recalculateTeam(Team $team): void
+    {
+        $ay = $team->academicYear;
+        if ($ay) {
+            $this->recalculateStudentIds($team->members()->pluck('student_id'), $ay);
+        }
+    }
+
+    /**
+     * Hapus nilai hasil hitung mahasiswa pada tahun ajaran tsb (dipakai saat
+     * mahasiswa dikeluarkan dari tim / tim dihapus).
+     */
+    public function forgetStudents(iterable $studentIds, int $academicYearId): void
+    {
+        FinalGrade::where('academic_year_id', $academicYearId)
+            ->whereIn('student_id', collect($studentIds)->all())
+            ->whereNotNull('breakdown_json')
+            ->delete();
+    }
+
 
     public function recalculateStudent(User $student, AcademicYear $ay, $stages = null, $rules = null): FinalGrade
     {
@@ -50,6 +92,7 @@ class GradeCalculationService
 
         foreach ($stages as $stage) {
             $groupScore = $this->groupRubricScore($stage, $team);
+            $scoredCriteria = $this->scoredCriteriaCount($stage, $team);
             $peerWeight = (float) $stage->peer_weight_percentage / 100;
             $peerScore = $this->peerAverage($stage, $student, $team);
             $hasPeer = $peerScore !== null;
@@ -72,6 +115,9 @@ class GradeCalculationService
                 'peer_score' => $hasPeer ? round($peerScore, 2) : null,
                 'stage_score' => $stageScore,
                 'weighted' => $weighted,
+                // Penanda "belum dinilai" untuk tampilan (kriteria kosong dihitung 0).
+                'scored_criteria' => $scoredCriteria,
+                'total_criteria' => $stage->criteria->count(),
             ];
         }
         $na = round($na, 2);
@@ -96,6 +142,13 @@ class GradeCalculationService
 
         $finalScore = $forceFail ? 0.0 : max(0, min(100, $na - $penaltyPoints));
 
+        // Override koordinator (bila ada) menentukan huruf indeks.
+        $override = FinalGrade::where('student_id', $student->id)
+            ->where('academic_year_id', $ay->id)->value('override_score');
+        $letter = $override !== null
+            ? $this->gradeLetter((float) $override)
+            : ($forceFail ? 'E' : $this->gradeLetter($finalScore));
+
         return FinalGrade::updateOrCreate(
             ['student_id' => $student->id, 'academic_year_id' => $ay->id],
             [
@@ -105,10 +158,21 @@ class GradeCalculationService
                 'penalty_points' => $penaltyPoints,
                 'penalty_level' => $penaltyLevel,
                 'final_score' => $finalScore,
-                'grade_letter' => $forceFail ? 'E' : $this->gradeLetter($finalScore),
+                'grade_letter' => $letter,
                 'calculated_at' => now(),
             ]
         );
+    }
+
+    /** Jumlah kriteria stage yang sudah diberi nilai untuk tim. */
+    public function scoredCriteriaCount(AssessmentStage $stage, ?Team $team): int
+    {
+        if (! $team || $stage->criteria->isEmpty()) {
+            return 0;
+        }
+
+        return AssessmentScore::whereIn('criterion_id', $stage->criteria->pluck('id'))
+            ->where('team_id', $team->id)->count();
     }
 
     /**

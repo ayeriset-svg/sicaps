@@ -48,6 +48,23 @@ class Team extends Model
         return $this->hasMany(AssessmentScore::class);
     }
 
+    /**
+     * Susunan anggota terkunci untuk mahasiswa begitu Assessment pertama (A1)
+     * tim ini mulai dinilai; setelahnya hanya koordinator yang dapat mengubah.
+     */
+    public function isMembershipLocked(): bool
+    {
+        $firstStage = AssessmentStage::where('academic_year_id', $this->academic_year_id)
+            ->orderBy('order_index')->first();
+        if (! $firstStage) {
+            return false;
+        }
+
+        return AssessmentScore::where('team_id', $this->id)
+            ->whereIn('criterion_id', $firstStage->criteria()->pluck('id'))
+            ->exists();
+    }
+
     public function studentUsers()
     {
         return $this->members()->with('student')->get()->pluck('student')->filter();

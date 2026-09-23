@@ -114,8 +114,7 @@ class ManualBookController extends Controller
                 Storage::disk('local')->delete($book->file_path);
             }
             $file = $request->file('file');
-            $safe = Str::slug(pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME));
-            $name = $safe . '-' . now()->format('YmdHis') . '.' . $file->getClientOriginalExtension();
+            $name = \App\Support\UploadName::make($file, config('capstone.manual_file.mimes', ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'xls', 'xlsx', 'png', 'jpg', 'jpeg', 'zip']));
             $book->update([
                 'file_path' => $file->storeAs('manual-books', $name, 'local'),
                 'file_name' => $file->getClientOriginalName(),

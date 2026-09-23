@@ -75,6 +75,16 @@ class UserController extends Controller
         }
         $data['is_active'] = $request->boolean('is_active');
 
+        // Cegah terkuncinya akses admin: akun sendiri tidak boleh diturunkan/dinonaktifkan,
+        // dan superadmin aktif terakhir harus tetap ada.
+        $losesAdmin = $user->role === 'superadmin' && ($data['role'] !== 'superadmin' || ! $data['is_active']);
+        if ($losesAdmin && $user->id === auth()->id()) {
+            return back()->with('error', 'Tidak dapat menurunkan role atau menonaktifkan akun Anda sendiri.');
+        }
+        if ($losesAdmin && ! $this->hasOtherActiveSuperadmin($user)) {
+            return back()->with('error', 'Minimal harus ada satu superadmin aktif. Tambahkan superadmin lain terlebih dahulu.');
+        }
+
         $user->update($data);
 
         return back()->with('success', 'Data user diperbarui.');
@@ -83,9 +93,23 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         abort_if($user->id === auth()->id(), 422, 'Tidak dapat menghapus akun sendiri.');
+        if ($user->role === 'superadmin' && ! $this->hasOtherActiveSuperadmin($user)) {
+            return back()->with('error', 'Minimal harus ada satu superadmin aktif.');
+        }
+        // Sama seperti Master Mahasiswa: tim ikut terhapus (cascade) bila ketuanya dihapus,
+        // beserta logbook, nilai, & presensi seluruh anggota — maka dicegah.
+        if ($user->ledTeams()->exists() || $user->memberships()->exists()) {
+            return back()->with('error', "{$user->name} masih tergabung dalam tim, sehingga tidak dapat dihapus. Keluarkan dari tim / hapus timnya terlebih dahulu.");
+        }
         $user->delete();
 
         return back()->with('success', 'User dihapus.');
+    }
+
+    private function hasOtherActiveSuperadmin(User $except): bool
+    {
+        return User::where('role', 'superadmin')->where('is_active', true)
+            ->whereKeyNot($except->id)->exists();
     }
 
     /**

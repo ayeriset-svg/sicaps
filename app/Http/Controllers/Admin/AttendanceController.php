@@ -7,6 +7,7 @@ use App\Models\AcademicYear;
 use App\Models\Attendance;
 use App\Models\Team;
 use App\Models\User;
+use App\Services\GradeCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -29,7 +30,10 @@ class AttendanceController extends Controller
 
         $students = User::where('role', 'mahasiswa')
             ->whereHas('memberships.team', fn ($q) => $q->where('academic_year_id', $ay->id))
-            ->when($request->filled('class'), fn ($q) => $q->where('class_name', $request->class))
+            // Filter kelas mengikuti kelas TIM (kelas ketua), konsisten dengan dropdown Kelompok.
+            ->when($request->filled('class'), fn ($q) => $q->whereHas('memberships.team', fn ($t) => $t
+                ->where('academic_year_id', $ay->id)
+                ->whereHas('leader', fn ($l) => $l->where('class_name', $request->class))))
             ->when($memberIds !== null, fn ($q) => $q->whereIn('id', $memberIds ?: [0]))
             ->orderBy('class_name')->orderBy('name')->get();
 
@@ -57,10 +61,12 @@ class AttendanceController extends Controller
         return view('admin.attendance.index', compact('students', 'classes', 'allTeams', 'ay', 'totalWeeks', 'sessions', 'matrix', 'absentDays'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, GradeCalculationService $grades)
     {
         $ay = AcademicYear::active();
         abort_unless($ay, 404);
+        // Hari alpa memengaruhi penalti → nilai akhir mahasiswa diperbarui setelah presensi disimpan.
+        $recalc = fn () => $grades->recalculateStudentIds([(int) $request->input('student_id')], $ay);
 
         $data = $request->validate([
             'student_id' => ['required', 'exists:users,id'],
@@ -77,6 +83,7 @@ class AttendanceController extends Controller
                 'week_number' => $data['week_number'],
                 'session_number' => $data['session_number'],
             ])->delete();
+            $recalc();
 
             return back()->with('success', 'Presensi dikosongkan.');
         }
@@ -90,6 +97,7 @@ class AttendanceController extends Controller
             ],
             ['status' => $data['status'], 'recorded_by' => Auth::id()]
         );
+        $recalc();
 
         return back()->with('success', 'Presensi disimpan.');
     }

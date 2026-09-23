@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\AssessmentStage;
 use App\Models\PeerEvaluation;
+use App\Services\GradeCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -19,7 +20,9 @@ class PeerEvaluationController extends Controller
         abort_unless($ay, 404);
         $user = Auth::user();
         $team = $user->activeTeam($ay->id);
-        abort_unless($team, 403, 'Anda harus tergabung dalam tim.');
+        if (! $team) {
+            return redirect()->route('team.index')->with('error', 'Anda belum tergabung dalam tim — Peer 180° hanya untuk sesama anggota tim.');
+        }
 
         $team->load('members.student');
         $members = $team->members->pluck('student')->filter()->values();
@@ -37,7 +40,7 @@ class PeerEvaluationController extends Controller
         return view('peer.index', compact('team', 'members', 'stages', 'existing', 'criteria', 'user'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, GradeCalculationService $grades)
     {
         $ay = AcademicYear::active();
         $user = Auth::user();
@@ -55,6 +58,7 @@ class PeerEvaluationController extends Controller
         ]);
 
         $stage = AssessmentStage::findOrFail($data['stage_id']);
+        abort_unless((int) $stage->academic_year_id === (int) $ay->id, 404);
         abort_unless($stage->peer_open, 403, 'Peer 180° untuk tahap ini belum dibuka.');
         abort_unless(
             $team->members()->where('student_id', $data['evaluatee_id'])->exists(),
@@ -68,6 +72,7 @@ class PeerEvaluationController extends Controller
             ['stage_id' => $stage->id, 'evaluator_id' => $user->id, 'evaluatee_id' => $data['evaluatee_id']],
             array_merge($data, ['team_id' => $team->id, 'final_peer_score' => $final])
         );
+        $grades->recalculateStudentIds([(int) $data['evaluatee_id']], $ay);
 
         return back()->with('success', 'Penilaian peer tersimpan.');
     }

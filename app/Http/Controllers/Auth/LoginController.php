@@ -39,11 +39,10 @@ class LoginController extends Controller
             ]);
         }
 
-        if (! $request->user()->is_active) {
+        // Akun nonaktif / melewati batas aktivasi (sandi awal NIM belum diganti) ditolak.
+        if ($reason = $request->user()->accessBlockedReason()) {
             Auth::logout();
-            throw ValidationException::withMessages([
-                'login' => 'Akun Anda tidak aktif. Hubungi koordinator.',
-            ]);
+            throw ValidationException::withMessages(['login' => $reason]);
         }
 
         $request->session()->regenerate();

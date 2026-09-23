@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ModuleLogbook;
 use App\Models\User;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Mengelola siklus status logbook (Pending, Revision Needed, Approved) dan
@@ -58,6 +59,24 @@ class LogbookWorkflowService
         }
 
         return $logbook;
+    }
+
+    /**
+     * Hapus berkas lama hanya bila tidak lagi dirujuk riwayat versi
+     * (agar tautan berkas pada riwayat revisi tetap berfungsi).
+     */
+    public function deleteFileIfUnreferenced(ModuleLogbook $logbook, ?string $path): void
+    {
+        if (! $path) {
+            return;
+        }
+
+        $referenced = $logbook->versions()->get(['payload_json'])
+            ->contains(fn ($v) => in_array($path, (array) $v->payload_json, true));
+
+        if (! $referenced) {
+            Storage::disk('local')->delete($path);
+        }
     }
 
     public function snapshot(ModuleLogbook $logbook, User $actor): void

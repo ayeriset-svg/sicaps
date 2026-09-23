@@ -106,8 +106,10 @@
                     <td class="px-5 py-3">{{ $s->angkatan ?? '—' }}</td>
                     <td class="px-5 py-3">{{ $s->class_name ?? '—' }}</td>
                     <td class="px-5 py-3">
-                        @if($s->must_change_password)
-                            <span class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-0.5 text-xs font-semibold">⏳ Belum Aktivasi</span>
+                        @if($s->activationExpired())
+                            <span class="inline-flex items-center rounded-full border border-red-200 bg-red-50 text-red-700 px-2.5 py-0.5 text-xs font-semibold" title="Batas aktivasi {{ config('capstone.activation_days') }} hari terlewati. Reset sandi (Edit → isi sandi baru, mis. NIM) untuk membuka kembali.">⛔ Aktivasi Kedaluwarsa</span>
+                        @elseif($s->must_change_password)
+                            <span class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-0.5 text-xs font-semibold" title="Batas aktivasi: {{ $s->activationDeadline()?->translatedFormat('d M Y H:i') }}">⏳ Belum Aktivasi</span>
                         @else
                             <span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-2.5 py-0.5 text-xs font-semibold">✓ Aktif</span>
                         @endif

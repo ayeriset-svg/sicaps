@@ -74,7 +74,8 @@
                         </a>
                     @else
                         <a href="{{ route('logbook.show', $mod) }}" class="block rounded-lg border p-3 text-center hover:shadow transition
-                            {{ $st==='Approved' ? 'border-green-300 bg-green-50' : ($st==='Revision Needed' ? 'border-orange-300 bg-orange-50' : ($st==='Pending' ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white')) }}">
+                            {{ $st==='Approved' ? 'border-green-300 bg-green-50' : ($st==='Rejected' ? 'border-red-300 bg-red-50' : ($st==='Revision Needed' ? 'border-orange-300 bg-orange-50' : ($st==='Pending' ? 'border-amber-300 bg-amber-50' : 'border-slate-200 bg-white'))) }}"
+                            title="{{ ['Approved'=>'Disetujui','Rejected'=>'Ditolak','Revision Needed'=>'Perlu Revisi','Pending'=>'Menunggu Review'][$st] ?? 'Belum dikerjakan' }}">
                             <span class="block text-xs text-slate-400">{{ $mod->week_label }}</span>
                             <span class="block font-semibold text-slate-700 text-sm">{{ $mod->code }}</span>
                         </a>
@@ -96,21 +97,31 @@
             </dl>
         </div>
         @if($attendance)
-            @php $pc = $attendance['percent']; $pcol = $pc>=80?'emerald':($pc>=60?'amber':'red'); @endphp
+            @php $pc = $attendance['percent']; $pcol = $pc === null ? 'slate' : ($pc>=80?'emerald':($pc>=60?'amber':'red')); @endphp
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
                 <h2 class="font-semibold text-slate-800 mb-3">🗓️ Rekap Presensi</h2>
                 <div class="flex items-center gap-4 mb-3">
-                    <div class="text-3xl font-extrabold text-{{ $pcol }}-600">{{ $pc }}%</div>
-                    <div class="text-xs text-slate-500">Kehadiran<br>({{ $attendance['present'] }} dari {{ $attendance['total'] }} sesi)</div>
+                    <div class="text-3xl font-extrabold text-{{ $pcol }}-600">{{ $pc === null ? '—' : $pc.'%' }}</div>
+                    <div class="text-xs text-slate-500">Kehadiran<br>({{ $attendance['present'] }} hadir dari {{ $attendance['recorded'] }} sesi tercatat · total {{ $attendance['total'] }} sesi)</div>
                 </div>
-                <div class="h-2 rounded-full bg-slate-200 overflow-hidden mb-3"><div class="h-full bg-{{ $pcol }}-500" style="width: {{ $pc }}%"></div></div>
+                <div class="h-2 rounded-full bg-slate-200 overflow-hidden mb-3"><div class="h-full bg-{{ $pcol }}-500" style="width: {{ $pc ?? 0 }}%"></div></div>
                 <div class="grid grid-cols-4 gap-1 text-center text-xs">
                     <div class="rounded-lg bg-emerald-50 py-1.5"><span class="block font-bold text-emerald-700">{{ $attendance['present'] }}</span>Hadir</div>
                     <div class="rounded-lg bg-sky-50 py-1.5"><span class="block font-bold text-sky-700">{{ $attendance['permit'] }}</span>Izin</div>
                     <div class="rounded-lg bg-amber-50 py-1.5"><span class="block font-bold text-amber-700">{{ $attendance['sick'] }}</span>Sakit</div>
                     <div class="rounded-lg bg-red-50 py-1.5"><span class="block font-bold text-red-700">{{ $attendance['absent'] }}</span>Alpa</div>
                 </div>
-                @if($attendance['absent'] > 10)<p class="mt-2 text-[11px] text-red-600">⚠️ Alpa &gt; 10 hari berisiko nilai E.</p>@endif
+                <p class="mt-2 text-[11px] text-slate-400">Izin &amp; sakit tidak dihitung sebagai alpa.</p>
+                @php $cr = $attendance['current_rule']; $nr = $attendance['next_rule']; @endphp
+                @if($cr)
+                    <p class="mt-1 text-[11px] text-red-600 font-medium">⚠️ {{ $attendance['absent'] }} hari alpa — kena penalti {{ $cr->label ? '"'.$cr->label.'"' : '' }}: {{ $cr->penalty_type === 'fail' ? 'nilai E (tidak lulus)' : '−'.number_format($cr->deduction_points,0).' poin dari nilai akhir' }}.</p>
+                @endif
+                @if($nr)
+                    @php $left = $nr->min_days - $attendance['absent']; @endphp
+                    <p class="mt-1 text-[11px] {{ $left <= 2 ? 'text-amber-700' : 'text-slate-500' }}">
+                        {{ $left <= 2 ? '⚠️ ' : '' }}{{ $left }} hari alpa lagi → {{ $nr->penalty_type === 'fail' ? 'nilai E (tidak lulus)' : '−'.number_format($nr->deduction_points,0).' poin' }}.
+                    </p>
+                @endif
             </div>
         @endif
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">

@@ -26,6 +26,11 @@
                 <label class="block text-sm font-medium mb-1">Email</label>
                 <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="w-full rounded-lg border-rose-200 border px-3 py-2">
             </div>
+            <div>
+                <label class="block text-sm font-medium mb-1">Password Saat Ini</label>
+                <input type="password" name="current_password" autocomplete="current-password" placeholder="wajib diisi bila mengganti password" class="w-full rounded-lg border-rose-200 border px-3 py-2">
+                <p class="text-xs text-slate-400 mt-1">Password baru minimal 8 karakter dan tidak boleh sama dengan NIM.</p>
+            </div>
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-sm font-medium mb-1">Password Baru</label>

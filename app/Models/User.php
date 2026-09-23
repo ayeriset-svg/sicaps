@@ -36,6 +36,40 @@ class User extends Authenticatable
         return $this->role === 'mahasiswa';
     }
 
+    /**
+     * Batas aktivasi: akun yang masih wajib ganti sandi awal hanya dapat dipakai
+     * selama N hari sejak dibuat / terakhir direset koordinator (updated_at).
+     */
+    public function activationDeadline(): ?\Illuminate\Support\Carbon
+    {
+        if (! $this->must_change_password) {
+            return null;
+        }
+        $since = $this->updated_at ?? $this->created_at;
+
+        return $since?->copy()->addDays((int) config('capstone.activation_days', 7));
+    }
+
+    public function activationExpired(): bool
+    {
+        $deadline = $this->activationDeadline();
+
+        return $deadline !== null && now()->gt($deadline);
+    }
+
+    /** Pesan penolakan akses bila akun tidak dapat dipakai (null = boleh). */
+    public function accessBlockedReason(): ?string
+    {
+        if (! $this->is_active) {
+            return 'Akun Anda tidak aktif. Hubungi koordinator.';
+        }
+        if ($this->activationExpired()) {
+            return 'Batas waktu aktivasi akun telah habis. Hubungi koordinator untuk mereset kata sandi Anda.';
+        }
+
+        return null;
+    }
+
     public function memberships(): HasMany
     {
         return $this->hasMany(TeamMember::class, 'student_id');

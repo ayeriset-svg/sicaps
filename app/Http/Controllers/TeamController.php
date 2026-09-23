@@ -6,12 +6,15 @@ use App\Models\AcademicYear;
 use App\Models\Team;
 use App\Models\TeamMember;
 use App\Models\User;
+use App\Services\GradeCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class TeamController extends Controller
 {
+    private const LOCKED_MESSAGE = 'Susunan anggota tim sudah terkunci karena Assessment 1 tim ini sudah mulai dinilai. Hubungi koordinator untuk perubahan anggota.';
+
     public function index()
     {
         $user = Auth::user();
@@ -31,7 +34,9 @@ class TeamController extends Controller
                 ->orderBy('name')->get();
         }
 
-        return view('team.index', compact('team', 'ay', 'user', 'available'));
+        $locked = $team?->isMembershipLocked() ?? false;
+
+        return view('team.index', compact('team', 'ay', 'user', 'available', 'locked'));
     }
 
     public function store(Request $request)
@@ -73,6 +78,9 @@ class TeamController extends Controller
     public function addMember(Request $request, Team $team)
     {
         $this->authorizeLeader($team);
+        if ($team->isMembershipLocked()) {
+            return back()->with('error', self::LOCKED_MESSAGE);
+        }
         $max = config('capstone.team_max_members');
         abort_if($team->members()->count() >= $max, 422, "Kapasitas tim maksimal {$max} orang.");
 
@@ -101,12 +109,17 @@ class TeamController extends Controller
         return back()->with('success', 'Anggota ditambahkan.');
     }
 
-    public function removeMember(Team $team, TeamMember $member)
+    public function removeMember(Team $team, TeamMember $member, GradeCalculationService $grades)
     {
         $this->authorizeLeader($team);
         abort_if($member->team_id !== $team->id, 404);
         abort_if($member->student_id === $team->leader_id, 422, 'Ketua tim tidak dapat dihapus.');
+        if ($team->isMembershipLocked()) {
+            return back()->with('error', self::LOCKED_MESSAGE);
+        }
         $member->delete();
+        // Nilai hasil hitung dari tim ini tidak lagi berlaku bagi mahasiswa yang dikeluarkan.
+        $grades->forgetStudents([$member->student_id], $team->academic_year_id);
 
         return back()->with('success', 'Anggota dihapus dari tim.');
     }
