@@ -15,7 +15,7 @@
             <div class="bg-white rounded-xl p-6 w-full max-w-md">
                 <h3 class="font-semibold mb-2">Import User (Excel)</h3>
                 <p class="text-xs text-slate-500 mb-3">Kolom: <code>identity_number, name, email, role, angkatan, class_name, password</code>. Password kosong → default = NIM/NIP. Isi di template Excel, lalu unggah.</p>
-                <a href="{{ route('admin.templates.users') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline">⬇️ Unduh Template Excel (.xlsx)</a>
+                <a href="{{ route('admin.templates.users') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline"><x-icon name="download" class="ico" /> Unduh Template Excel (.xlsx)</a>
                 <form method="POST" action="{{ route('admin.users.import') }}" enctype="multipart/form-data" class="space-y-3">
                     @csrf
                     <input type="file" name="file" accept=".xlsx,.csv" required class="w-full text-sm">
@@ -78,7 +78,7 @@
                     <td class="px-5 py-3 font-medium text-slate-800">{{ $user->name }}<br><span class="text-xs text-slate-400">{{ $user->angkatan }} {{ $user->class_name }}</span></td>
                     <td class="px-5 py-3 text-slate-500">{{ $user->email }}</td>
                     <td class="px-5 py-3"><span class="rounded-full bg-slate-100 px-2 py-0.5 text-xs">{{ $user->role }}</span></td>
-                    <td class="px-5 py-3">{!! $user->is_active ? '✅' : '⛔' !!}</td>
+                    <td class="px-5 py-3">@if($user->is_active)<span class="text-emerald-600" title="Aktif"><x-icon name="check" class="w-5 h-5" /></span>@else<span class="text-red-500" title="Nonaktif"><x-icon name="ban" class="w-5 h-5" /></span>@endif</td>
                     <td class="px-5 py-3 text-right whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                             <button @click="edit=true" title="Edit" class="p-1.5 rounded-lg text-brand hover:bg-rose-50"><x-icon name="edit" /></button>

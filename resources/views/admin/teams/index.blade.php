@@ -49,7 +49,7 @@
                         <form method="POST" action="{{ route('admin.teams.hki', $team) }}">
                             @csrf
                             <button class="rounded-full px-3 py-1 text-xs font-semibold border transition {{ $team->hki_eligible ? 'bg-brand text-white border-brand' : 'bg-white text-slate-500 border-slate-200 hover:border-brand hover:text-brand' }}">
-                                {{ $team->hki_eligible ? '⭐ Layak HKI' : 'Tandai HKI' }}
+                                @if($team->hki_eligible)<x-icon name="star" class="ico" /> Layak HKI @else Tandai HKI @endif
                             </button>
                         </form>
                     </td>

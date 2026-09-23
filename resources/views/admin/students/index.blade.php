@@ -19,7 +19,7 @@
                     <code class="text-[11px]">identity_number, name, angkatan, class_name, password, year, semester, final_score, grade_letter</code><br>
                     Kolom <code>year..grade_letter</code> opsional — bila diisi, dibuat nilai historis (tahun ajaran otomatis diarsipkan). Isi langsung di template Excel, lalu unggah.
                 </p>
-                <a href="{{ route('admin.templates.students') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline">⬇️ Unduh Template Excel (.xlsx)</a>
+                <a href="{{ route('admin.templates.students') }}" class="inline-flex items-center gap-1.5 mb-3 text-sm text-brand hover:underline"><x-icon name="download" class="ico" /> Unduh Template Excel (.xlsx)</a>
                 <form method="POST" action="{{ route('admin.students.import') }}" enctype="multipart/form-data" class="space-y-3">
                     @csrf
                     <input type="file" name="file" accept=".xlsx,.csv" required class="w-full text-sm">
@@ -51,7 +51,7 @@
 
 @if($pendingCount > 0)
     <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 flex items-center justify-between flex-wrap gap-2">
-        <span>⏳ <strong>{{ $pendingCount }}</strong> mahasiswa <strong>belum aktivasi</strong> (masih pakai sandi default = NIM, belum ganti sandi saat login pertama).</span>
+        <span><x-icon name="clock" class="ico" /> <strong>{{ $pendingCount }}</strong> mahasiswa <strong>belum aktivasi</strong> (masih pakai sandi default = NIM, belum ganti sandi saat login pertama).</span>
         <a href="{{ route('admin.students.index', ['activation' => 'pending']) }}" class="rounded-lg bg-amber-600 text-white px-3 py-1.5 hover:bg-amber-700">Lihat yang belum aktivasi →</a>
     </div>
 @endif
@@ -83,7 +83,7 @@
                   @submit="if(!confirm('Hapus '+selected.length+' mahasiswa terpilih? Yang masih tergabung tim akan dilewati. Tindakan ini tidak dapat dibatalkan.')){ $event.preventDefault(); }">
                 @csrf
                 <template x-for="id in selected" :key="id"><input type="hidden" name="ids[]" :value="id"></template>
-                <button class="rounded-lg bg-red-600 text-white px-4 py-1.5 text-sm font-medium hover:bg-red-700">🗑️ Hapus Terpilih</button>
+                <button class="rounded-lg bg-red-600 text-white px-4 py-1.5 text-sm font-medium hover:bg-red-700"><x-icon name="trash" class="ico" /> Hapus Terpilih</button>
             </form>
         </div>
     </div>
@@ -107,11 +107,11 @@
                     <td class="px-5 py-3">{{ $s->class_name ?? '—' }}</td>
                     <td class="px-5 py-3">
                         @if($s->activationExpired())
-                            <span class="inline-flex items-center rounded-full border border-red-200 bg-red-50 text-red-700 px-2.5 py-0.5 text-xs font-semibold" title="Batas aktivasi {{ config('capstone.activation_days') }} hari terlewati. Reset sandi (Edit → isi sandi baru, mis. NIM) untuk membuka kembali.">⛔ Aktivasi Kedaluwarsa</span>
+                            <span class="inline-flex items-center rounded-full border border-red-200 bg-red-50 text-red-700 px-2.5 py-0.5 text-xs font-semibold" title="Batas aktivasi {{ config('capstone.activation_days') }} hari terlewati. Reset sandi (Edit → isi sandi baru, mis. NIM) untuk membuka kembali."><x-icon name="ban" class="ico" /> Aktivasi Kedaluwarsa</span>
                         @elseif($s->must_change_password)
-                            <span class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-0.5 text-xs font-semibold" title="Batas aktivasi: {{ $s->activationDeadline()?->translatedFormat('d M Y H:i') }}">⏳ Belum Aktivasi</span>
+                            <span class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 text-amber-700 px-2.5 py-0.5 text-xs font-semibold" title="Batas aktivasi: {{ $s->activationDeadline()?->translatedFormat('d M Y H:i') }}"><x-icon name="clock" class="ico" /> Belum Aktivasi</span>
                         @else
-                            <span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-2.5 py-0.5 text-xs font-semibold">✓ Aktif</span>
+                            <span class="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 px-2.5 py-0.5 text-xs font-semibold"><x-icon name="check-mark" class="ico" /> Aktif</span>
                         @endif
                     </td>
                     <td class="px-5 py-3 text-right whitespace-nowrap">

@@ -20,7 +20,7 @@
                 <tr>
                     <td class="px-5 py-3 text-slate-400">{{ $b->order_index }}</td>
                     <td class="px-5 py-3 font-medium text-slate-800">{{ $b->title }}
-                        @if($b->file_path)<span class="ml-1 text-xs text-slate-400" title="{{ $b->file_name }}">📎</span>@endif
+                        @if($b->file_path)<span class="ml-1 text-xs text-slate-400" title="{{ $b->file_name }}"><x-icon name="paperclip" class="ico" /></span>@endif
                     </td>
                     <td class="px-5 py-3">
                         @if($b->is_published)

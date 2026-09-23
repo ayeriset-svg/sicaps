@@ -14,8 +14,8 @@
                 @foreach($classes as $c)<option value="{{ $c }}" @selected(request('class')==$c)>{{ $c }}</option>@endforeach
             </select>
         </form>
-        <a href="{{ route('admin.grades.export', ['class' => request('class')]) }}" class="rounded-lg border border-emerald-200 text-emerald-700 px-4 py-2 text-sm font-medium hover:bg-emerald-50">⬇️ Export Excel</a>
-        <form method="POST" action="{{ route('admin.grades.recalculate') }}">@csrf<button class="rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-dark">🔄 Rekalkulasi</button></form>
+        <a href="{{ route('admin.grades.export', ['class' => request('class')]) }}" class="rounded-lg border border-emerald-200 text-emerald-700 px-4 py-2 text-sm font-medium hover:bg-emerald-50"><x-icon name="download" class="ico" /> Export Excel</a>
+        <form method="POST" action="{{ route('admin.grades.recalculate') }}">@csrf<button class="rounded-lg bg-brand text-white px-4 py-2 text-sm font-medium hover:bg-brand-dark"><x-icon name="refresh" class="ico" /> Rekalkulasi</button></form>
     </div>
 </div>
 

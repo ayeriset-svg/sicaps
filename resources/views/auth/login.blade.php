@@ -55,7 +55,7 @@
                 <a href="https://wa.me/6282219008199?text={{ rawurlencode('Halo Admin, saya lupa kata sandi akun SIM-CAPSTONE. Mohon bantuan reset. NIM/Email saya: ') }}"
                    target="_blank" rel="noopener"
                    class="inline-flex items-center gap-1.5 text-sm text-brand hover:text-brand-dark hover:underline">
-                    🔑 Lupa kata sandi? Hubungi admin via WhatsApp
+                    {!! \App\Support\Icon::svg('key', 'inline-block w-4 h-4 align-[-3px] mr-1') !!}Lupa kata sandi? Hubungi admin via WhatsApp
                 </a>
             </div>
         </div>

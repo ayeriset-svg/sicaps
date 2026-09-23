@@ -36,7 +36,7 @@
         <label class="block text-sm font-semibold text-brand-dark mb-2">Lampiran Berkas <span class="font-normal text-slate-400">(opsional)</span></label>
         @if($book && $book->file_path)
             <div class="mb-3 flex items-center gap-3 text-sm">
-                <a href="{{ route('file.show', $book->file_path) }}" class="text-brand hover:underline break-all">📎 {{ $book->file_name ?: basename($book->file_path) }}</a>
+                <a href="{{ route('file.show', $book->file_path) }}" class="text-brand hover:underline break-all"><x-icon name="paperclip" class="ico" /> {{ $book->file_name ?: basename($book->file_path) }}</a>
                 <label class="flex items-center gap-1.5 text-xs text-red-600"><input type="checkbox" name="remove_file" value="1"> Hapus berkas</label>
             </div>
         @endif

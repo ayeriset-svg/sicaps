@@ -15,7 +15,7 @@
             <a href="{{ route('logbook.show', $mod) }}" class="block rounded-2xl shadow-sm border p-5 hover:shadow-md transition {{ $isAsmt ? 'border-pink-400 bg-pink-200' : 'border-rose-100 bg-white' }}">
                 <div class="flex items-center justify-between mb-2 gap-2">
                     <span class="text-xs font-medium {{ $isAsmt ? 'text-pink-700' : 'text-slate-400' }}">{{ $mod->week_label }} · {{ $mod->code }}</span>
-                    @if($isAsmt)<span class="text-xs rounded-full bg-pink-300 text-pink-900 px-2 py-0.5 font-medium">Assessment</span>@else<span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium">📄 Materi saja</span>@endif
+                    @if($isAsmt)<span class="text-xs rounded-full bg-pink-300 text-pink-900 px-2 py-0.5 font-medium">Assessment</span>@else<span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium"><x-icon name="document" class="ico" /> Materi saja</span>@endif
                 </div>
                 <h3 class="font-semibold {{ $isAsmt ? 'text-pink-900' : 'text-slate-800' }} leading-snug">{{ $mod->title }}</h3>
                 <p class="text-sm {{ $isAsmt ? 'text-pink-800' : 'text-slate-500' }} mt-1">{{ \Illuminate\Support\Str::limit(trim(html_entity_decode(strip_tags($mod->description ?? ''))), 80) }}</p>
@@ -35,22 +35,22 @@
                         <span class="text-xs rounded-full bg-pink-300 text-pink-900 px-2 py-0.5 font-medium">Assessment</span>
                     @endif
                     @if($mod->isIndividual())
-                        <span class="text-xs rounded-full bg-orange-100 text-orange-700 px-2 py-0.5 font-medium">👤 Tugas Individu</span>
+                        <span class="text-xs rounded-full bg-orange-100 text-orange-700 px-2 py-0.5 font-medium"><x-icon name="user" class="ico" /> Tugas Individu</span>
                     @else
-                        <span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium">👥 {{ $isAsmt ? 'Kelompok' : 'Logbook Tim' }}</span>
+                        <span class="text-xs rounded-full bg-slate-100 text-slate-500 px-2 py-0.5 font-medium"><x-icon name="users" class="ico" /> {{ $isAsmt ? 'Kelompok' : 'Logbook Tim' }}</span>
                     @endif
                     @php $stt = $mod->scheduleState(); $dl = $mod->daysToDeadline(); @endphp
                     @switch($stt)
-                        @case('open')<span class="text-xs rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 font-medium">🔓 Dibuka</span>@break
-                        @case('scheduled')<span class="text-xs rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 font-medium">🗓️ Terjadwal</span>@break
+                        @case('open')<span class="text-xs rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 font-medium"><x-icon name="lock-open" class="ico" /> Dibuka</span>@break
+                        @case('scheduled')<span class="text-xs rounded-full bg-sky-100 text-sky-700 px-2 py-0.5 font-medium"><x-icon name="calendar" class="ico" /> Terjadwal</span>@break
                         @case('ended')
-                            @if($st === 'Revision Needed')<span class="text-xs rounded-full bg-pink-100 text-pink-700 px-2 py-0.5 font-medium">🔁 Revisi dibuka</span>
-                            @else<span class="text-xs rounded-full bg-red-100 text-red-600 px-2 py-0.5 font-medium">⛔ Berakhir</span>@endif
+                            @if($st === 'Revision Needed')<span class="text-xs rounded-full bg-pink-100 text-pink-700 px-2 py-0.5 font-medium"><x-icon name="refresh" class="ico" /> Revisi dibuka</span>
+                            @else<span class="text-xs rounded-full bg-red-100 text-red-600 px-2 py-0.5 font-medium"><x-icon name="ban" class="ico" /> Berakhir</span>@endif
                             @break
-                        @default<span class="text-xs rounded-full bg-slate-100 text-slate-400 px-2 py-0.5 font-medium">🔒 Belum dibuka</span>
+                        @default<span class="text-xs rounded-full bg-slate-100 text-slate-400 px-2 py-0.5 font-medium"><x-icon name="lock" class="ico" /> Belum dibuka</span>
                     @endswitch
                     @if($stt==='open' && $dl!==null)
-                        <span class="text-xs rounded-full px-2 py-0.5 font-medium {{ $dl<=3 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700' }}">⏰ {{ $dl<=0 ? 'hari ini' : $dl.' hari lagi' }}</span>
+                        <span class="text-xs rounded-full px-2 py-0.5 font-medium {{ $dl<=3 ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700' }}"><x-icon name="clock" class="ico" /> {{ $dl<=0 ? 'hari ini' : $dl.' hari lagi' }}</span>
                     @endif
                 </div>
             </a>

@@ -23,10 +23,10 @@
 @endif
 
 <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-    <x-stat-card label="NA (sebelum penalti)" :value="number_format($grade->raw_score,1)" icon="🧮" color="blue" />
-    <x-stat-card label="Hari Tidak Hadir (Alpa)" :value="$grade->absent_days" icon="📅" color="indigo" />
-    <x-stat-card label="Potongan Penalti" :value="number_format($grade->penalty_points,0).' poin'" icon="⚠️" color="amber" />
-    <x-stat-card :label="$hasOverride ? 'Nilai Akhir (override)' : 'Nilai Akhir'" :value="number_format($grade->effective_score,1)" icon="🏆" color="green" />
+    <x-stat-card label="NA (sebelum penalti)" :value="number_format($grade->raw_score,1)" icon="calculator" color="blue" />
+    <x-stat-card label="Hari Tidak Hadir (Alpa)" :value="$grade->absent_days" icon="calendar" color="indigo" />
+    <x-stat-card label="Potongan Penalti" :value="number_format($grade->penalty_points,0).' poin'" icon="warning" color="amber" />
+    <x-stat-card :label="$hasOverride ? 'Nilai Akhir (override)' : 'Nilai Akhir'" :value="number_format($grade->effective_score,1)" icon="trophy" color="green" />
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -101,7 +101,7 @@
 
         {{-- Aturan penalti kehadiran (mengikuti pengaturan koordinator) --}}
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-            <h2 class="font-semibold text-slate-800 mb-2">⚠️ Aturan Penalti Kehadiran</h2>
+            <h2 class="font-semibold text-slate-800 mb-2"><x-icon name="warning" class="ico" /> Aturan Penalti Kehadiran</h2>
             <p class="text-xs text-slate-400 mb-3">Dihitung dari jumlah sesi berstatus Alpa. Anda saat ini: <span class="font-semibold text-slate-700">{{ $grade->absent_days }} hari alpa</span>.</p>
             <ul class="space-y-1.5 text-sm">
                 @forelse($rules as $r)

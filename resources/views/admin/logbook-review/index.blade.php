@@ -48,7 +48,7 @@
                 <tr>
                     <td class="px-5 py-3 font-medium text-slate-800">
                         {{ $lb->team->team_name }}
-                        @if($lb->user_id)<span class="block text-xs font-normal text-indigo-600">👤 {{ $lb->user->name ?? '—' }}</span>@endif
+                        @if($lb->user_id)<span class="block text-xs font-normal text-indigo-600"><x-icon name="user" class="ico" /> {{ $lb->user->name ?? '—' }}</span>@endif
                     </td>
                     <td class="px-5 py-3 text-slate-500">{{ $lb->team->class_name ?? '—' }}</td>
                     <td class="px-5 py-3">

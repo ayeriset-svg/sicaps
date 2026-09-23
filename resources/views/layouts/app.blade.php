@@ -25,6 +25,8 @@
         body{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-feature-settings:'cv11','ss01'}
         /* Angka rata lebar di tabel agar kolom nilai/presensi tersusun lurus */
         table{font-variant-numeric:tabular-nums}
+        /* Ikon SVG sebaris teks: ukuran mengikuti font & sejajar baseline */
+        .ico{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;flex-shrink:0}
         .rt-content{color:#1f2937;line-height:1.65}
         .rt-content img{max-width:100%;height:auto;border-radius:8px;margin:4px 0}
         .rt-content ul{list-style:disc;padding-left:1.5rem;margin:.5rem 0}
@@ -68,16 +70,16 @@
     <div class="lg:pl-64 min-h-full flex flex-col">
         @if(session()->has('impersonator_id'))
             <div class="bg-pink-600 text-white text-sm px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3 flex-wrap">
-                <span class="flex items-center gap-2">🔍 <strong>Mode Observasi</strong> — Anda melihat sebagai <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->identity_number }}).</span>
+                <span class="flex items-center gap-2"><x-icon name="search" class="ico" /> <strong>Mode Observasi</strong> — Anda melihat sebagai <strong>{{ auth()->user()->name }}</strong> ({{ auth()->user()->identity_number }}).</span>
                 <form method="POST" action="{{ route('observe.stop') }}">
                     @csrf
-                    <button class="rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1 font-semibold transition">↩︎ Kembali ke Superadmin</button>
+                    <button class="rounded-lg bg-white/20 hover:bg-white/30 px-3 py-1 font-semibold transition"><x-icon name="undo" class="ico" /> Kembali ke Superadmin</button>
                 </form>
             </div>
         @endif
         <header class="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur border-b border-rose-100 flex items-center justify-between px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-3">
-                <button @click="sidebar=true" class="lg:hidden text-brand text-2xl leading-none">☰</button>
+                <button @click="sidebar=true" class="lg:hidden text-brand text-2xl leading-none"><x-icon name="menu" class="ico" /></button>
                 @if($ay = \App\Models\AcademicYear::active())
                     <span class="text-xs font-medium bg-rose-50 text-brand rounded-full px-3 py-1 border border-rose-100">{{ $ay->label }}</span>
                 @else
@@ -108,7 +110,7 @@
                         @if($observing)
                             <form method="POST" action="{{ route('observe.stop') }}">
                                 @csrf
-                                <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-pink-700 hover:bg-pink-50">↩︎ Kembali ke Superadmin</button>
+                                <button class="w-full flex items-center gap-2 px-4 py-2 text-sm text-pink-700 hover:bg-pink-50"><x-icon name="undo" class="ico" /> Kembali ke Superadmin</button>
                             </form>
                         @else
                             <form method="POST" action="{{ route('logout') }}">
@@ -126,10 +128,10 @@
 
         <main class="flex-1 px-4 sm:px-6 lg:px-8 py-7 max-w-[1400px] w-full mx-auto">
             @if(session('success'))
-                <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 flex items-center gap-2"><span>✅</span> {{ session('success') }}</div>
+                <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-emerald-800 flex items-center gap-2"><span><x-icon name="check" class="ico" /></span> {{ session('success') }}</div>
             @endif
             @if(session('error'))
-                <div class="mb-4 rounded-xl border border-pink-200 bg-pink-50 px-4 py-3 text-pink-800 flex items-center gap-2"><span>⚠️</span> {{ session('error') }}</div>
+                <div class="mb-4 rounded-xl border border-pink-200 bg-pink-50 px-4 py-3 text-pink-800 flex items-center gap-2"><span><x-icon name="warning" class="ico" /></span> {{ session('error') }}</div>
             @endif
             @if($errors->any())
                 <div class="mb-4 rounded-xl border border-pink-200 bg-pink-50 px-4 py-3 text-pink-800">

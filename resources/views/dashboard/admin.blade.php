@@ -14,10 +14,10 @@
     </div>
 @else
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-    <x-stat-card label="Mahasiswa" :value="$stats['mahasiswa']" icon="🎓" color="blue" />
-    <x-stat-card label="Tim Capstone" :value="$stats['teams']" icon="👥" color="green" />
-    <x-stat-card label="Topik Pending" :value="$stats['topic_pending']" icon="📝" color="amber" />
-    <x-stat-card label="Logbook Perlu Review" :value="$stats['logbook_pending']" icon="⏳" color="indigo" />
+    <x-stat-card label="Mahasiswa" :value="$stats['mahasiswa']" icon="academic" color="blue" />
+    <x-stat-card label="Tim Capstone" :value="$stats['teams']" icon="users" color="green" />
+    <x-stat-card label="Topik Pending" :value="$stats['topic_pending']" icon="pencil" color="amber" />
+    <x-stat-card label="Logbook Perlu Review" :value="$stats['logbook_pending']" icon="clock" color="indigo" />
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -48,11 +48,11 @@
     <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
         <h2 class="font-semibold text-slate-800 mb-3">Aksi Cepat</h2>
         <div class="space-y-2 text-sm">
-            <a href="{{ route('admin.modules.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50">🗂️ Kelola Modul</a>
-            <a href="{{ route('admin.logbook-review.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50">📖 Review Logbook</a>
-            <a href="{{ route('admin.scores.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50">✍️ Input Penilaian</a>
-            <a href="{{ route('admin.grades.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50">📊 Rekap Nilai</a>
-            <a href="{{ route('admin.reports.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50">📈 Summary Report</a>
+            <a href="{{ route('admin.modules.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"><x-icon name="folder" class="ico" /> Kelola Modul</a>
+            <a href="{{ route('admin.logbook-review.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"><x-icon name="book" class="ico" /> Review Logbook</a>
+            <a href="{{ route('admin.scores.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"><x-icon name="pencil" class="ico" /> Input Penilaian</a>
+            <a href="{{ route('admin.grades.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"><x-icon name="chart" class="ico" /> Rekap Nilai</a>
+            <a href="{{ route('admin.reports.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"><x-icon name="presentation" class="ico" /> Summary Report</a>
         </div>
     </div>
 </div>

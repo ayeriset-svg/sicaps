@@ -26,10 +26,10 @@
 @endphp
 
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-    <x-stat-card label="Total Mahasiswa" :value="$overallCount" icon="🎓" color="brand" />
-    <x-stat-card label="Rata-rata Nilai" :value="number_format($overallAvg,1)" icon="📊" color="pink" :progress="$overallAvg" />
-    <x-stat-card label="Lulus (≥ C)" :value="$lulus" icon="✅" color="green" :hint="$overallCount ? round($lulus/$overallCount*100).'% dari total' : null" />
-    <x-stat-card label="Tidak Lulus (D/E)" :value="$tidak" icon="⚠️" color="amber" />
+    <x-stat-card label="Total Mahasiswa" :value="$overallCount" icon="academic" color="brand" />
+    <x-stat-card label="Rata-rata Nilai" :value="number_format($overallAvg,1)" icon="chart" color="pink" :progress="$overallAvg" />
+    <x-stat-card label="Lulus (≥ C)" :value="$lulus" icon="check" color="green" :hint="$overallCount ? round($lulus/$overallCount*100).'% dari total' : null" />
+    <x-stat-card label="Tidak Lulus (D/E)" :value="$tidak" icon="warning" color="amber" />
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 items-stretch">
@@ -138,7 +138,7 @@
 {{-- ================= Rekap Indikasi AI per Kelas ================= --}}
 <div class="mt-6">
     <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-        <h2 class="font-semibold text-slate-800">🤖 Rekap Indikasi AI per Kelas</h2>
+        <h2 class="font-semibold text-slate-800"><x-icon name="cpu" class="ico" /> Rekap Indikasi AI per Kelas</h2>
         <span class="text-xs text-slate-400">Estimasi indikatif dari logbook yang sudah diperiksa · ambang "tinggi" ≥ 60%</span>
     </div>
 
@@ -146,10 +146,10 @@
         <div class="rounded-xl border border-slate-200 bg-white p-5 text-slate-400 text-sm">Belum ada logbook yang diperiksa AI pada periode ini.</div>
     @else
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-            <x-stat-card label="Logbook Diperiksa" :value="$aiCheckedTotal" icon="🔍" color="brand" />
-            <x-stat-card label="Rata-rata Indikasi AI" :value="number_format($aiAvgTotal,1).'%'" icon="🤖" color="pink" :progress="$aiAvgTotal" />
-            <x-stat-card label="Indikasi Tinggi (≥60%)" :value="$aiHighTotal" icon="⚠️" color="amber" />
-            <x-stat-card label="Indikasi Rendah (<60%)" :value="$aiCheckedTotal - $aiHighTotal" icon="✅" color="green" />
+            <x-stat-card label="Logbook Diperiksa" :value="$aiCheckedTotal" icon="search" color="brand" />
+            <x-stat-card label="Rata-rata Indikasi AI" :value="number_format($aiAvgTotal,1).'%'" icon="cpu" color="pink" :progress="$aiAvgTotal" />
+            <x-stat-card label="Indikasi Tinggi (≥60%)" :value="$aiHighTotal" icon="warning" color="amber" />
+            <x-stat-card label="Indikasi Rendah (<60%)" :value="$aiCheckedTotal - $aiHighTotal" icon="check" color="green" />
         </div>
 
         <div class="bg-white rounded-2xl border border-rose-100 shadow-sm overflow-x-auto">
@@ -190,7 +190,7 @@
                 </tfoot>
             </table>
         </div>
-        <p class="mt-2 text-xs text-slate-400">⚠️ Angka indikasi AI bersifat estimasi/heuristik (bukan vonis), dihitung dari logbook yang telah diperiksa koordinator.</p>
+        <p class="mt-2 text-xs text-slate-400"><x-icon name="warning" class="ico" /> Angka indikasi AI bersifat estimasi/heuristik (bukan vonis), dihitung dari logbook yang telah diperiksa koordinator.</p>
     @endif
 </div>
 @endif

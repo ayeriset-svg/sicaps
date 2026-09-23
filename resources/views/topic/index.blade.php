@@ -65,8 +65,8 @@
 @if($isLeader)
 <div x-data="{ tab: '{{ $topic && $topic->origin==='mandiri' ? 'mandiri' : 'katalog' }}' }">
     <div class="flex gap-2 mb-4">
-        <button @click="tab='katalog'" :class="tab==='katalog' ? 'bg-brand text-white' : 'bg-white text-slate-600 border border-slate-200'" class="rounded-lg px-4 py-2 text-sm">📚 Pilih dari Katalog</button>
-        <button @click="tab='mandiri'" :class="tab==='mandiri' ? 'bg-brand text-white' : 'bg-white text-slate-600 border border-slate-200'" class="rounded-lg px-4 py-2 text-sm">✏️ Ajukan Mandiri</button>
+        <button @click="tab='katalog'" :class="tab==='katalog' ? 'bg-brand text-white' : 'bg-white text-slate-600 border border-slate-200'" class="rounded-lg px-4 py-2 text-sm"><x-icon name="book" class="ico" /> Pilih dari Katalog</button>
+        <button @click="tab='mandiri'" :class="tab==='mandiri' ? 'bg-brand text-white' : 'bg-white text-slate-600 border border-slate-200'" class="rounded-lg px-4 py-2 text-sm"><x-icon name="pencil" class="ico" /> Ajukan Mandiri</button>
     </div>
 
     {{-- Katalog --}}
@@ -75,7 +75,7 @@
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
                 <div class="flex items-start justify-between gap-2">
                     <h3 class="font-semibold text-slate-800">{{ $t->title }}</h3>
-                    <span class="shrink-0 text-xs rounded-full {{ $t->teams_count > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500' }} px-2 py-0.5">👥 {{ $t->teams_count }} tim</span>
+                    <span class="shrink-0 text-xs rounded-full {{ $t->teams_count > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500' }} px-2 py-0.5"><x-icon name="users" class="ico" /> {{ $t->teams_count }} tim</span>
                 </div>
                 @if($t->partner)<p class="text-sm text-slate-500">{{ $t->partner->name }} · {{ $t->partner->type_label }}</p>@endif
                 @if($t->general_features)<p class="text-sm mt-2 text-slate-600"><span class="text-slate-400">Fitur:</span> {{ \Illuminate\Support\Str::limit($t->general_features, 90) }}</p>@endif

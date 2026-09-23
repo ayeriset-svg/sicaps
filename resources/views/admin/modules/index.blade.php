@@ -28,7 +28,7 @@
                     <td class="px-4 py-3">
                         @php $tc = ['module'=>'bg-rose-100 text-brand','assessment'=>'bg-rose-100 text-brand','other'=>'bg-slate-100 text-slate-600'][$m->type]; @endphp
                         <span class="rounded-full px-2 py-0.5 text-xs {{ $tc }}">{{ $m->type }}{{ $m->assessment_stage ? ' · '.$m->assessment_stage : '' }}</span>
-                        @if($m->isIndividual())<span class="block mt-1 rounded-full px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 w-fit">👤 Tugas Individu</span>@endif
+                        @if($m->isIndividual())<span class="block mt-1 rounded-full px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 w-fit"><x-icon name="user" class="ico" /> Tugas Individu</span>@endif
                     </td>
                     <td class="px-4 py-3 text-slate-500">{{ $m->requiresSubmission() ? count($m->fields()).' field' : '—' }}</td>
                     <td class="px-4 py-3">
@@ -36,7 +36,7 @@
                             <form method="POST" action="{{ route('admin.modules.toggle-open', $m) }}">@csrf
                                 <button title="{{ $m->is_open ? 'Klik untuk menutup' : 'Klik untuk membuka' }}"
                                         class="rounded-full px-2.5 py-0.5 text-xs font-medium {{ $m->is_open ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-500 hover:bg-slate-200' }}">
-                                    {{ $m->is_open ? '🔓 Dibuka' : '🔒 Ditutup' }}
+                                    <x-icon :name="$m->is_open ? 'lock-open' : 'lock'" class="ico" /> {{ $m->is_open ? 'Dibuka' : 'Ditutup' }}
                                 </button>
                             </form>
                             @if($m->opens_at || $m->closes_at)
@@ -45,8 +45,8 @@
                                     $sc = ['scheduled'=>'text-sky-600','open'=>'text-emerald-600','ended'=>'text-red-500'][$stt] ?? 'text-slate-400';
                                 @endphp
                                 <div class="mt-1 text-[11px] {{ $sc }} leading-tight">
-                                    @if($m->opens_at)<div>▶ {{ $m->opens_at->format('d/m/y H:i') }}</div>@endif
-                                    @if($m->closes_at)<div>⏹ {{ $m->closes_at->format('d/m/y H:i') }}</div>@endif
+                                    @if($m->opens_at)<div><x-icon name="calendar" class="ico" /> {{ $m->opens_at->format('d/m/y H:i') }}</div>@endif
+                                    @if($m->closes_at)<div><x-icon name="clock" class="ico" /> {{ $m->closes_at->format('d/m/y H:i') }}</div>@endif
                                     <div class="font-semibold">{{ ['scheduled'=>'Terjadwal','open'=>'Berlangsung','ended'=>'Berakhir','closed'=>'Ditutup'][$stt] ?? '' }}</div>
                                 </div>
                             @endif
@@ -57,10 +57,10 @@
                     <td class="px-4 py-3 text-right whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                             @if($m->isIndividual())
-                                <form method="POST" action="{{ route('admin.modules.check-similarity', $m) }}" class="inline" onsubmit="return confirm('Cek kemiripan jawaban antar mahasiswa untuk tugas ini? Hasil muncul di Review Logbook.')">@csrf<button title="Cek kemiripan jawaban antar mahasiswa" class="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50">🔍</button></form>
+                                <form method="POST" action="{{ route('admin.modules.check-similarity', $m) }}" class="inline" onsubmit="return confirm('Cek kemiripan jawaban antar mahasiswa untuk tugas ini? Hasil muncul di Review Logbook.')">@csrf<button title="Cek kemiripan jawaban antar mahasiswa" class="p-1.5 rounded-lg text-purple-600 hover:bg-purple-50"><x-icon name="search" class="ico" /></button></form>
                             @endif
                             @if($m->isIndividual() && $m->counts_as_attendance && $m->attendance_week)
-                                <form method="POST" action="{{ route('admin.modules.process-attendance', $m) }}" class="inline" onsubmit="return confirm('Proses presensi tugas ini? PASS → HADIR, sisanya (belum kumpul/lewat deadline/ditolak) → ALPA pada Mgg {{ $m->attendance_week }}/Sesi {{ $m->attendance_session }}.')">@csrf<button title="Proses presensi tugas" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50">🗓️</button></form>
+                                <form method="POST" action="{{ route('admin.modules.process-attendance', $m) }}" class="inline" onsubmit="return confirm('Proses presensi tugas ini? PASS → HADIR, sisanya (belum kumpul/lewat deadline/ditolak) → ALPA pada Mgg {{ $m->attendance_week }}/Sesi {{ $m->attendance_session }}.')">@csrf<button title="Proses presensi tugas" class="p-1.5 rounded-lg text-emerald-600 hover:bg-emerald-50"><x-icon name="calendar" class="ico" /></button></form>
                             @endif
                             <a href="{{ route('admin.modules.preview', $m) }}" target="_blank" title="Preview / PDF" class="p-1.5 rounded-lg text-slate-500 hover:bg-slate-100"><x-icon name="eye" /></a>
                             <a href="{{ route('admin.modules.edit', $m) }}" title="Edit" class="p-1.5 rounded-lg text-brand hover:bg-rose-50"><x-icon name="edit" /></a>

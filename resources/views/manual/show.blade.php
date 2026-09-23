@@ -21,7 +21,7 @@
     @if($book->file_path)
         <div class="mt-6 pt-4 border-t border-rose-100">
             <a href="{{ route('file.show', $book->file_path) }}" class="inline-flex items-center gap-2 rounded-lg border border-rose-200 text-brand px-4 py-2 text-sm hover:bg-rose-50">
-                📎 Unduh lampiran: {{ $book->file_name ?: basename($book->file_path) }}
+                <x-icon name="paperclip" class="ico" /> Unduh lampiran: {{ $book->file_name ?: basename($book->file_path) }}
             </a>
         </div>
     @endif

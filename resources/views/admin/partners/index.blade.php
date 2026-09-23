@@ -37,7 +37,7 @@
                 @if($p->logo)
                     <img src="{{ route('file.show', ['path' => $p->logo]) }}" alt="" class="h-12 w-12 rounded object-cover border border-slate-200">
                 @else
-                    <div class="h-12 w-12 rounded bg-slate-100 flex items-center justify-center text-xl">🏢</div>
+                    <div class="h-12 w-12 rounded bg-slate-100 flex items-center justify-center text-xl"><x-icon name="building" class="ico" /></div>
                 @endif
                 <div class="flex-1">
                     <h3 class="font-semibold text-slate-800">{{ $p->name }}</h3>

@@ -54,7 +54,7 @@
 
     <div class="toolbar">
         <button class="btn secondary" onclick="window.close()">Tutup</button>
-        <button class="btn" onclick="window.print()">🖨️ Simpan / Cetak PDF</button>
+        <button class="btn" onclick="window.print()">Simpan / Cetak PDF</button>
     </div>
 
     <div class="sheet">
@@ -108,7 +108,7 @@
                 <div class="box">@if($val)<a href="{{ $val }}">{{ $val }}</a>@else<span class="empty">—</span>@endif</div>
             @elseif(($field['type'] ?? 'richtext') === 'file')
                 @php $fname = $payload[$field['key'].'__name'] ?? ($val ? basename($val) : null); @endphp
-                <div class="box">@if($val)📎 Berkas terlampir: {{ $fname }}@else<span class="empty">— belum ada berkas —</span>@endif</div>
+                <div class="box">@if($val)Berkas terlampir: {{ $fname }}@else<span class="empty">— belum ada berkas —</span>@endif</div>
             @else
                 <div class="box rt">{!! filled($val) ? $val : '<span class="empty">— belum diisi —</span>' !!}</div>
             @endif

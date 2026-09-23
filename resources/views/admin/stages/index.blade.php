@@ -9,7 +9,7 @@
 
 @php $totalOk = abs($total - 100) < 0.01; @endphp
 <div class="mb-4 rounded-lg px-4 py-3 text-sm {{ $totalOk ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200' }}">
-    Total bobot assessment: <span class="font-bold">{{ number_format($total,2) }}%</span> {{ $totalOk ? '(seimbang ✓)' : '(disarankan 100%)' }}
+    Total bobot assessment: <span class="font-bold">{{ number_format($total,2) }}%</span> @if($totalOk)(seimbang <x-icon name="check-mark" class="ico" />)@else(disarankan 100%)@endif
 </div>
 
 <div class="space-y-6">
@@ -23,7 +23,7 @@
                 <form method="POST" action="{{ route('admin.stages.toggle-peer', $stage) }}">
                     @csrf
                     <button class="rounded-lg px-3 py-1.5 text-sm {{ $stage->peer_open ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600' }}">
-                        Peer 180°: {{ $stage->peer_open ? 'DIBUKA ✓' : 'Tertutup' }} — klik untuk {{ $stage->peer_open ? 'tutup' : 'buka' }}
+                        Peer 180°: @if($stage->peer_open)DIBUKA <x-icon name="check-mark" class="ico" />@else Tertutup @endif — klik untuk {{ $stage->peer_open ? 'tutup' : 'buka' }}
                     </button>
                 </form>
             </div>

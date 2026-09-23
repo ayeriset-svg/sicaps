@@ -35,7 +35,7 @@
                         <p class="text-sm text-slate-500">{{ $team->members->pluck('student.name')->implode(', ') }}</p>
                     </div>
                     @if($sudahDinilai)
-                        <span class="shrink-0 rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-0.5 text-xs font-medium">✓ Sudah dinilai · dapat diedit</span>
+                        <span class="shrink-0 rounded-full bg-emerald-100 text-emerald-700 px-2.5 py-0.5 text-xs font-medium"><x-icon name="check-mark" class="ico" /> Sudah dinilai · dapat diedit</span>
                     @endif
                 </div>
                 <form method="POST" action="{{ route('admin.scores.store') }}" class="p-5">

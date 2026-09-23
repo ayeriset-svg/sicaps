@@ -13,7 +13,7 @@
     $cls = $tints[$lv] ?? $tints[1];
 @endphp
 <span class="inline-flex items-center gap-1 rounded-full border {{ $cls }} px-2.5 py-0.5 text-xs font-semibold" title="{{ $info['desc'] }}">
-    🤖 Level {{ $lv }} · {{ $info['name'] }}
+    <x-icon name="cpu" class="ico" /> Level {{ $lv }} · {{ $info['name'] }}
 </span>
 @if($showDesc)
     <p class="text-xs text-slate-500 mt-1">{{ $info['desc'] }}</p>

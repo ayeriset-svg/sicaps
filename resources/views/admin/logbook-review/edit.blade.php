@@ -7,9 +7,9 @@
     <h1 class="text-2xl font-bold text-brand-dark">Edit Isi Logbook</h1>
     <p class="text-slate-500">
         {{ $logbook->module->code }} · {{ $logbook->module->title }} · Tim {{ $logbook->team->team_name }}
-        @if($logbook->module->isIndividual() && $logbook->user) · 👤 {{ $logbook->user->name }} @endif
+        @if($logbook->module->isIndividual() && $logbook->user) · <x-icon name="user" class="ico" /> {{ $logbook->user->name }} @endif
     </p>
-    <p class="text-xs text-amber-600 mt-1">⚠️ Edit oleh koordinator akan menimpa isi yang disubmit mahasiswa. Status review tidak berubah.</p>
+    <p class="text-xs text-amber-600 mt-1"><x-icon name="warning" class="ico" /> Edit oleh koordinator akan menimpa isi yang disubmit mahasiswa. Status review tidak berubah.</p>
 </div>
 
 <form method="POST" action="{{ route('admin.logbook-review.update-content', $logbook) }}" class="space-y-5" enctype="multipart/form-data">
@@ -24,7 +24,7 @@
                 @php $fname = $logbook->payload_json[$field['key'].'__name'] ?? null; @endphp
                 @if($val)
                     <div class="mb-2 flex items-center gap-2 text-sm">
-                        <a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all">📎 {{ $fname ?: basename($val) }}</a>
+                        <a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all"><x-icon name="paperclip" class="ico" /> {{ $fname ?: basename($val) }}</a>
                         <span class="text-xs text-slate-400">(berkas saat ini)</span>
                     </div>
                 @endif

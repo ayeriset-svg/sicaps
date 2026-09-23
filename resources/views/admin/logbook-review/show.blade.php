@@ -8,14 +8,14 @@
         <span class="text-xs text-slate-400">{{ $logbook->module->week_label }} · {{ $logbook->module->code }} · Tim {{ $logbook->team->team_name }} · {{ $logbook->team->class_name }}</span>
         <h1 class="text-2xl font-bold text-brand-dark">{{ $logbook->module->title }}</h1>
         @if($logbook->module->isIndividual())
-            <span class="inline-block mt-1 rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-medium">👤 Tugas Individu — {{ $logbook->user->name ?? '—' }}
+            <span class="inline-block mt-1 rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 text-xs font-medium"><x-icon name="user" class="ico" /> Tugas Individu — {{ $logbook->user->name ?? '—' }}
                 @if($logbook->module->attendance_week) · PASS → hadir Mgg {{ $logbook->module->attendance_week }}/Sesi {{ $logbook->module->attendance_session }}@endif
             </span>
         @endif
     </div>
     <div class="flex items-center gap-2">
-        <a href="{{ route('admin.logbook-review.edit', $logbook) }}" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50">✏️ Edit Isi</a>
-        <a href="{{ route('admin.logbook-review.print', $logbook) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50">🖨️ Generate PDF</a>
+        <a href="{{ route('admin.logbook-review.edit', $logbook) }}" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="pencil" class="ico" /> Edit Isi</a>
+        <a href="{{ route('admin.logbook-review.print', $logbook) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="printer" class="ico" /> Generate PDF</a>
     </div>
 </div>
 
@@ -26,10 +26,10 @@
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
                 <h2 class="font-semibold text-slate-800 mb-2">{{ $field['label'] }}</h2>
                 @if($field['type'] === 'link')
-                    @if($val)<a href="{{ $val }}" target="_blank" rel="noopener" class="text-brand hover:underline break-all">🔗 {{ $val }}</a>@else<span class="text-slate-400 text-sm">—</span>@endif
+                    @if($val)<a href="{{ $val }}" target="_blank" rel="noopener" class="text-brand hover:underline break-all"><x-icon name="link" class="ico" /> {{ $val }}</a>@else<span class="text-slate-400 text-sm">—</span>@endif
                 @elseif($field['type'] === 'file')
                     @php $fname = $logbook->payload_json[$field['key'].'__name'] ?? null; @endphp
-                    @if($val)<a href="{{ route('file.show', $val) }}" class="inline-flex items-center gap-2 rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50">📎 Unduh {{ $fname ?: basename($val) }}</a>@else<span class="text-slate-400 text-sm">— belum ada berkas —</span>@endif
+                    @if($val)<a href="{{ route('file.show', $val) }}" class="inline-flex items-center gap-2 rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="paperclip" class="ico" /> Unduh {{ $fname ?: basename($val) }}</a>@else<span class="text-slate-400 text-sm">— belum ada berkas —</span>@endif
                 @else
                     <div class="rt-content text-sm max-w-none">{!! $val ?: '<span class="text-slate-400">—</span>' !!}</div>
                 @endif
@@ -41,7 +41,7 @@
         {{-- Peringatan kemiripan jawaban antar mahasiswa (tugas individu) --}}
         @if($logbook->similarity_checked_at && $logbook->similarity_max !== null && $logbook->similarity_max >= 70 && !empty($logbook->similarity_json))
             <div class="rounded-2xl border-2 border-red-300 bg-red-50 p-4">
-                <p class="font-bold text-red-700 text-sm">🚨 Terindikasi jawaban MIRIP/SAMA dengan mahasiswa lain</p>
+                <p class="font-bold text-red-700 text-sm"><x-icon name="warning" class="ico" /> Terindikasi jawaban MIRIP/SAMA dengan mahasiswa lain</p>
                 <p class="text-xs text-red-600 mt-0.5">Kemiripan tertinggi <strong>{{ number_format($logbook->similarity_max,0) }}%</strong> — periksa kemungkinan menyontek.</p>
                 <ul class="mt-2 text-xs text-red-700 space-y-0.5">
                     @foreach(array_slice($logbook->similarity_json, 0, 5) as $s)
@@ -51,13 +51,13 @@
                 <p class="text-[11px] text-red-400 mt-2">Diperiksa {{ $logbook->similarity_checked_at->format('d M Y H:i') }} (rule-based similarity).</p>
             </div>
         @elseif($logbook->similarity_checked_at)
-            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs text-emerald-700">✔ Kemiripan jawaban: {{ $logbook->similarity_max!==null ? number_format($logbook->similarity_max,0).'% (aman)' : 'tidak ada pembanding' }}.</div>
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2 text-xs text-emerald-700"><x-icon name="check-mark" class="ico" /> Kemiripan jawaban: {{ $logbook->similarity_max!==null ? number_format($logbook->similarity_max,0).'% (aman)' : 'tidak ada pembanding' }}.</div>
         @endif
 
         {{-- Pemeriksaan indikasi AI --}}
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
             <div class="flex items-center justify-between mb-2">
-                <h2 class="font-semibold text-slate-800">🤖 Periksa Indikasi AI</h2>
+                <h2 class="font-semibold text-slate-800"><x-icon name="cpu" class="ico" /> Periksa Indikasi AI</h2>
                 <x-ai-level :level="$logbook->module->ai_policy_level" />
             </div>
             <p class="text-xs text-slate-400 mb-3">Batasan tugas: {{ $logbook->module->aiLevel()['desc'] }}</p>
@@ -90,7 +90,7 @@
             <form method="POST" action="{{ route('admin.logbook-review.check-ai', $logbook) }}">
                 @csrf
                 <button class="w-full rounded-lg bg-slate-800 text-white px-4 py-2 text-sm font-medium hover:bg-slate-900">
-                    {{ $logbook->ai_checked_at ? '🔄 Periksa Ulang AI' : '🤖 Periksa AI Sekarang' }}
+                    <x-icon :name="$logbook->ai_checked_at ? 'refresh' : 'cpu'" class="ico" /> {{ $logbook->ai_checked_at ? 'Periksa Ulang AI' : 'Periksa AI Sekarang' }}
                 </button>
             </form>
             <p class="text-[11px] text-slate-400 mt-2">Hasil akan tampil ke mahasiswa bersama feedback review.</p>
@@ -99,7 +99,7 @@
         {{-- Pemeriksaan tata tulis (proofreader / technical editor) --}}
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5" x-data="{ open: false }">
             <div class="flex items-center justify-between mb-2">
-                <h2 class="font-semibold text-slate-800">📝 Periksa Tata Tulis</h2>
+                <h2 class="font-semibold text-slate-800"><x-icon name="pencil" class="ico" /> Periksa Tata Tulis</h2>
                 <span class="text-[11px] text-slate-400">Proofreader &amp; Technical Editor</span>
             </div>
             <p class="text-xs text-slate-400 mb-3">Ejaan baku · istilah asing · kata ganti · konsistensi · rujukan · struktur · kapitalisasi.</p>
@@ -135,7 +135,7 @@
                             <div class="rounded-lg border border-slate-200 p-3 text-xs">
                                 <span class="inline-block rounded bg-{{ $cc }}-100 text-{{ $cc }}-700 px-1.5 py-0.5 font-medium mb-1.5">{{ str_replace('_',' ',$it['category']) }}</span>
                                 <p class="text-slate-500 line-through decoration-rose-300">{{ $it['original_text'] }}</p>
-                                <p class="text-emerald-700 mt-1">✔ {!! e($it['suggestion']) !!}</p>
+                                <p class="text-emerald-700 mt-1"><x-icon name="check-mark" class="ico" /> {!! e($it['suggestion']) !!}</p>
                                 <p class="text-slate-400 mt-1">{{ $it['explanation'] }}</p>
                             </div>
                         @endforeach
@@ -151,7 +151,7 @@
             <form method="POST" action="{{ route('admin.logbook-review.proofread', $logbook) }}">
                 @csrf
                 <button class="w-full rounded-lg bg-slate-800 text-white px-4 py-2 text-sm font-medium hover:bg-slate-900">
-                    {{ $logbook->proofread_checked_at ? '🔄 Periksa Ulang Tata Tulis' : '📝 Periksa Tata Tulis' }}
+                    <x-icon :name="$logbook->proofread_checked_at ? 'refresh' : 'pencil'" class="ico" /> {{ $logbook->proofread_checked_at ? 'Periksa Ulang Tata Tulis' : 'Periksa Tata Tulis' }}
                 </button>
             </form>
             <p class="text-[11px] text-slate-400 mt-2">Auto-fix hanya untuk perbaikan aman (ejaan &amp; istilah asing); rujukan/struktur perlu penilaian manusia.</p>
@@ -182,7 +182,7 @@
 
         {{-- Riwayat revisi (snapshot tersimpan) --}}
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-            <h2 class="font-semibold text-slate-800 mb-3">🕓 Riwayat Revisi</h2>
+            <h2 class="font-semibold text-slate-800 mb-3"><x-icon name="clock" class="ico" /> Riwayat Revisi</h2>
             @forelse($logbook->versions as $v)
                 <div class="border-l-2 border-rose-200 pl-3 pb-3 text-sm">
                     <div class="flex items-center justify-between">

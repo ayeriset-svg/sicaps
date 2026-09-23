@@ -32,7 +32,7 @@
 <body>
     <div class="toolbar">
         <button class="btn secondary" onclick="window.close()">Tutup</button>
-        <button class="btn" onclick="window.print()">🖨️ Simpan / Cetak PDF</button>
+        <button class="btn" onclick="window.print()">Simpan / Cetak PDF</button>
     </div>
 
     <div class="sheet">

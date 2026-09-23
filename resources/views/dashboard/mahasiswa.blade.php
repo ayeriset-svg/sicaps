@@ -3,7 +3,7 @@
 
 @section('content')
 <div class="mb-6">
-    <h1 class="text-2xl font-bold text-brand-dark">Halo, {{ explode(' ', $user->name)[0] }} 👋</h1>
+    <h1 class="text-2xl font-bold text-brand-dark">Halo, {{ explode(' ', $user->name)[0] }}</h1>
     <p class="text-slate-500">{{ $ay?->label ?? 'Tidak ada tahun ajaran aktif' }}</p>
 </div>
 
@@ -19,7 +19,7 @@
 @if($deadlines->isNotEmpty())
     <div class="mb-6 rounded-2xl border border-amber-200 bg-gradient-to-br from-amber-50 to-rose-50 p-5">
         <div class="flex items-center gap-2 mb-3">
-            <span class="text-xl">⏰</span>
+            <span class="text-xl"><x-icon name="clock" class="ico" /></span>
             <h2 class="font-semibold text-brand-dark">Menuju Deadline</h2>
             <span class="text-xs text-slate-500">— {{ $deadlines->count() }} sedang berlangsung</span>
         </div>
@@ -99,7 +99,7 @@
         @if($attendance)
             @php $pc = $attendance['percent']; $pcol = $pc === null ? 'slate' : ($pc>=80?'emerald':($pc>=60?'amber':'red')); @endphp
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-                <h2 class="font-semibold text-slate-800 mb-3">🗓️ Rekap Presensi</h2>
+                <h2 class="font-semibold text-slate-800 mb-3"><x-icon name="calendar" class="ico" /> Rekap Presensi</h2>
                 <div class="flex items-center gap-4 mb-3">
                     <div class="text-3xl font-extrabold text-{{ $pcol }}-600">{{ $pc === null ? '—' : $pc.'%' }}</div>
                     <div class="text-xs text-slate-500">Kehadiran<br>({{ $attendance['present'] }} hadir dari {{ $attendance['recorded'] }} sesi tercatat · total {{ $attendance['total'] }} sesi)</div>
@@ -114,12 +114,12 @@
                 <p class="mt-2 text-[11px] text-slate-400">Izin &amp; sakit tidak dihitung sebagai alpa.</p>
                 @php $cr = $attendance['current_rule']; $nr = $attendance['next_rule']; @endphp
                 @if($cr)
-                    <p class="mt-1 text-[11px] text-red-600 font-medium">⚠️ {{ $attendance['absent'] }} hari alpa — kena penalti {{ $cr->label ? '"'.$cr->label.'"' : '' }}: {{ $cr->penalty_type === 'fail' ? 'nilai E (tidak lulus)' : '−'.number_format($cr->deduction_points,0).' poin dari nilai akhir' }}.</p>
+                    <p class="mt-1 text-[11px] text-red-600 font-medium"><x-icon name="warning" class="ico" /> {{ $attendance['absent'] }} hari alpa — kena penalti {{ $cr->label ? '"'.$cr->label.'"' : '' }}: {{ $cr->penalty_type === 'fail' ? 'nilai E (tidak lulus)' : '−'.number_format($cr->deduction_points,0).' poin dari nilai akhir' }}.</p>
                 @endif
                 @if($nr)
                     @php $left = $nr->min_days - $attendance['absent']; @endphp
                     <p class="mt-1 text-[11px] {{ $left <= 2 ? 'text-amber-700' : 'text-slate-500' }}">
-                        {{ $left <= 2 ? '⚠️ ' : '' }}{{ $left }} hari alpa lagi → {{ $nr->penalty_type === 'fail' ? 'nilai E (tidak lulus)' : '−'.number_format($nr->deduction_points,0).' poin' }}.
+                        @if($left <= 2)<x-icon name="warning" class="ico" /> @endif{{ $left }} hari alpa lagi → {{ $nr->penalty_type === 'fail' ? 'nilai E (tidak lulus)' : '−'.number_format($nr->deduction_points,0).' poin' }}.
                     </p>
                 @endif
             </div>
@@ -127,9 +127,9 @@
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
             <h2 class="font-semibold text-slate-800 mb-2">Aksi Cepat</h2>
             <div class="space-y-2 text-sm">
-                <a href="{{ route('topic.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50">📝 Topik & Mitra</a>
-                <a href="{{ route('peer.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50">🤝 Peer 180°</a>
-                <a href="{{ route('grade.me') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50">📊 Nilai Saya</a>
+                <a href="{{ route('topic.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"><x-icon name="pencil" class="ico" /> Topik & Mitra</a>
+                <a href="{{ route('peer.index') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"><x-icon name="chat" class="ico" /> Peer 180°</a>
+                <a href="{{ route('grade.me') }}" class="block rounded-lg border border-slate-200 px-3 py-2 hover:bg-slate-50"><x-icon name="chart" class="ico" /> Nilai Saya</a>
             </div>
         </div>
     </div>

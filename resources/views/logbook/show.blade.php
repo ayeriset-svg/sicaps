@@ -10,7 +10,7 @@
         <h1 class="text-2xl font-bold text-brand-dark">{{ $module->title }}</h1>
     </div>
     <div class="flex items-center gap-2">
-        <a href="{{ route('logbook.print', $module) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50">🖨️ Simpan PDF</a>
+        <a href="{{ route('logbook.print', $module) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="printer" class="ico" /> Simpan PDF</a>
         <x-status-badge :status="$logbook->status_approval" />
     </div>
 </div>
@@ -20,7 +20,7 @@
     <div class="lg:col-span-2 space-y-6">
         @if($module->subClos->isNotEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-4">
-                <p class="text-xs font-semibold text-brand-dark uppercase tracking-wide mb-2">🎯 Capaian Pembelajaran (Sub-CLO)</p>
+                <p class="text-xs font-semibold text-brand-dark uppercase tracking-wide mb-2"><x-icon name="flag" class="ico" /> Capaian Pembelajaran (Sub-CLO)</p>
                 <div class="flex flex-wrap gap-1.5">
                     @foreach($module->subClos as $sc)
                         <span class="text-xs rounded-full bg-rose-50 text-brand px-2 py-0.5" title="{{ $sc->description }}">{{ $sc->code }}@if($sc->clo) · {{ $sc->clo->code }}@endif</span>
@@ -30,7 +30,7 @@
         @endif
 
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-            <h2 class="font-semibold text-slate-800 mb-3">📘 Materi Modul</h2>
+            <h2 class="font-semibold text-slate-800 mb-3"><x-icon name="book" class="ico" /> Materi Modul</h2>
             @php $anyMaterial = false; @endphp
             <div class="space-y-4">
                 @foreach(\App\Models\Module::MATERIAL_FIELDS as $key => $label)
@@ -48,37 +48,37 @@
 
         @if(! $requiresSubmission)
             <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
-                <h2 class="font-semibold text-slate-800 mb-1">📄 Modul Materi</h2>
+                <h2 class="font-semibold text-slate-800 mb-1"><x-icon name="document" class="ico" /> Modul Materi</h2>
                 <p class="text-sm text-slate-500">Modul ini hanya berisi materi untuk dipelajari — tidak ada logbook/isian yang perlu dikerjakan.</p>
             </div>
         @else
         <div class="bg-white rounded-2xl shadow-sm border {{ $isIndividual ? 'border-indigo-100' : 'border-rose-100' }} p-5">
             <div class="flex items-center justify-between mb-4 gap-2">
-                <h2 class="font-semibold text-slate-800">📝 {{ $isIndividual ? 'Tugas Individu' : 'Form Logbook Tim' }}</h2>
+                <h2 class="font-semibold text-slate-800"><x-icon name="pencil" class="ico" /> {{ $isIndividual ? 'Tugas Individu' : 'Form Logbook Tim' }}</h2>
                 @if($isIndividual)<span class="text-xs rounded-full bg-indigo-100 text-indigo-700 px-2 py-0.5 font-medium">Dikerjakan per mahasiswa</span>@endif
             </div>
 
             {{-- Info jadwal --}}
             @if($module->opens_at || $module->closes_at)
                 <div class="mb-3 text-xs text-slate-500 flex flex-wrap gap-x-4 gap-y-1">
-                    @if($module->opens_at)<span>▶ Dibuka: <strong>{{ $module->opens_at->translatedFormat('d M Y H:i') }}</strong></span>@endif
-                    @if($module->closes_at)<span>⏹ Deadline: <strong class="{{ $scheduleState==='open' && $module->daysToDeadline()!==null && $module->daysToDeadline()<=3 ? 'text-red-600' : '' }}">{{ $module->closes_at->translatedFormat('d M Y H:i') }}</strong>@if($scheduleState==='open' && $module->daysToDeadline()!==null) ({{ $module->daysToDeadline() }} hari lagi)@endif</span>@endif
+                    @if($module->opens_at)<span><x-icon name="calendar" class="ico" /> Dibuka: <strong>{{ $module->opens_at->translatedFormat('d M Y H:i') }}</strong></span>@endif
+                    @if($module->closes_at)<span><x-icon name="clock" class="ico" /> Deadline: <strong class="{{ $scheduleState==='open' && $module->daysToDeadline()!==null && $module->daysToDeadline()<=3 ? 'text-red-600' : '' }}">{{ $module->closes_at->translatedFormat('d M Y H:i') }}</strong>@if($scheduleState==='open' && $module->daysToDeadline()!==null) ({{ $module->daysToDeadline() }} hari lagi)@endif</span>@endif
                 </div>
             @endif
 
             {{-- Banner status/akses: status final & revisi didahulukan agar catatan koordinator selalu terlihat --}}
             @if($logbook->status_approval === 'Rejected')
                 <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
-                    ⛔ <span class="font-semibold">Ditolak (Rejected) & terkunci.</span> {{ $isIndividual ? 'Tugas' : 'Logbook' }} tidak dapat diubah lagi.
+                    <x-icon name="ban" class="ico" /> <span class="font-semibold">Ditolak (Rejected) & terkunci.</span> {{ $isIndividual ? 'Tugas' : 'Logbook' }} tidak dapat diubah lagi.
                     @if($logbook->feedback)<p class="mt-1">Catatan: {{ $logbook->feedback }}</p>@endif
                 </div>
             @elseif($locked)
                 <div class="rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3 text-sm text-emerald-700 mb-4">
-                    ✅ <span class="font-semibold">Sudah disetujui (PASS) & terkunci.</span> {{ $isIndividual ? 'Tugas' : 'Logbook' }} tidak dapat diubah lagi.
+                    <x-icon name="check" class="ico" /> <span class="font-semibold">Sudah disetujui (PASS) & terkunci.</span> {{ $isIndividual ? 'Tugas' : 'Logbook' }} tidak dapat diubah lagi.
                 </div>
             @elseif($logbook->status_approval === 'Revision Needed')
                 <div class="rounded-lg bg-pink-50 border border-pink-200 px-4 py-3 text-sm text-pink-800 mb-4">
-                    <p class="font-semibold">🔁 Perlu Revisi — silakan kerjakan ulang & submit lagi.</p>
+                    <p class="font-semibold"><x-icon name="refresh" class="ico" /> Perlu Revisi — silakan kerjakan ulang & submit lagi.</p>
                     @if($logbook->feedback)<p class="mt-1">Catatan: {{ $logbook->feedback }}</p>@endif
                     @if($scheduleState === 'ended')
                         <p class="mt-1 text-xs">Deadline sudah lewat, namun revisi tetap dapat dikirim selama modul masih dibuka koordinator.</p>
@@ -88,21 +88,21 @@
                 </div>
             @elseif($scheduleState === 'closed')
                 <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-3 text-sm text-amber-800 mb-4">
-                    🔒 <span class="font-semibold">Belum dibuka koordinator.</span> Anda belum dapat mengerjakan {{ $isIndividual ? 'tugas' : 'logbook' }} ini. Materi tetap dapat dipelajari.
+                    <x-icon name="lock" class="ico" /> <span class="font-semibold">Belum dibuka koordinator.</span> Anda belum dapat mengerjakan {{ $isIndividual ? 'tugas' : 'logbook' }} ini. Materi tetap dapat dipelajari.
                 </div>
             @elseif($scheduleState === 'scheduled')
                 <div class="rounded-lg bg-sky-50 border border-sky-200 px-4 py-3 text-sm text-sky-800 mb-4">
-                    🗓️ <span class="font-semibold">Belum waktunya.</span> Pengerjaan dibuka mulai {{ $module->opens_at->translatedFormat('d M Y H:i') }}.
+                    <x-icon name="calendar" class="ico" /> <span class="font-semibold">Belum waktunya.</span> Pengerjaan dibuka mulai {{ $module->opens_at->translatedFormat('d M Y H:i') }}.
                 </div>
             @elseif($scheduleState === 'ended')
                 <div class="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700 mb-4">
-                    ⛔ <span class="font-semibold">Batas waktu berakhir.</span> Deadline {{ $module->closes_at->translatedFormat('d M Y H:i') }} telah lewat — pengerjaan ditutup.
+                    <x-icon name="ban" class="ico" /> <span class="font-semibold">Batas waktu berakhir.</span> Deadline {{ $module->closes_at->translatedFormat('d M Y H:i') }} telah lewat — pengerjaan ditutup.
                     @if($logbook->status_approval === 'Pending')<p class="mt-1">Isian Anda sudah terkirim dan menunggu review koordinator.</p>@endif
                 </div>
             @endif
             @if(! $isIndividual && $team->topic_status !== 'approved')
                 <div class="rounded-lg bg-amber-50 border border-amber-200 px-4 py-2 text-sm text-amber-800 mb-4">
-                    📌 Topik tim {{ $team->topic_status === 'rejected' ? 'DITOLAK' : ($team->topic_status === 'pending' ? 'masih menunggu persetujuan' : 'belum dipilih') }}.
+                    <x-icon name="pin" class="ico" /> Topik tim {{ $team->topic_status === 'rejected' ? 'DITOLAK' : ($team->topic_status === 'pending' ? 'masih menunggu persetujuan' : 'belum dipilih') }}.
                     Logbook tetap dapat diisi, namun pastikan topik segera <a href="{{ route('topic.index') }}" class="underline font-medium">diajukan / diperbaiki</a>.
                 </div>
             @endif
@@ -123,7 +123,7 @@
                                 @php $fname = $logbook->payload_json[$field['key'].'__name'] ?? null; @endphp
                                 @if($val)
                                     <div class="mb-2 flex items-center gap-2 text-sm">
-                                        <a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all">📎 {{ $fname ?: basename($val) }}</a>
+                                        <a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all"><x-icon name="paperclip" class="ico" /> {{ $fname ?: basename($val) }}</a>
                                         <span class="text-xs text-slate-400">(berkas saat ini)</span>
                                     </div>
                                 @endif
@@ -147,10 +147,10 @@
                             <div>
                                 <p class="text-sm font-medium text-slate-700 mb-1">{{ $field['label'] }}</p>
                                 @if($field['type'] === 'link')
-                                    @if($val)<a href="{{ $val }}" target="_blank" rel="noopener" class="text-brand hover:underline break-all">🔗 {{ $val }}</a>@else<span class="text-slate-400 text-sm">—</span>@endif
+                                    @if($val)<a href="{{ $val }}" target="_blank" rel="noopener" class="text-brand hover:underline break-all"><x-icon name="link" class="ico" /> {{ $val }}</a>@else<span class="text-slate-400 text-sm">—</span>@endif
                                 @elseif($field['type'] === 'file')
                                     @php $fname = $logbook->payload_json[$field['key'].'__name'] ?? null; @endphp
-                                    @if($val)<a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all">📎 {{ $fname ?: basename($val) }}</a>@else<span class="text-slate-400 text-sm">—</span>@endif
+                                    @if($val)<a href="{{ route('file.show', $val) }}" class="text-brand hover:underline break-all"><x-icon name="paperclip" class="ico" /> {{ $fname ?: basename($val) }}</a>@else<span class="text-slate-400 text-sm">—</span>@endif
                                 @else
                                     <div class="rt-content text-sm max-w-none">{!! $val ?: '<span class="text-slate-400">—</span>' !!}</div>
                                 @endif
@@ -168,13 +168,13 @@
     <div class="space-y-6">
         {{-- Batasan AI tugas ini --}}
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-            <h2 class="font-semibold text-slate-800 mb-2">🤖 Batasan Penggunaan AI</h2>
+            <h2 class="font-semibold text-slate-800 mb-2"><x-icon name="cpu" class="ico" /> Batasan Penggunaan AI</h2>
             <x-ai-level :level="$module->ai_policy_level" :showDesc="true" />
             <p class="text-xs text-slate-400 mt-2">Panduan: {{ $module->aiLevel()['guide'] }}</p>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-            <h2 class="font-semibold text-slate-800 mb-2">💬 Feedback Koordinator</h2>
+            <h2 class="font-semibold text-slate-800 mb-2"><x-icon name="message" class="ico" /> Feedback Koordinator</h2>
             @if($logbook->feedback)
                 <p class="text-sm text-slate-600 whitespace-pre-line">{{ $logbook->feedback }}</p>
             @else
@@ -191,7 +191,7 @@
                         Teks {{ $logbook->ai_text_percentage!==null ? number_format($logbook->ai_text_percentage,1).'%' : '—' }} ·
                         Gambar {{ $logbook->ai_image_percentage!==null ? number_format($logbook->ai_image_percentage,1).'%' : '—' }}
                     </p>
-                    <p class="text-[11px] text-slate-400 mt-2">⚠️ Estimasi indikatif, bukan vonis. Diperiksa {{ $logbook->ai_checked_at->format('d M Y H:i') }}.</p>
+                    <p class="text-[11px] text-slate-400 mt-2"><x-icon name="warning" class="ico" /> Estimasi indikatif, bukan vonis. Diperiksa {{ $logbook->ai_checked_at->format('d M Y H:i') }}.</p>
                 </div>
             @endif
 
@@ -215,7 +215,7 @@
                                 <div class="rounded-lg border border-slate-200 p-2.5 text-xs">
                                     <span class="inline-block rounded bg-slate-100 text-slate-600 px-1.5 py-0.5 font-medium mb-1">{{ str_replace('_',' ',$it['category'] ?? '') }}</span>
                                     @if(!empty($it['original_text']))<p class="text-slate-500 line-through decoration-rose-300">{{ $it['original_text'] }}</p>@endif
-                                    @if(!empty($it['suggestion']))<p class="text-emerald-700 mt-1">✔ {{ $it['suggestion'] }}</p>@endif
+                                    @if(!empty($it['suggestion']))<p class="text-emerald-700 mt-1"><x-icon name="check-mark" class="ico" /> {{ $it['suggestion'] }}</p>@endif
                                     @if(!empty($it['explanation']))<p class="text-slate-400 mt-1">{{ $it['explanation'] }}</p>@endif
                                 </div>
                             @endforeach
@@ -225,13 +225,13 @@
             @endif
         </div>
         <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-            <h2 class="font-semibold text-slate-800 mb-3">✅ Status Validasi</h2>
+            <h2 class="font-semibold text-slate-800 mb-3"><x-icon name="check" class="ico" /> Status Validasi</h2>
             <x-status-badge :status="$logbook->status_approval" />
             @if($logbook->submitted_at)<p class="text-xs text-slate-400 mt-2">Submit terakhir: {{ $logbook->submitted_at->format('d M Y H:i') }}</p>@endif
         </div>
         @if($logbook->versions->isNotEmpty())
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100 p-5">
-                <h2 class="font-semibold text-slate-800 mb-3">🕓 Riwayat Versi</h2>
+                <h2 class="font-semibold text-slate-800 mb-3"><x-icon name="clock" class="ico" /> Riwayat Versi</h2>
                 <ul class="space-y-2 text-sm">
                     @foreach($logbook->versions as $v)
                         <li class="text-slate-500">

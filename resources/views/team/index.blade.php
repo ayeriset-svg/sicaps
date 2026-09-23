@@ -47,7 +47,7 @@
                 </div>
                 @if($locked)
                     <div class="mb-4 rounded-lg bg-slate-50 border border-slate-200 px-4 py-2 text-sm text-slate-600">
-                        🔒 Susunan anggota sudah <strong>terkunci</strong> karena Assessment 1 tim ini sudah mulai dinilai. Perubahan anggota hanya dapat dilakukan koordinator.
+                        <x-icon name="lock" class="ico" /> Susunan anggota sudah <strong>terkunci</strong> karena Assessment 1 tim ini sudah mulai dinilai. Perubahan anggota hanya dapat dilakukan koordinator.
                     </div>
                 @endif
                 <div class="space-y-2">
@@ -71,7 +71,7 @@
 
                 @if($isLeader && ! $locked && $team->members->count() < $maxMembers)
                     <div class="mt-4 pt-4 border-t border-slate-100">
-                        <p class="text-xs text-slate-500 mb-2">➕ Tambah anggota — hanya mahasiswa <strong>kelas {{ $team->class_name ?? '-' }}</strong> yang dapat dipilih.</p>
+                        <p class="text-xs text-slate-500 mb-2"><x-icon name="plus" class="ico" /> Tambah anggota — hanya mahasiswa <strong>kelas {{ $team->class_name ?? '-' }}</strong> yang dapat dipilih.</p>
                         @if($available->isEmpty())
                             <p class="text-sm text-slate-400">Tidak ada mahasiswa kelas {{ $team->class_name ?? '-' }} yang tersedia (semua sudah tergabung tim atau data kelas belum diatur).</p>
                         @else

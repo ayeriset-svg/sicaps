@@ -1,4 +1,4 @@
-@props(['label', 'value', 'icon' => '📌', 'color' => 'brand', 'hint' => null, 'progress' => null])
+@props(['label', 'value', 'icon' => 'pin', 'color' => 'brand', 'hint' => null, 'progress' => null])
 @php
     $tints = [
         'brand'   => 'bg-rose-100 text-brand',
@@ -16,7 +16,7 @@
 <div class="bg-white p-5 rounded-2xl border border-rose-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
     <div class="flex items-center justify-between">
         <span class="text-xs font-semibold text-brand-dark/60 uppercase tracking-wider">{{ $label }}</span>
-        <span class="h-9 w-9 rounded-xl {{ $tint }} flex items-center justify-center text-lg">{{ $icon }}</span>
+        <span class="h-9 w-9 rounded-xl {{ $tint }} flex items-center justify-center"><x-icon :name="$icon" class="w-5 h-5" /></span>
     </div>
     <div class="mt-2 flex items-baseline gap-2">
         <h4 class="text-2xl font-bold text-slate-800">{{ $value }}</h4>

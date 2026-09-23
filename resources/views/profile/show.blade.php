@@ -50,7 +50,7 @@
         <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-rose-100 p-6">
             <div class="flex items-start justify-between gap-3 mb-4 flex-wrap">
                 <div>
-                    <h2 class="font-semibold text-slate-800">🔍 Mode Observasi</h2>
+                    <h2 class="font-semibold text-slate-800"><x-icon name="search" class="ico" /> Mode Observasi</h2>
                     <p class="text-sm text-slate-500">Masuk ke tampilan seorang mahasiswa untuk mengamati — tanpa login/logout akun berbeda. Anda dapat kembali kapan saja.</p>
                 </div>
             </div>
