@@ -25,10 +25,39 @@
 @if(! $stage)
     <p class="text-slate-400">Belum ada stage.</p>
 @else
+    @if($notDoneCount > 0)
+        <div class="mb-5 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 flex items-start gap-2">
+            <x-icon name="warning" class="w-4 h-4 mt-0.5 shrink-0" />
+            <span><span class="font-semibold">{{ $notDoneCount }}</span> mahasiswa belum menyelesaikan pengisian penilaian 180° untuk tahap <span class="font-semibold">{{ $stage->code }}</span>{{ $stage->peer_open ? '' : ' (catatan: tahap ini sudah ditutup)' }}. Detail per tim di bawah.</span>
+        </div>
+    @else
+        <div class="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800 flex items-center gap-2">
+            <x-icon name="check" class="w-4 h-4 shrink-0" />
+            <span>Semua mahasiswa sudah menyelesaikan pengisian penilaian 180° untuk tahap <span class="font-semibold">{{ $stage->code }}</span>.</span>
+        </div>
+    @endif
+
     <div class="space-y-6">
         @foreach($teams as $team)
             <div class="bg-white rounded-2xl shadow-sm border border-rose-100">
                 <div class="px-5 py-4 border-b border-slate-100"><h2 class="font-semibold text-slate-800">{{ $team->team_name }}</h2></div>
+
+                {{-- Status pengisian tiap penilai --}}
+                <div class="px-5 py-4 border-b border-slate-100">
+                    <p class="text-xs font-semibold text-slate-500 mb-2">Status Pengisian (siapa yang sudah/belum menilai)</p>
+                    <div class="flex flex-wrap gap-2">
+                        @forelse($progress[$team->id] ?? [] as $p)
+                            <span class="inline-flex items-center gap-1.5 text-xs rounded-full px-2.5 py-1 font-medium {{ $p['done'] ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
+                                <x-icon :name="$p['done'] ? 'check' : 'x'" class="w-3.5 h-3.5" /> {{ $p['student']->name }}
+                                <span class="opacity-70">({{ $p['submitted'] }}/{{ $p['expected'] }})</span>
+                            </span>
+                        @empty
+                            <span class="text-xs text-slate-400">Tidak ada anggota.</span>
+                        @endforelse
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-2">Angka (x/y): x = anggota yang sudah dinilai oleh mahasiswa itu, y = total anggota tim yang harus dinilai (termasuk diri sendiri).</p>
+                </div>
+
                 <table class="min-w-full text-sm">
                     <thead class="bg-slate-50 text-slate-500 text-left">
                         <tr><th class="px-5 py-2 font-medium">Mahasiswa</th><th class="px-5 py-2 font-medium text-center">Penilai Masuk</th><th class="px-5 py-2 font-medium text-right">Rerata Peer</th></tr>

@@ -31,9 +31,14 @@ class PeerResultController extends Controller
         $allTeams = Team::where('academic_year_id', $ay->id)->orderBy('team_name')->get(['id', 'team_name']);
 
         $results = [];
+        $progress = [];      // [team_id] => daftar status pengisian tiap penilai
+        $notDoneCount = 0;   // total penilai yang belum selesai mengisi (stage terpilih)
         if ($stage) {
             foreach ($teams as $team) {
-                foreach ($team->members->pluck('student')->filter() as $student) {
+                $members = $team->members->pluck('student')->filter()->values();
+                $expected = $members->count(); // tiap penilai menilai seluruh anggota (termasuk diri sendiri)
+
+                foreach ($members as $student) {
                     $q = PeerEvaluation::where('stage_id', $stage->id)
                         ->where('team_id', $team->id)
                         ->where('evaluatee_id', $student->id);
@@ -42,10 +47,26 @@ class PeerResultController extends Controller
                         'avg' => ($a = $q->avg('final_peer_score')) !== null ? round($a, 2) : null,
                         'received' => (clone $q)->count(),
                     ];
+
+                    // Progres pengisian: berapa anggota yang sudah DINILAI oleh mahasiswa ini.
+                    $submitted = PeerEvaluation::where('stage_id', $stage->id)
+                        ->where('team_id', $team->id)
+                        ->where('evaluator_id', $student->id)
+                        ->distinct('evaluatee_id')->count('evaluatee_id');
+                    $done = $expected > 0 && $submitted >= $expected;
+                    if (! $done) {
+                        $notDoneCount++;
+                    }
+                    $progress[$team->id][] = [
+                        'student' => $student,
+                        'submitted' => $submitted,
+                        'expected' => $expected,
+                        'done' => $done,
+                    ];
                 }
             }
         }
 
-        return view('admin.peer-result.index', compact('stages', 'stage', 'teams', 'results', 'ay', 'classes', 'allTeams'));
+        return view('admin.peer-result.index', compact('stages', 'stage', 'teams', 'results', 'progress', 'notDoneCount', 'ay', 'classes', 'allTeams'));
     }
 }
