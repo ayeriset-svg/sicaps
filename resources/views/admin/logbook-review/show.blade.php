@@ -15,7 +15,10 @@
     </div>
     <div class="flex items-center gap-2">
         <a href="{{ route('admin.logbook-review.edit', $logbook) }}" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="pencil" class="ico" /> Edit Isi</a>
-        <a href="{{ route('admin.logbook-review.print', $logbook) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="printer" class="ico" /> Generate PDF</a>
+        @if($logbook->module->requiresSubmission())
+            <a href="{{ route('admin.logbook-review.print', ['logbook' => $logbook, 'mode' => 'answers']) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="printer" class="ico" /> PDF Jawaban</a>
+        @endif
+        <a href="{{ route('admin.logbook-review.print', $logbook) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="printer" class="ico" /> PDF Lengkap</a>
     </div>
 </div>
 

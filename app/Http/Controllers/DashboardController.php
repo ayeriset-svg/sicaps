@@ -78,7 +78,7 @@ class DashboardController extends Controller
         }
 
         if ($ay && $team) {
-            $modules = $ay->modules()->get();
+            $modules = $ay->modules()->visibleToStudents()->get();
             $ids = $modules->pluck('id');
 
             // Submission relevan per modul: tugas individu = milik user; lainnya = milik tim.

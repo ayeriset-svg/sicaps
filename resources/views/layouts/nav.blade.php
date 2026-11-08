@@ -35,6 +35,7 @@
 
     {!! $header('Penilaian') !!}
     {!! $item('admin.logbook-review.index', 'Review Logbook', 'clipboard-check') !!}
+    {!! $item('admin.student-progress.index', 'Progres Mahasiswa', 'chart') !!}
     {!! $item('admin.scores.index', 'Input Penilaian', 'pencil') !!}
     {!! $item('admin.peer-result.index', 'Hasil Peer 180°', 'chat') !!}
     {!! $item('admin.stages.index', 'Bobot & Stage', 'scale') !!}

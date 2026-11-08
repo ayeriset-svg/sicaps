@@ -68,6 +68,10 @@
                 <span><span class="font-medium">Buka untuk dikerjakan mahasiswa</span> — bila dimatikan, mahasiswa belum bisa mengisi (hanya melihat materi).</span>
             </label>
             <label class="flex items-start gap-2 text-sm">
+                <input type="checkbox" name="is_hidden" value="1" class="mt-0.5" @checked(old('is_hidden', $module->is_hidden ?? false))>
+                <span><span class="font-medium">Sembunyikan dari mahasiswa</span> — modul <strong>tidak terlihat sama sekali</strong> di sisi mahasiswa (materi maupun form tidak dapat diakses). Berguna untuk menyiapkan modul sebelum dirilis.</span>
+            </label>
+            <label class="flex items-start gap-2 text-sm">
                 <input type="checkbox" name="is_individual" value="1" x-model="indiv" class="mt-0.5" @checked(old('is_individual', $module->is_individual ?? false))>
                 <span><span class="font-medium">Tugas Individu</span> — wajib dikerjakan tiap mahasiswa (tidak diwakilkan ketua tim). Jika di-PASS, mahasiswa otomatis ditandai HADIR pada presensi.</span>
             </label>

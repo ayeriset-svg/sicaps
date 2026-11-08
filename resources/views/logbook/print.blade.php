@@ -50,6 +50,8 @@
     $st = $logbook->status_approval ?? 'Not Started';
     [$stCls, $stLabel] = $statusMap[$st] ?? ['b-none', $st];
     $payload = $logbook->payload_json ?? [];
+    // Mode 'answers' = hanya tugas/jawaban mahasiswa (tanpa materi modul).
+    $mode = ($mode ?? 'full') === 'answers' ? 'answers' : 'full';
 @endphp
 
     <div class="toolbar">
@@ -92,13 +94,15 @@
             @endforeach
         </table>
 
-        <h2 class="section">{{ strtoupper($module->code ? $module->code.' : ' : '') }}{{ $module->title }}</h2>
+        <h2 class="section">{{ strtoupper($module->code ? $module->code.' : ' : '') }}{{ $module->title }}{{ $mode === 'answers' ? ' — JAWABAN MAHASISWA' : '' }}</h2>
 
-        {{-- Materi modul (mengikuti template) --}}
-        @foreach(\App\Models\Module::MATERIAL_FIELDS as $key => $label)
-            <div class="field-label">{{ strtoupper($label) }}</div>
-            <div class="box rt">{!! filled($module->$key) ? $module->$key : '<span class="empty">—</span>' !!}</div>
-        @endforeach
+        {{-- Materi modul (mengikuti template) — disembunyikan pada mode "jawaban saja". --}}
+        @if($mode !== 'answers')
+            @foreach(\App\Models\Module::MATERIAL_FIELDS as $key => $label)
+                <div class="field-label">{{ strtoupper($label) }}</div>
+                <div class="box rt">{!! filled($module->$key) ? $module->$key : '<span class="empty">—</span>' !!}</div>
+            @endforeach
+        @endif
 
         {{-- Isian mahasiswa (field dinamis) --}}
         @foreach($module->fields() as $field)

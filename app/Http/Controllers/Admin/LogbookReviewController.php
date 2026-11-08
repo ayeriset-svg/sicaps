@@ -252,6 +252,7 @@ class LogbookReviewController extends Controller
             'module' => $logbook->module,
             'logbook' => $logbook,
             'ay' => $logbook->team->academicYear,
+            'mode' => request('mode') === 'answers' ? 'answers' : 'full',
         ]);
     }
 }

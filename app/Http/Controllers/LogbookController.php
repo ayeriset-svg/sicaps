@@ -29,7 +29,7 @@ class LogbookController extends Controller
             return $this->redirectNoTeam();
         }
 
-        $modules = $ay->modules()->get();
+        $modules = $ay->modules()->visibleToStudents()->get();
         $moduleIds = $modules->pluck('id');
 
         // Logbook tim (user_id NULL) & submission individu milik user ini.
@@ -58,6 +58,7 @@ class LogbookController extends Controller
             return $this->redirectNoTeam();
         }
         abort_unless($module->academic_year_id === $ay->id, 404);
+        abort_if($module->isHidden(), 404, 'Modul tidak ditemukan.');
         // Modul (logbook/tugas) & assessment sama-sama dapat dibuka untuk melihat materi.
         abort_unless($module->isLogbook() || $module->type === 'assessment', 404, 'Modul tidak ditemukan.');
         $module->load('subClos.clo');
@@ -87,6 +88,7 @@ class LogbookController extends Controller
         $team = Auth::user()->activeTeam($ay?->id);
         abort_unless($team, 403);
         abort_unless($module->academic_year_id === $ay->id, 404);
+        abort_if($module->isHidden(), 404);
         abort_unless($module->isLogbook() || $module->type === 'assessment', 404);
 
         $team->load('members.student', 'leader', 'topic.partner');
@@ -95,7 +97,9 @@ class LogbookController extends Controller
             $logbook->load('versions.author');
         }
 
-        return view('logbook.print', compact('team', 'module', 'logbook', 'ay'));
+        $mode = request('mode') === 'answers' ? 'answers' : 'full';
+
+        return view('logbook.print', compact('team', 'module', 'logbook', 'ay', 'mode'));
     }
 
     public function update(Request $request, Module $module)
@@ -104,6 +108,7 @@ class LogbookController extends Controller
         $team = Auth::user()->activeTeam($ay?->id);
         abort_unless($team, 403);
         abort_unless($module->academic_year_id === $ay->id, 404);
+        abort_if($module->isHidden(), 404);
         abort_unless($module->requiresSubmission(), 404, 'Modul ini tidak memiliki pengerjaan.');
 
         // Izin pengerjaan: tugas individu = tiap anggota (isi miliknya); logbook tim = ketua saja.

@@ -165,6 +165,7 @@ class ModuleController extends Controller
         // Checkbox (hanya terkirim bila dicentang).
         $data['is_individual'] = $request->boolean('is_individual');
         $data['is_open'] = $request->boolean('is_open');
+        $data['is_hidden'] = $request->boolean('is_hidden');
         $data['requires_submission'] = $request->boolean('requires_submission');
         $data['counts_as_attendance'] = $data['is_individual'] && $request->boolean('counts_as_attendance');
 

@@ -10,7 +10,10 @@
         <h1 class="text-2xl font-bold text-brand-dark">{{ $module->title }}</h1>
     </div>
     <div class="flex items-center gap-2">
-        <a href="{{ route('logbook.print', $module) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="printer" class="ico" /> Simpan PDF</a>
+        @if($module->requiresSubmission())
+            <a href="{{ route('logbook.print', ['module' => $module, 'mode' => 'answers']) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="printer" class="ico" /> PDF Jawaban</a>
+        @endif
+        <a href="{{ route('logbook.print', $module) }}" target="_blank" class="rounded-lg border border-rose-200 text-brand px-3 py-1.5 text-sm hover:bg-rose-50"><x-icon name="printer" class="ico" /> PDF Lengkap</a>
         <x-status-badge :status="$logbook->status_approval" />
     </div>
 </div>

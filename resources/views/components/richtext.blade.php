@@ -23,7 +23,13 @@
                 menubar: false,
                 statusbar: true,
                 min_height: minH,
+                // Batasi tinggi maksimum: bila konten panjang, area isi scroll di
+                // dalam editor sehingga TOOLBAR tetap terlihat (tidak ikut memanjang).
+                max_height: Math.max(minH + 120, 640),
                 autoresize_bottom_margin: 30,
+                // Toolbar menempel (sticky) saat halaman di-scroll → selalu terjangkau.
+                toolbar_sticky: true,
+                toolbar_sticky_offset: 0,
                 plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen table wordcount autoresize',
                 toolbar: 'undo redo | blocks fontfamily fontsizeinput | bold italic underline strikethrough subscript superscript | forecolor backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | blockquote link image table charmap | removeformat code fullscreen',
                 toolbar_mode: 'wrap',

@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\PartnerController;
 use App\Http\Controllers\Admin\PeerResultController;
 use App\Http\Controllers\Admin\PenaltyRuleController;
 use App\Http\Controllers\Admin\ReportController;
+use App\Http\Controllers\Admin\StudentProgressController;
 use App\Http\Controllers\Admin\ScoreController;
 use App\Http\Controllers\Admin\StudentController;
 use App\Http\Controllers\Admin\TemplateController;
@@ -170,6 +171,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/logbook-review/{logbook}/check-ai', [LogbookReviewController::class, 'checkAi'])->name('logbook-review.check-ai');
         Route::post('/logbook-review/{logbook}/proofread', [LogbookReviewController::class, 'proofread'])->name('logbook-review.proofread');
         Route::put('/logbook-review/{logbook}', [LogbookReviewController::class, 'review'])->name('logbook-review.review');
+
+        // Pemantauan progres per mahasiswa (modul mana saja yang sudah dikerjakan)
+        Route::get('/student-progress', [StudentProgressController::class, 'index'])->name('student-progress.index');
 
         // Assessment stage (bobot, peer open, kriteria) + input nilai
         Route::get('/stages', [AssessmentStageController::class, 'index'])->name('stages.index');

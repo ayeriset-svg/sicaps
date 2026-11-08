@@ -23,6 +23,7 @@
                     <td class="px-4 py-3">{{ $m->code }}</td>
                     <td class="px-4 py-3 text-slate-800">
                         {{ $m->title }}
+                        @if($m->isHidden())<span class="ml-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs bg-slate-200 text-slate-600 align-middle"><x-icon name="eye" class="ico" /> Disembunyikan</span>@endif
                         <span class="block mt-1"><x-ai-level :level="$m->ai_policy_level" /></span>
                     </td>
                     <td class="px-4 py-3">

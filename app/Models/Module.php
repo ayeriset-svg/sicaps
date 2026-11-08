@@ -11,7 +11,7 @@ class Module extends Model
 {
     protected $fillable = [
         'academic_year_id', 'order_index', 'week_label', 'code', 'type',
-        'assessment_stage', 'is_individual', 'requires_submission', 'is_open', 'opens_at', 'closes_at',
+        'assessment_stage', 'is_individual', 'requires_submission', 'is_open', 'is_hidden', 'opens_at', 'closes_at',
         'attendance_week', 'attendance_session', 'counts_as_attendance', 'attendance_finalized_at',
         'ai_policy_level', 'title',
         'objectives', 'tools_materials', 'references', 'description', 'tasks',
@@ -37,6 +37,7 @@ class Module extends Model
         'is_individual' => 'boolean',
         'requires_submission' => 'boolean',
         'is_open' => 'boolean',
+        'is_hidden' => 'boolean',
         'counts_as_attendance' => 'boolean',
         'opens_at' => 'datetime',
         'closes_at' => 'datetime',
@@ -77,6 +78,18 @@ class Module extends Model
     public function isIndividual(): bool
     {
         return (bool) $this->is_individual;
+    }
+
+    /** Disembunyikan dari mahasiswa (tidak terlihat sama sekali). */
+    public function isHidden(): bool
+    {
+        return (bool) $this->is_hidden;
+    }
+
+    /** Scope: hanya modul yang boleh dilihat mahasiswa (tidak di-hide). */
+    public function scopeVisibleToStudents($query)
+    {
+        return $query->where('is_hidden', false);
     }
 
     /** Label ringkas jenis pengerjaan. */
