@@ -5,8 +5,12 @@
     <title>{{ $module->code }} — {{ $module->title }}</title>
     <style>
         /* margin:0 agar browser tidak mencetak header/footer otomatis (tanggal, URL, no. halaman).
-           Margin cetak dipindah ke padding .sheet saat print. */
+           Margin atas/bawah tiap halaman dibuat lewat spacer thead/tfoot (berulang per halaman);
+           margin kiri/kanan lewat padding .sheet saat print. */
         @page { size: A4; margin: 0; }
+        .pagewrap { width: 100%; border-collapse: collapse; }
+        .pagewrap > thead > tr > td, .pagewrap > tbody > tr > td, .pagewrap > tfoot > tr > td { border: 0; padding: 0; vertical-align: top; }
+        .pw-space { height: 0; }
         * { box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; color: #1f2937; font-size: 11.5px; line-height: 1.55; margin: 0; background: #f1f3f5; }
         .sheet { background: #fff; max-width: 820px; margin: 20px auto; padding: 36px 44px; box-shadow: 0 2px 12px rgba(0,0,0,.12); }
@@ -38,7 +42,7 @@
         .toolbar { max-width: 820px; margin: 14px auto 0; text-align: right; }
         .btn { background: #A61010; color: #fff; border: 0; border-radius: 8px; padding: 9px 18px; font-size: 13px; cursor: pointer; }
         .btn.secondary { background: #e5e7eb; color: #374151; margin-right: 6px; }
-        @media print { body { background: #fff; } .sheet { box-shadow: none; margin: 0; max-width: none; padding: 16mm; } .toolbar { display: none; } }
+        @media print { body { background: #fff; } .sheet { box-shadow: none; margin: 0; max-width: none; padding: 0 16mm; } .toolbar { display: none; } .pw-space { height: 15mm; } }
     </style>
 </head>
 <body>
@@ -61,6 +65,10 @@
         <button class="btn" onclick="window.print()">Simpan / Cetak PDF</button>
     </div>
 
+    <table class="pagewrap">
+    <thead><tr><td><div class="pw-space"></div></td></tr></thead>
+    <tfoot><tr><td><div class="pw-space"></div></td></tr></tfoot>
+    <tbody><tr><td>
     <div class="sheet">
         <div class="head">
             <img src="{{ asset('img/modul-header-logo.png') }}" alt="Logo">
@@ -184,5 +192,7 @@
             @endif
         </div>
     </div>
+    </td></tr></tbody>
+    </table>
 </body>
 </html>
