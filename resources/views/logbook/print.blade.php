@@ -4,16 +4,15 @@
     <meta charset="utf-8">
     <title>{{ $module->code }} — {{ $module->title }}</title>
     <style>
-        /* margin:0 agar browser tidak mencetak header/footer otomatis (tanggal, URL, no. halaman).
-           Margin atas/bawah tiap halaman dibuat lewat spacer thead/tfoot (berulang per halaman);
-           margin kiri/kanan lewat padding .sheet saat print. */
+        /* Cetak: tiap .page = satu lembar A4 (margin via padding); @page margin:0 agar browser
+           tidak menambah header/footer sendiri (tanpa tanggal/URL). Nomor halaman ditaruh sendiri
+           di kanan bawah. Font Arial agar glyph l/I tidak tampak tebal di hasil cetak. */
         @page { size: A4; margin: 0; }
-        .pagewrap { width: 100%; border-collapse: collapse; }
-        .pagewrap > thead > tr > td, .pagewrap > tbody > tr > td, .pagewrap > tfoot > tr > td { border: 0; padding: 0; vertical-align: top; }
-        .pw-space { height: 0; }
         * { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; color: #1f2937; font-size: 11.5px; line-height: 1.55; margin: 0; background: #f1f3f5; }
-        .sheet { background: #fff; max-width: 820px; margin: 20px auto; padding: 36px 44px; box-shadow: 0 2px 12px rgba(0,0,0,.12); }
+        body { font-family: Arial, Helvetica, sans-serif; color: #1f2937; font-size: 11.5px; line-height: 1.55; margin: 0; background: #eef0f2; }
+        .sheet { background: #fff; max-width: 210mm; margin: 16px auto; padding: 15mm 16mm; box-shadow: 0 2px 12px rgba(0,0,0,.12); }
+        .page { width: 210mm; min-height: 297mm; padding: 15mm 16mm; background: #fff; margin: 0 auto 10px; position: relative; }
+        .page .page-num { position: absolute; right: 16mm; bottom: 7mm; font-size: 9.5px; color: #6b7280; }
         .head { display: flex; align-items: center; gap: 14px; border-bottom: 3px solid #A61010; padding-bottom: 12px; margin-bottom: 16px; }
         .head img { height: 54px; }
         .head .t1 { font-weight: 800; font-size: 15px; color: #7E0B0B; }
@@ -39,10 +38,15 @@
         .b-pending { background: #fef3c7; color: #b45309; }
         .b-none { background: #f1f5f9; color: #64748b; }
         .dates { margin-top: 6px; font-size: 10.5px; color: #6b7280; }
-        .toolbar { max-width: 820px; margin: 14px auto 0; text-align: right; }
+        .toolbar { position: fixed; top: 12px; right: 12px; z-index: 9999; }
         .btn { background: #A61010; color: #fff; border: 0; border-radius: 8px; padding: 9px 18px; font-size: 13px; cursor: pointer; }
         .btn.secondary { background: #e5e7eb; color: #374151; margin-right: 6px; }
-        @media print { body { background: #fff; } .sheet { box-shadow: none; margin: 0; max-width: none; padding: 0 16mm; } .toolbar { display: none; } .pw-space { height: 15mm; } }
+        @media print {
+            body { background: #fff; }
+            .toolbar { display: none; }
+            .page { margin: 0; box-shadow: none; page-break-after: always; }
+            .page:last-child { page-break-after: auto; }
+        }
     </style>
 </head>
 <body>
@@ -65,10 +69,6 @@
         <button class="btn" onclick="window.print()">Simpan / Cetak PDF</button>
     </div>
 
-    <table class="pagewrap">
-    <thead><tr><td><div class="pw-space"></div></td></tr></thead>
-    <tfoot><tr><td><div class="pw-space"></div></td></tr></tfoot>
-    <tbody><tr><td>
     <div class="sheet">
         <div class="head">
             <img src="{{ asset('img/modul-header-logo.png') }}" alt="Logo">
@@ -78,6 +78,14 @@
                 <div class="t2">FAKULTAS ILMU TERAPAN – UNIVERSITAS TELKOM</div>
             </div>
         </div>
+
+        <h2 class="section">IDENTITAS MODUL</h2>
+        <table class="ident">
+            <tr><th>Minggu / Kode</th><td>{{ $module->week_label }}{{ $module->code ? ' · '.$module->code : '' }}</td></tr>
+            <tr><th>Judul Modul</th><td>{{ $module->title }}</td></tr>
+            <tr><th>Jenis</th><td>{{ $module->workLabel() }}{{ $module->type==='assessment' ? ' (Assessment '.$module->assessment_stage.')' : '' }}</td></tr>
+            <tr><th>Batasan AI</th><td>Level {{ $module->ai_policy_level }} — {{ $module->aiLevel()['name'] }}</td></tr>
+        </table>
 
         <h2 class="section">IDENTITAS UMUM</h2>
         <table class="ident">
@@ -192,7 +200,7 @@
             @endif
         </div>
     </div>
-    </td></tr></tbody>
-    </table>
+
+    @include('logbook._paginator')
 </body>
 </html>
