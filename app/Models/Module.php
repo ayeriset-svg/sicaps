@@ -86,6 +86,17 @@ class Module extends Model
         return (bool) $this->is_hidden;
     }
 
+    /**
+     * Tugas individu yang presensinya diambil dari pengumpulan.
+     * Modul yang di-hide tanpa deadline pengumpulan tidak dapat diambil presensinya.
+     */
+    public function takesAssignmentAttendance(): bool
+    {
+        return $this->isIndividual() && $this->counts_as_attendance
+            && $this->attendance_week && $this->attendance_session
+            && ! ($this->isHidden() && ! $this->closes_at);
+    }
+
     /** Scope: hanya modul yang boleh dilihat mahasiswa (tidak di-hide). */
     public function scopeVisibleToStudents($query)
     {

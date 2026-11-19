@@ -29,7 +29,7 @@ class AssignmentAttendanceService
     public function finalize(Module $module, bool $recalculate = true): array
     {
         $result = ['present' => 0, 'absent' => 0, 'waiting' => 0, 'kept' => 0];
-        if (! ($module->isIndividual() && $module->counts_as_attendance && $module->attendance_week && $module->attendance_session)) {
+        if (! $module->takesAssignmentAttendance()) {
             return $result;
         }
 

@@ -2,7 +2,7 @@
 @section('title', 'Topik & Mitra — Modul 1')
 
 @section('content')
-@php $isLeader = auth()->id() === $team->leader_id; $topic = $team->topic; @endphp
+@php $isLeader = auth()->id() === $team->leader_id; $topic = $team->topic; $topicLocked = $team->isTopicLocked(); @endphp
 <div class="mb-6 flex items-start justify-between flex-wrap gap-3">
     <div>
         <h1 class="text-2xl font-bold text-brand-dark">Modul 1 — Topik & Mitra</h1>
@@ -28,7 +28,7 @@
         @if($topic->partner_label)<p class="text-sm text-slate-500">Mitra: {{ $topic->partner_label }}@if($topic->partner) ({{ $topic->partner->type_label }})@endif</p>@endif
 
         {{-- Editor fitur tim: menambah/mengurangi fitur tanpa mengubah master topik --}}
-        @if($isLeader)
+        @if($isLeader && ! $topicLocked)
             <form method="POST" action="{{ route('topic.features') }}" class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-rose-100 pt-4">
                 @csrf @method('PUT')
                 <div class="md:col-span-2">
@@ -62,7 +62,13 @@
     </div>
 @endif
 
-@if($isLeader)
+@if($topicLocked)
+    <div class="mb-6 rounded-lg bg-slate-50 border border-slate-200 px-4 py-3 text-sm text-slate-600">
+        <x-icon name="lock" class="ico" /> Topik tim sudah <strong>disetujui</strong> koordinator dan terkunci. Topik dan daftar fitur tidak dapat diganti lagi; hubungi koordinator bila perlu perubahan.
+    </div>
+@endif
+
+@if($isLeader && ! $topicLocked)
 <div x-data="{ tab: '{{ $topic && $topic->origin==='mandiri' ? 'mandiri' : 'katalog' }}' }">
     <div class="flex gap-2 mb-4">
         <button @click="tab='katalog'" :class="tab==='katalog' ? 'bg-brand text-white' : 'bg-white text-slate-600 border border-slate-200'" class="rounded-lg px-4 py-2 text-sm"><x-icon name="book" class="ico" /> Pilih dari Katalog</button>

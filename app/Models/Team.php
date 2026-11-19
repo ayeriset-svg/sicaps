@@ -52,6 +52,12 @@ class Team extends Model
      * Susunan anggota terkunci untuk mahasiswa begitu Assessment pertama (A1)
      * tim ini mulai dinilai; setelahnya hanya koordinator yang dapat mengubah.
      */
+    /** Topik yang sudah disetujui koordinator tidak dapat diganti/diubah oleh tim. */
+    public function isTopicLocked(): bool
+    {
+        return $this->topic_id && $this->topic_status === 'approved';
+    }
+
     public function isMembershipLocked(): bool
     {
         $firstStage = AssessmentStage::where('academic_year_id', $this->academic_year_id)

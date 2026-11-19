@@ -10,6 +10,8 @@ use Illuminate\Validation\Rule;
 
 class TopicController extends Controller
 {
+    private const LOCKED_MESSAGE = 'Topik tim sudah disetujui koordinator sehingga tidak dapat diganti atau diubah. Hubungi koordinator bila perlu perubahan.';
+
     /**
      * Modul 1 - Topik: pilih dari katalog superadmin ATAU ajukan mandiri.
      */
@@ -42,6 +44,9 @@ class TopicController extends Controller
     {
         $ay = AcademicYear::active();
         $team = $this->leaderTeam($ay);
+        if ($team->isTopicLocked()) {
+            return back()->with('error', self::LOCKED_MESSAGE);
+        }
 
         $data = $request->validate(['topic_id' => ['required', 'exists:topics,id']]);
         $topic = Topic::where('academic_year_id', $ay->id)->findOrFail($data['topic_id']);
@@ -66,6 +71,9 @@ class TopicController extends Controller
         $ay = AcademicYear::active();
         $team = $this->leaderTeam($ay);
         abort_unless($team->topic_id, 422, 'Belum ada topik terpilih.');
+        if ($team->isTopicLocked()) {
+            return back()->with('error', self::LOCKED_MESSAGE);
+        }
 
         $data = $request->validate([
             'custom_general_features' => ['nullable', 'string'],
@@ -88,6 +96,9 @@ class TopicController extends Controller
     {
         $ay = AcademicYear::active();
         $team = $this->leaderTeam($ay);
+        if ($team->isTopicLocked()) {
+            return back()->with('error', self::LOCKED_MESSAGE);
+        }
 
         $data = $request->validate([
             'title' => ['required', 'string', 'max:255'],

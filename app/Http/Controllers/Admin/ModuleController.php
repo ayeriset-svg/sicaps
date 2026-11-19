@@ -126,6 +126,9 @@ class ModuleController extends Controller
             $module->isIndividual() && $module->counts_as_attendance && $module->attendance_week && $module->attendance_session,
             422, 'Modul ini bukan tugas individu yang dihitung sebagai presensi.'
         );
+        if (! $module->takesAssignmentAttendance()) {
+            return back()->with('error', 'Modul ini disembunyikan & tidak memiliki deadline pengumpulan, sehingga presensinya tidak dapat diambil.');
+        }
 
         $r = $svc->finalize($module);
 

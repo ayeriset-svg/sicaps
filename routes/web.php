@@ -67,6 +67,7 @@ Route::middleware('auth')->group(function () {
         Route::put('/team/{team}', [TeamController::class, 'update'])->name('team.update');
         Route::post('/team/{team}/members', [TeamController::class, 'addMember'])->name('team.members.add');
         Route::delete('/team/{team}/members/{member}', [TeamController::class, 'removeMember'])->name('team.members.remove');
+        Route::post('/team/{team}/leave', [TeamController::class, 'leave'])->name('team.leave');
 
         Route::get('/topic', [TopicController::class, 'index'])->name('topic.index');
         Route::post('/topic/choose', [TopicController::class, 'choose'])->name('topic.choose');

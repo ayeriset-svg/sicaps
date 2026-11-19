@@ -69,6 +69,16 @@
                     @endforeach
                 </div>
 
+                @if(! $isLeader && ! $locked)
+                    <div class="mt-4 pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <p class="text-sm text-slate-500">Anda dimasukkan ke tim ini oleh ketua <strong>{{ $team->leader?->name }}</strong>. Bila tidak sesuai, Anda dapat menolak atau keluar dari tim.</p>
+                        <form method="POST" action="{{ route('team.leave', $team) }}" onsubmit="return confirm('Keluar dari tim {{ addslashes($team->team_name) }}? Anda harus bergabung ke tim lain agar dapat mengerjakan logbook.')">
+                            @csrf
+                            <button class="whitespace-nowrap rounded-lg border border-red-200 text-red-600 px-4 py-2 text-sm hover:bg-red-50">Tolak / Keluar dari Tim</button>
+                        </form>
+                    </div>
+                @endif
+
                 @if($isLeader && ! $locked && $team->members->count() < $maxMembers)
                     <div class="mt-4 pt-4 border-t border-slate-100">
                         <p class="text-xs text-slate-500 mb-2"><x-icon name="plus" class="ico" /> Tambah anggota — hanya mahasiswa <strong>kelas {{ $team->class_name ?? '-' }}</strong> yang dapat dipilih.</p>

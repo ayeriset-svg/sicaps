@@ -124,6 +124,27 @@ class TeamController extends Controller
         return back()->with('success', 'Anggota dihapus dari tim.');
     }
 
+    /**
+     * Anggota (bukan ketua) menolak dimasukkan ke tim / keluar dari tim,
+     * selama susunan anggota belum terkunci.
+     */
+    public function leave(Team $team, GradeCalculationService $grades)
+    {
+        $member = $team->members()->where('student_id', Auth::id())->first();
+        abort_unless($member, 403, 'Anda bukan anggota tim ini.');
+        if ($team->leader_id === Auth::id()) {
+            return back()->with('error', 'Ketua tim tidak dapat keluar dari tim. Hubungi koordinator bila tim perlu dibubarkan atau ganti ketua.');
+        }
+        if ($team->isMembershipLocked()) {
+            return back()->with('error', self::LOCKED_MESSAGE);
+        }
+
+        $member->delete();
+        $grades->forgetStudents([$member->student_id], $team->academic_year_id);
+
+        return redirect()->route('team.index')->with('success', "Anda sudah keluar dari tim {$team->team_name}. Silakan buat tim baru atau minta ketua tim lain menambahkan Anda.");
+    }
+
     private function authorizeLeader(Team $team): void
     {
         abort_unless(Auth::id() === $team->leader_id, 403, 'Hanya ketua tim yang dapat mengubah data ini.');
