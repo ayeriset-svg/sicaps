@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\GradeCalculationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class TeamController extends Controller
@@ -52,13 +53,25 @@ class TeamController extends Controller
             'leader_role' => ['required', 'string', 'max:255'],
         ]);
 
-        $team = Team::create([
-            'academic_year_id' => $ay->id,
-            'team_name' => $data['team_name'],
-            'leader_id' => $user->id,
-            'case_type' => $data['case_type'],
-        ]);
-        $team->members()->create(['student_id' => $user->id, 'assigned_role' => $data['leader_role']]);
+        // Kunci baris mahasiswa agar klik ganda / dua tab tidak membuat 2 tim sekaligus.
+        $created = DB::transaction(function () use ($ay, $user, $data) {
+            User::whereKey($user->id)->lockForUpdate()->first();
+            if (Team::studentHasTeam($user->id, $ay->id)) {
+                return false;
+            }
+            $team = Team::create([
+                'academic_year_id' => $ay->id,
+                'team_name' => $data['team_name'],
+                'leader_id' => $user->id,
+                'case_type' => $data['case_type'],
+            ]);
+            $team->members()->create(['student_id' => $user->id, 'assigned_role' => $data['leader_role']]);
+
+            return true;
+        });
+        if (! $created) {
+            return redirect()->route('team.index')->with('error', 'Anda sudah tergabung dalam sebuah tim pada tahun ajaran ini.');
+        }
 
         return redirect()->route('team.index')->with('success', 'Tim berhasil dibuat. Tambahkan anggota (maks ' . config('capstone.team_max_members') . ' orang).');
     }
@@ -98,13 +111,9 @@ class TeamController extends Controller
             return back()->with('error', 'Hanya mahasiswa dari kelas yang sama (' . ($team->class_name ?? '-') . ') yang dapat ditambahkan ke tim.');
         }
 
-        $already = TeamMember::where('student_id', $data['student_id'])
-            ->whereHas('team', fn ($q) => $q->where('academic_year_id', $team->academic_year_id))->exists();
-        if ($already) {
-            return back()->with('error', 'Mahasiswa tersebut sudah tergabung di tim lain.');
+        if ($error = $team->enrollStudent($candidate->id, $data['assigned_role'])) {
+            return back()->with('error', $error);
         }
-
-        $team->members()->create($data);
 
         return back()->with('success', 'Anggota ditambahkan.');
     }

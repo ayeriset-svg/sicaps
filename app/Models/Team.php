@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class Team extends Model
 {
@@ -52,6 +53,42 @@ class Team extends Model
      * Susunan anggota terkunci untuk mahasiswa begitu Assessment pertama (A1)
      * tim ini mulai dinilai; setelahnya hanya koordinator yang dapat mengubah.
      */
+    /**
+     * Cek apakah mahasiswa sudah tergabung di tim mana pun pada tahun ajaran ini.
+     */
+    public static function studentHasTeam(int $studentId, int $academicYearId): bool
+    {
+        return TeamMember::where('student_id', $studentId)
+            ->whereHas('team', fn ($q) => $q->where('academic_year_id', $academicYearId))
+            ->exists();
+    }
+
+    /**
+     * Tambahkan mahasiswa ke tim ini secara aman: satu mahasiswa hanya boleh
+     * berada di SATU tim per tahun ajaran. Baris mahasiswa & tim dikunci
+     * (SELECT ... FOR UPDATE) agar dua permintaan bersamaan tidak sama-sama lolos.
+     * Mengembalikan pesan error, atau null bila berhasil.
+     */
+    public function enrollStudent(int $studentId, string $role): ?string
+    {
+        return DB::transaction(function () use ($studentId, $role) {
+            User::whereKey($studentId)->lockForUpdate()->first();
+            static::whereKey($this->id)->lockForUpdate()->first();
+
+            if (static::studentHasTeam($studentId, $this->academic_year_id)) {
+                return 'Mahasiswa tersebut sudah tergabung di tim lain pada tahun ajaran ini.';
+            }
+            $max = config('capstone.team_max_members');
+            if ($this->members()->count() >= $max) {
+                return "Kapasitas tim maksimal {$max} orang.";
+            }
+
+            $this->members()->create(['student_id' => $studentId, 'assigned_role' => $role]);
+
+            return null;
+        });
+    }
+
     /** Topik yang sudah disetujui koordinator tidak dapat diganti/diubah oleh tim. */
     public function isTopicLocked(): bool
     {

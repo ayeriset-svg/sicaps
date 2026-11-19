@@ -84,13 +84,9 @@ class TeamController extends Controller
         if (! $candidate || $candidate->class_name !== $team->class_name) {
             return back()->with('error', 'Anggota harus mahasiswa dari kelas yang sama dengan ketua (' . ($team->class_name ?? '-') . ').');
         }
-        $already = TeamMember::where('student_id', $candidate->id)
-            ->whereHas('team', fn ($q) => $q->where('academic_year_id', $team->academic_year_id))->exists();
-        if ($already) {
-            return back()->with('error', 'Mahasiswa tersebut sudah tergabung di tim lain.');
+        if ($error = $team->enrollStudent($candidate->id, $data['assigned_role'])) {
+            return back()->with('error', $error);
         }
-
-        $team->members()->create($data);
         $grades->recalculateTeam($team);
 
         return back()->with('success', "{$candidate->name} ditambahkan ke tim {$team->team_name}.");
