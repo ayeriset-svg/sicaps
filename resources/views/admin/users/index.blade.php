@@ -11,7 +11,7 @@
         <button @click="importOpen=!importOpen" class="rounded-lg bg-slate-100 px-4 py-2 text-sm hover:bg-slate-200">Import CSV</button>
         <button @click="addOpen=!addOpen" class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">+ Tambah User</button>
 
-        <div x-show="importOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="importOpen=false">
+        <div x-show="importOpen" x-dialog="importOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="importOpen=false">
             <div class="bg-white rounded-xl p-6 w-full max-w-md">
                 <h3 class="font-semibold mb-2">Import User (Excel)</h3>
                 <p class="text-xs text-slate-500 mb-3">Kolom: <code>identity_number, name, email, role, angkatan, class_name, password</code>. Password kosong → default = NIM/NIP. Isi di template Excel, lalu unggah.</p>
@@ -27,7 +27,7 @@
             </div>
         </div>
 
-        <div x-show="addOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="addOpen=false">
+        <div x-show="addOpen" x-dialog="addOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="addOpen=false">
             <div class="bg-white rounded-xl p-6 w-full max-w-lg">
                 <h3 class="font-semibold mb-4">Tambah User</h3>
                 <form method="POST" action="{{ route('admin.users.store') }}" class="grid grid-cols-2 gap-3">
@@ -85,7 +85,7 @@
                             <form method="POST" action="{{ route('admin.users.destroy', $user) }}" class="inline" onsubmit="return confirm('Hapus user ini?')">@csrf @method('DELETE')<button title="Hapus" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50"><x-icon name="trash" /></button></form>
                         </div>
 
-                        <div x-show="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
+                        <div x-show="edit" x-dialog="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
                             <div class="bg-white rounded-xl p-6 w-full max-w-lg">
                                 <h3 class="font-semibold mb-4">Edit {{ $user->name }}</h3>
                                 <form method="POST" action="{{ route('admin.users.update', $user) }}" class="grid grid-cols-2 gap-3">

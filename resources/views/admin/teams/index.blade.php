@@ -60,7 +60,7 @@
                         </div>
 
                         {{-- Modal edit tim --}}
-                        <div x-show="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
+                        <div x-show="edit" x-dialog="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
                             <div class="bg-white rounded-xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
                                 <h3 class="font-semibold mb-4">Edit Tim — {{ $team->team_name }}</h3>
                                 <form method="POST" action="{{ route('admin.teams.update', $team) }}" class="space-y-3">

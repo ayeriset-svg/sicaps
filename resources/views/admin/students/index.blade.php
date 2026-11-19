@@ -12,7 +12,7 @@
         <button @click="addOpen=true" class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">+ Tambah Mahasiswa</button>
 
         {{-- Modal import --}}
-        <div x-show="importOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="importOpen=false">
+        <div x-show="importOpen" x-dialog="importOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="importOpen=false">
             <div class="bg-white rounded-xl p-6 w-full max-w-lg">
                 <h3 class="font-semibold mb-2">Import Master Mahasiswa + Nilai Historis</h3>
                 <p class="text-xs text-slate-500 mb-3">Kolom (baris pertama):<br>
@@ -29,7 +29,7 @@
         </div>
 
         {{-- Modal tambah mahasiswa --}}
-        <div x-show="addOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="addOpen=false">
+        <div x-show="addOpen" x-dialog="addOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="addOpen=false">
             <div class="bg-white rounded-xl p-6 w-full max-w-lg">
                 <h3 class="font-semibold mb-4">Tambah Mahasiswa</h3>
                 <form method="POST" action="{{ route('admin.students.store') }}" class="grid grid-cols-2 gap-3">
@@ -121,7 +121,7 @@
                         </div>
 
                         {{-- Modal edit --}}
-                        <div x-show="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
+                        <div x-show="edit" x-dialog="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
                             <div class="bg-white rounded-xl p-6 w-full max-w-lg">
                                 <h3 class="font-semibold mb-4">Edit {{ $s->name }}</h3>
                                 <form method="POST" action="{{ route('admin.students.update', $s) }}" class="grid grid-cols-2 gap-3">

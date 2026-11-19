@@ -50,7 +50,7 @@
                         </div>
                         <span class="text-[11px] text-slate-400">{{ $row['submitted'] }} dikerjakan · {{ $row['done'] }} disetujui</span>
                     </td>
-                    <td class="px-4 py-3 text-slate-400"><svg class="w-4 h-4 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></td>
+                    <td class="px-2 py-1.5 text-slate-400"><button type="button" @click.stop="open=!open" :aria-expanded="open.toString()" aria-label="Lihat detail progres {{ $row['student']->name }}" class="p-1.5 rounded-lg hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"><svg aria-hidden="true" class="w-4 h-4 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></button></td>
                 </tr>
                 <tr x-show="open" x-cloak>
                     <td colspan="5" class="px-4 py-4 bg-slate-50">

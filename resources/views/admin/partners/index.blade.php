@@ -9,7 +9,7 @@
     </div>
     <div x-data="{ open:false }">
         <button @click="open=true" class="rounded-lg bg-brand text-white px-4 py-2 text-sm hover:bg-brand-dark">+ Tambah Mitra</button>
-        <div x-show="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="open=false">
+        <div x-show="open" x-dialog="open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="open=false">
             <div class="bg-white rounded-xl p-6 w-full max-w-md">
                 <h3 class="font-semibold mb-4">Tambah Mitra</h3>
                 <form method="POST" action="{{ route('admin.partners.store') }}" enctype="multipart/form-data" class="space-y-3">
@@ -51,7 +51,7 @@
                 <form method="POST" action="{{ route('admin.partners.destroy', $p) }}" onsubmit="return confirm('Hapus mitra?')">@csrf @method('DELETE')<button title="Hapus" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50"><x-icon name="trash" /></button></form>
             </div>
 
-            <div x-show="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
+            <div x-show="edit" x-dialog="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 text-left" @click.self="edit=false">
                 <div class="bg-white rounded-xl p-6 w-full max-w-md">
                     <h3 class="font-semibold mb-4">Edit {{ $p->name }}</h3>
                     <form method="POST" action="{{ route('admin.partners.update', $p) }}" enctype="multipart/form-data" class="space-y-3">

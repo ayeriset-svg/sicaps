@@ -17,6 +17,46 @@
                 fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
             } }
         }
+
+        // x-dialog="namaVar": jadikan overlay modal yang aksesibel — role dialog,
+        // Esc menutup, fokus masuk ke modal saat dibuka, Tab berputar di dalam
+        // modal, dan fokus kembali ke tombol pembuka saat ditutup.
+        document.addEventListener('alpine:init', () => {
+            const FOCUSABLE = 'a[href],button:not([disabled]),input:not([type=hidden]):not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+            Alpine.directive('dialog', (el, { expression }, { effect, evaluateLater, evaluate }) => {
+                el.setAttribute('role', 'dialog');
+                el.setAttribute('aria-modal', 'true');
+                const title = el.querySelector('h2, h3');
+                if (title) {
+                    title.id = title.id || 'dlg-' + Math.random().toString(36).slice(2, 9);
+                    el.setAttribute('aria-labelledby', title.id);
+                }
+                const visible = () => [...el.querySelectorAll(FOCUSABLE)].filter(n => n.offsetParent !== null);
+                const isOpen = evaluateLater(expression);
+                let opener = null;
+                effect(() => isOpen(open => {
+                    if (open) {
+                        opener = document.activeElement;
+                        requestAnimationFrame(() => (el.querySelector('[autofocus]') || visible()[0])?.focus());
+                    } else if (opener) {
+                        opener.focus?.();
+                        opener = null;
+                    }
+                }));
+                el.addEventListener('keydown', e => {
+                    if (e.key === 'Escape') {
+                        e.stopPropagation();
+                        evaluate(expression + ' = false');
+                    } else if (e.key === 'Tab') {
+                        const items = visible();
+                        if (!items.length) return;
+                        const first = items[0], last = items[items.length - 1];
+                        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+                        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+                    }
+                });
+            });
+        });
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -46,7 +86,7 @@
 </head>
 <body class="h-full bg-canvas text-slate-800">
 @auth
-<div x-data="{ sidebar: false }" class="min-h-full">
+<div x-data="{ sidebar: false }" @keydown.escape.window="sidebar=false" class="min-h-full">
     {{-- ===================== SIDEBAR ===================== --}}
     <aside
         class="fixed inset-y-0 left-0 z-40 w-64 bg-gradient-to-b from-brand-dark to-brand-night text-white flex flex-col transition-transform duration-200 lg:translate-x-0"
@@ -79,7 +119,7 @@
         @endif
         <header class="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur border-b border-rose-100 flex items-center justify-between px-4 sm:px-6 lg:px-8">
             <div class="flex items-center gap-3">
-                <button @click="sidebar=true" class="lg:hidden text-brand text-2xl leading-none"><x-icon name="menu" class="ico" /></button>
+                <button type="button" @click="sidebar=true" :aria-expanded="sidebar.toString()" aria-label="Buka menu navigasi" class="lg:hidden text-brand text-2xl leading-none p-2 -ml-2 rounded-lg"><x-icon name="menu" class="ico" /></button>
                 @if($ay = \App\Models\AcademicYear::active())
                     <span class="text-xs font-medium bg-rose-50 text-brand rounded-full px-3 py-1 border border-rose-100">{{ $ay->label }}</span>
                 @else
@@ -90,7 +130,7 @@
                 <span class="text-sm text-slate-500 hidden lg:block">D3 Sistem Informasi Akuntansi</span>
                 @php $observing = session()->has('impersonator_id'); $u = auth()->user(); @endphp
                 <div class="relative" x-data="{ open:false }" @click.outside="open=false">
-                    <button @click="open=!open" class="flex items-center gap-2 rounded-xl hover:bg-rose-50 pl-1.5 pr-2 py-1.5 transition border border-transparent hover:border-rose-100">
+                    <button type="button" @click="open=!open" @keydown.escape="open=false" :aria-expanded="open.toString()" aria-haspopup="true" class="flex items-center gap-2 rounded-xl hover:bg-rose-50 pl-1.5 pr-2 py-1.5 transition border border-transparent hover:border-rose-100">
                         <div class="h-8 w-8 rounded-full bg-gradient-to-br from-brand to-pink-400 text-white flex items-center justify-center font-bold text-sm shadow-sm">{{ strtoupper(substr($u->name, 0, 1)) }}</div>
                         <div class="text-left hidden sm:block leading-tight">
                             <p class="text-sm font-semibold text-slate-800 max-w-[150px] truncate">{{ $u->name }}</p>

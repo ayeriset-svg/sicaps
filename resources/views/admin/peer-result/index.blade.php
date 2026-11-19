@@ -8,7 +8,7 @@
 </div>
 
 <form method="GET" class="mb-5 flex flex-wrap gap-2 text-sm">
-    <select name="stage" onchange="this.form.submit()" class="rounded-lg border-rose-200 border px-3 py-2 bg-white">
+    <select name="stage" onchange="this.form.submit()" aria-label="Tahap penilaian" class="max-w-full rounded-lg border-rose-200 border px-3 py-2 bg-white">
         @foreach($stages as $s)<option value="{{ $s->id }}" @selected($stage && $stage->id===$s->id)>{{ $s->code }} — {{ $s->name }} {{ $s->peer_open ? '(dibuka)' : '(tertutup)' }}</option>@endforeach
     </select>
     <select name="class" onchange="this.form.submit()" class="rounded-lg border-rose-200 border px-3 py-2 bg-white">
@@ -58,6 +58,7 @@
                     <p class="text-[11px] text-slate-400 mt-2">Angka (x/y): x = anggota yang sudah dinilai oleh mahasiswa itu, y = total anggota tim yang harus dinilai (termasuk diri sendiri).</p>
                 </div>
 
+                <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                     <thead class="bg-slate-50 text-slate-500 text-left">
                         <tr><th class="px-5 py-2 font-medium">Mahasiswa</th><th class="px-5 py-2 font-medium text-center">Penilai Masuk</th><th class="px-5 py-2 font-medium text-right">Rerata Peer</th></tr>
@@ -72,6 +73,7 @@
                         @endforeach
                     </tbody>
                 </table>
+                </div>
             </div>
         @endforeach
     </div>

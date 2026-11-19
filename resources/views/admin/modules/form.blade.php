@@ -147,14 +147,14 @@
                 <div class="flex items-center gap-2">
                     {{-- Kunci field dipertahankan agar jawaban mahasiswa tidak "hilang" saat label diganti --}}
                     <input type="hidden" :name="'field_key['+i+']'" :value="f.key || ''">
-                    <input :name="'field_label['+i+']'" x-model="f.label" placeholder="Label field" class="flex-1 rounded-lg border-rose-200 border px-3 py-2 text-sm">
+                    <input :name="'field_label['+i+']'" x-model="f.label" placeholder="Label field" aria-label="Label field" class="flex-1 rounded-lg border-rose-200 border px-3 py-2 text-sm">
                     <select :name="'field_type['+i+']'" x-model="f.type" class="rounded-lg border-rose-200 border px-3 py-2 text-sm">
                         <option value="richtext">Teks + Gambar</option>
                         <option value="link">Link</option>
                         <option value="file">Unggah Berkas (PDF/Word)</option>
                     </select>
                     <label class="flex items-center gap-1 text-xs whitespace-nowrap"><input type="checkbox" :name="'field_required['+i+']'" x-model="f.required"> Wajib</label>
-                    <button type="button" @click="fields.splice(i,1)" class="text-red-500 text-sm px-1"><x-icon name="x" class="ico" /></button>
+                    <button type="button" @click="fields.splice(i,1)" :aria-label="'Hapus field ' + (f.label || (i + 1))" title="Hapus field" class="text-red-500 text-sm p-1.5 rounded-lg hover:bg-red-50"><x-icon name="x" class="ico" /></button>
                 </div>
             </template>
         </div>

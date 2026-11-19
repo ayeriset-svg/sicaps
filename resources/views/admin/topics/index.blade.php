@@ -30,7 +30,7 @@
                                 <form method="POST" action="{{ route('admin.topics.destroy', $t) }}" onsubmit="return confirm('Hapus topik?')">@csrf @method('DELETE')<button title="Hapus" class="p-1.5 rounded-lg text-red-600 hover:bg-red-50"><x-icon name="trash" /></button></form>
                             </div>
                         </div>
-                        <div x-show="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="edit=false">
+                        <div x-show="edit" x-dialog="edit" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="edit=false">
                             <div class="bg-white rounded-xl p-6 w-full max-w-lg">
                                 <h3 class="font-semibold mb-4">Edit Topik</h3>
                                 @include('admin.topics._form', ['action' => route('admin.topics.update', $t), 'method' => 'PUT', 'topic' => $t, 'partners' => $partners])
@@ -90,13 +90,14 @@
                             </td>
                             <td class="px-4 py-3 text-slate-500">{{ $team->topic?->partner_label ?? '—' }}</td>
                             <td class="px-4 py-3 text-slate-700">{{ $team->topic?->title ?? '—' }}</td>
-                            <td class="px-4 py-3" @click.stop="open=true; editStatus=true">
-                                <span class="inline-flex items-center gap-1 cursor-pointer hover:opacity-80" title="Klik untuk ubah status">
+                            <td class="px-4 py-3">
+                                <button type="button" @click.stop="open=true; editStatus=true" class="relative inline-flex items-center gap-1 rounded-lg hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand" title="Klik untuk ubah status">
                                     <x-status-badge :status="$team->topic_status" />
                                     <x-icon name="edit" class="w-3.5 h-3.5 text-slate-400" />
-                                </span>
+                                    <span class="sr-only">— ubah status topik tim {{ $team->team_name }}</span>
+                                </button>
                             </td>
-                            <td class="px-4 py-3 text-slate-400"><svg class="w-4 h-4 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></td>
+                            <td class="px-2 py-1.5 text-slate-400"><button type="button" @click.stop="open=!open" :aria-expanded="open.toString()" aria-label="Lihat detail topik tim {{ $team->team_name }}" class="p-1.5 rounded-lg hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-brand"><svg aria-hidden="true" class="w-4 h-4 transition-transform" :class="open && 'rotate-180'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg></button></td>
                         </tr>
                         <tr x-show="open" x-cloak>
                             <td colspan="7" class="px-4 py-4 bg-slate-50">
