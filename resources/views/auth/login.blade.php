@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Masuk — SIM-CAPSTONE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ asset('vendor/tailwindcss-3.4.17.js') }}"></script>
     <script>
         tailwind.config = { theme: { extend: { colors: {
             brand: { DEFAULT: '#A61010', dark: '#7E0B0B', night: '#5C0808', light: '#C6413F' },

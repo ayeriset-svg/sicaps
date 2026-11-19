@@ -4,7 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Aktivasi Akun — SIM-CAPSTONE</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="{{ asset('vendor/tailwindcss-3.4.17.js') }}"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            brand: { DEFAULT: '#A61010', dark: '#7E0B0B', night: '#5C0808', light: '#C6413F' },
+        } } } }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>body{font-family:'Inter',ui-sans-serif,system-ui,sans-serif;font-feature-settings:'cv11','ss01'}</style>
@@ -26,25 +31,27 @@
                 Ini login pertama Anda — silakan ganti kata sandi default terlebih dahulu.
             </div>
 
-            @if($errors->any())
-                <div class="mb-4 rounded-xl bg-pink-50 border border-pink-200 px-4 py-3 text-sm text-pink-700">{{ $errors->first() }}</div>
+            @php $hasError = $errors->any(); @endphp
+            @if($hasError)
+                <div id="password-error" role="alert" class="mb-4 rounded-xl bg-pink-50 border border-pink-200 px-4 py-3 text-sm text-pink-700">{{ $errors->first() }}</div>
             @endif
 
             <form method="POST" action="{{ route('password.change.update') }}" class="space-y-4">
                 @csrf @method('PUT')
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Kata Sandi Baru</label>
-                    <input name="password" type="password" required autofocus
+                    <label for="password" class="block text-sm font-semibold text-slate-700 mb-1">Kata Sandi Baru</label>
+                    <input id="password" name="password" type="password" required autofocus autocomplete="new-password"
+                           aria-describedby="password-hint{{ $hasError ? ' password-error' : '' }}" @if($hasError) aria-invalid="true" @endif
                            class="w-full rounded-xl border border-rose-200 px-3 py-2.5 focus:border-brand focus:ring focus:ring-rose-200 outline-none transition"
                            placeholder="Minimal 8 karakter">
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Konfirmasi Kata Sandi</label>
-                    <input name="password_confirmation" type="password" required
+                    <label for="password_confirmation" class="block text-sm font-semibold text-slate-700 mb-1">Konfirmasi Kata Sandi</label>
+                    <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password"
                            class="w-full rounded-xl border border-rose-200 px-3 py-2.5 focus:border-brand focus:ring focus:ring-rose-200 outline-none transition"
                            placeholder="Ulangi kata sandi baru">
                 </div>
-                <p class="text-xs text-slate-400">Tidak boleh sama dengan NIM Anda. Minimal 8 karakter.</p>
+                <p id="password-hint" class="text-xs text-slate-500">Tidak boleh sama dengan NIM Anda. Minimal 8 karakter.</p>
                 <button class="w-full rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-night text-white font-semibold py-2.5 shadow-md shadow-rose-900/20 transition">
                     Simpan & Aktifkan Akun
                 </button>

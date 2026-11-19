@@ -33,26 +33,35 @@ class PeerResultController extends Controller
         $results = [];
         $progress = [];      // [team_id] => daftar status pengisian tiap penilai
         $notDoneCount = 0;   // total penilai yang belum selesai mengisi (stage terpilih)
-        if ($stage) {
+        if ($stage && $teams->isNotEmpty()) {
+            // Dua query agregat untuk seluruh tim (bukan 3 query per mahasiswa).
+            $base = PeerEvaluation::where('stage_id', $stage->id)->whereIn('team_id', $teams->pluck('id'));
+
+            // Nilai yang DITERIMA tiap mahasiswa: [team_id][evaluatee_id] => {avg, received}
+            $received = (clone $base)
+                ->selectRaw('team_id, evaluatee_id, AVG(final_peer_score) AS avg_score, COUNT(*) AS received')
+                ->groupBy('team_id', 'evaluatee_id')->get()
+                ->groupBy('team_id')->map(fn ($rows) => $rows->keyBy('evaluatee_id'));
+
+            // Progres pengisian: jumlah anggota yang sudah DINILAI oleh tiap mahasiswa.
+            $given = (clone $base)
+                ->selectRaw('team_id, evaluator_id, COUNT(DISTINCT evaluatee_id) AS submitted')
+                ->groupBy('team_id', 'evaluator_id')->get()
+                ->groupBy('team_id')->map(fn ($rows) => $rows->keyBy('evaluator_id'));
+
             foreach ($teams as $team) {
                 $members = $team->members->pluck('student')->filter()->values();
                 $expected = $members->count(); // tiap penilai menilai seluruh anggota (termasuk diri sendiri)
 
                 foreach ($members as $student) {
-                    $q = PeerEvaluation::where('stage_id', $stage->id)
-                        ->where('team_id', $team->id)
-                        ->where('evaluatee_id', $student->id);
+                    $row = $received[$team->id][$student->id] ?? null;
                     $results[$team->id][] = [
                         'student' => $student,
-                        'avg' => ($a = $q->avg('final_peer_score')) !== null ? round($a, 2) : null,
-                        'received' => (clone $q)->count(),
+                        'avg' => $row && $row->avg_score !== null ? round((float) $row->avg_score, 2) : null,
+                        'received' => (int) ($row->received ?? 0),
                     ];
 
-                    // Progres pengisian: berapa anggota yang sudah DINILAI oleh mahasiswa ini.
-                    $submitted = PeerEvaluation::where('stage_id', $stage->id)
-                        ->where('team_id', $team->id)
-                        ->where('evaluator_id', $student->id)
-                        ->distinct('evaluatee_id')->count('evaluatee_id');
+                    $submitted = (int) ($given[$team->id][$student->id]->submitted ?? 0);
                     $done = $expected > 0 && $submitted >= $expected;
                     if (! $done) {
                         $notDoneCount++;

@@ -10,7 +10,7 @@
 
 @once
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/tinymce@7/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.jsdelivr.net/npm/tinymce@7.9.3/tinymce.min.js" integrity="sha384-Ovv1ZPEkpW4ElBKDKaEIPkNfTTadFpifFwNJOBnuStg0PQ0RBln5Lsf9AI8BsCmx" crossorigin="anonymous" referrerpolicy="origin"></script>
 <script>
     (function () {
         function initOne(el) {

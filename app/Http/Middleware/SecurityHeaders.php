@@ -26,11 +26,12 @@ class SecurityHeaders
         $headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), interest-cohort=()');
         $headers->set('Cross-Origin-Opener-Policy', 'same-origin');
 
-        // CSP: mengizinkan CDN yang dipakai (Tailwind, Alpine, TinyMCE, Google Fonts),
+        // CSP: Tailwind & Alpine di-host sendiri (public/vendor); CDN hanya untuk TinyMCE & Google Fonts.
+        // 'unsafe-eval' tetap dibutuhkan Alpine (build standar) dan Tailwind Play;
         // gambar data:/https:, serta membatasi frame-ancestors, object, dan base-uri.
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net",
             "font-src 'self' https://fonts.gstatic.com https://cdn.jsdelivr.net data:",
             "img-src 'self' data: blob: https:",

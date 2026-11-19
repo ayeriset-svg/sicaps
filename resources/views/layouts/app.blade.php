@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'SIM-CAPSTONE')</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    {{-- Library di-host sendiri dengan versi terkunci (lihat public/vendor). --}}
+    <script src="{{ asset('vendor/tailwindcss-3.4.17.js') }}"></script>
+    <script src="{{ asset('vendor/alpinejs-3.17.5.min.js') }}" defer></script>
     <script>
         tailwind.config = {
             theme: { extend: {
